@@ -1,0 +1,1 @@
+/usr/bin/cc    CMakeFiles/Homework.dir/src/solver/solver.c.o CMakeFiles/Homework.dir/src/solver/thomas.c.o CMakeFiles/Homework.dir/src/main.c.o  -o Homework -lm 
