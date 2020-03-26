@@ -5,8 +5,9 @@ load u.txt
 
 for i = 1:length(uh)
     clf; hold on;
-    plot(uh(i,:))
-    plot(u(i,:))
+    plot(linspace(0,1, length(uh)), uh(i,:))
+    plot(linspace(0,1, length(uh)), u(i,:))
+    
     legend("Numerical solution", "Exact solution");
     pause(.01);
 end
@@ -70,13 +71,13 @@ legend("Q", "Energy", "Error");
 %% Plot the solutions
 cd convection-diffusion
 
-u = load('u_125.txt');
+u = load('u_5.txt');
 n = length(u); x = linspace(0,1,n);
 
-uh_e2 = load('uh_125_e2.txt');
-uh_e4 = load('uh_125_e4.txt');
-uh_ds = load('uh_125_ds.txt');
-uh_i4 = load('uh_125_i4.txt');
+uh_e2 = load('uh_5_e2.txt');
+uh_e4 = load('uh_5_e4.txt');
+uh_ds = load('uh_5_ds.txt');
+uh_i4 = load('uh_5_i4.txt');
 
 % ct/L = 1/4
 subplot(4,1,1); hold on;
@@ -134,11 +135,11 @@ cd ..
 %% Plot the global diagnostics
 cd convection
 
-e2 = load('glob_125_e2.txt');
-e4 = load('glob_125_e4.txt');
-ds = load('glob_125_ds.txt');
-i4 = load('glob_125_i4.txt');
-i6 = load('glob_125_i6.txt');
+e2 = load('glob_5_e2.txt');
+e4 = load('glob_5_e4.txt');
+ds = load('glob_5_ds.txt');
+i4 = load('glob_5_i4.txt');
+i6 = load('glob_5_i6.txt');
 
 n = length(e2); x = linspace(0,1,n);
 
@@ -179,14 +180,15 @@ load DS.txt
 load I4.txt
 load I6.txt
 
-loglog(E2(:,1), E2(:,2), '-o'); hold on;
-loglog(E4(:,1), E4(:,2), '-o')
-loglog(DS(:,1), DS(:,2), '-o')
-loglog(I4(:,1), I4(:,2), '-o')
-loglog(I6(:,1), I6(:,2), '-o')
+loglog(E2(:,1), E2(:,2), '-o', 'linewidth', 1.2); hold on;
+loglog(E4(:,1), E4(:,2), '-o', 'linewidth', 1.2);
+loglog(DS(:,1), DS(:,2), '-o', 'linewidth', 1.2);
+loglog(I4(:,1), I4(:,2), '-o', 'linewidth', 1.2);
+loglog(I6(:,1), I6(:,2), '-o', 'linewidth', 1.2);
 
+set(gca, 'XDir','reverse')
 grid
-legend("E2", "E4", "DS", "I4"," I6", 'location', 'southeast')
+legend("E2", "E4", "DS", "I4"," I6", 'location', 'southwest')
 xlabel("h/$\sigma_0$", 'interpreter', 'latex')
 ylabel("Error", 'interpreter', 'latex')
 title("Order of convergence of the different FD schemes", 'interpreter', 'latex')

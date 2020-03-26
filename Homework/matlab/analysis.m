@@ -28,21 +28,24 @@ for i = 1:3
         
         % Exact Fourier coefficients
         coeff = exp(-k_discr.^2 * sigma^2 * pi^2);
-        plot(k_discr, log10(abs(coeff)));
+        plot(k_discr(length(k_discr)/2:end), log10(abs(coeff(length(k_discr)/2:end))));
         
         % Discrete Fourier coefficients
         u0 = Q/sqrt(pi*sigma^2) * exp(-(X/sigma).^2);
         dft = fftshift(fft(u0))/n;
-        stem(k, log10(abs(dft)), '*', 'linestyle', 'none')
+        stem(k(n/2:end), log10(abs(dft(n/2:end))), '*', 'linestyle', 'none')
         
         % Plot styling
-        xlim([k(1) k(end)])
+        xlim([0 k(end)])
         ylim([min([log10(abs(dft)) log10(abs(coeff))]) 0])
         title(sprintf("L/$\\sigma_0$ = %d, h/$\\sigma_0$ = %g", a(i), b(j)), 'interpreter', 'latex')
         ylabel("$\log_{10}\left|F(k)\right|$", "interpreter", "latex")
         xlabel("k", "interpreter", "latex")
+        ylim([-60 0]);
    end
 end
+
+subplot(3,3,1); legend("Fourier Transform", "Discrete Fourier series", 'location', 'southwest');
 
 
 
