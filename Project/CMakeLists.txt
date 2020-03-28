@@ -18,9 +18,12 @@ unset(CMAKE_REQUIRED_LIBRARIES)
 set(LIBM_LIBRARIES m)
 
 # PETSc
+set(PETSC_DIR ${PROJECT_SOURCE_DIR}/petsc-3.12.4)
+set(PETSC_ARCH arch-linux2-c-debug)
 find_package(PETSc 3.12.4 REQUIRED)
 include_directories(${PETSC_INCLUDES})
 add_definitions(${PETSC_DEFINITIONS})
+
 
 # Project files
 include_directories(${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/inc)
