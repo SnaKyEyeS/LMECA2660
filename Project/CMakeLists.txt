@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.10.2)
 
 # Project name
-project(Project)
+project(Project CXX)
 
 # Exec name
 set(EXEC_NAME Project)
@@ -27,12 +27,12 @@ add_definitions(${PETSC_DEFINITIONS})
 
 # Project files
 include_directories(${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/inc)
-file(GLOB SRCS
-    "${PROJECT_SOURCE_DIR}/inc/*.h"
-	"${PROJECT_SOURCE_DIR}/inc/*.c"
-	"${PROJECT_SOURCE_DIR}/src/*.h"
-	"${PROJECT_SOURCE_DIR}/src/*.c"
+file(GLOB C_SRCS
+    "${PROJECT_SOURCE_DIR}/src/*.c"
+	"${PROJECT_SOURCE_DIR}/src/*.cpp"
 )
 
-add_executable(${EXEC_NAME} ${SRCS})
+# Use G++ for compiling/linking the source files
+set_source_files_properties(${C_SRCS} PROPERTIES LANGUAGE CXX)
+add_executable(${EXEC_NAME} ${C_SRCS})
 target_link_libraries(${EXEC_NAME} ${LIBM_LIBRARIES} ${PETSC_LIBRARIES})

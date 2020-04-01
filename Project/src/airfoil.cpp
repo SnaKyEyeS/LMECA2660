@@ -33,7 +33,7 @@ void airfoil_init_mapping(Data_airfoil_mapping* mapping){
 	mapping->L = mapping->n_xi1*mapping->dxi1;
 	mapping->H = 2*M_PI;
 	mapping->xi1_lim[0] = 0.0;
-	mapping->xi2_lim[0] = 0.0;	
+	mapping->xi2_lim[0] = 0.0;
 
 	mapping->xi1_lim[1] = mapping->xi1_lim[0] + mapping->L;
 	mapping->xi2_lim[1] = mapping->xi2_lim[0] + mapping->H;
@@ -46,7 +46,7 @@ void airfoil_metrics(Data_airfoil_mapping* mapping, double xi1, double xi2, doub
 							  double * dh2_dxi1, double * dh2_dxi2, \
 							  double * d2h1_dxi1dxi2, double * d2h2_dxi1dxi2, \
 							  double * theta_mesh){
-							  
+
 	double fact1 = mapping->fact1;
 	double fact2 = mapping->fact2;
 	double a = (mapping->L_carac/2.0);
@@ -56,7 +56,7 @@ void airfoil_metrics(Data_airfoil_mapping* mapping, double xi1, double xi2, doub
 	double b = mapping->bj;
 	double r0 = mapping->reg*a;
 
-	double t = xi1;		
+	double t = xi1;
 	double theta = xi2;
 	double r = r0 + fact2*(exp(fact1*xi1) -1);
 
@@ -210,7 +210,7 @@ void airfoil_metrics(Data_airfoil_mapping* mapping, double xi1, double xi2, doub
 		          pow(eps*eps+r*r-eps*r*cos(delta+theta)*2.0,2.0)*((r*r*r)*sin(gamma-theta)-(b*b)*r*sin(gamma+theta)+eps*(r*r)*sin(delta-gamma+theta*2.0)*2.0+(eps*eps)*r*\
 				  sin(gamma-theta))*4.0)*2.0)*(1.0/2.0);
 	}
-    
+
 	if(d2h1_dxi1dxi2!=NULL){
 		*d2h1_dxi1dxi2 = fact1*fact2*exp(fact1*t)*1.0/sqrt(pow(((r*r*r)*sin(gamma-theta)-(b*b)*r*sin(gamma+theta)+eps*(r*r)*sin(delta-gamma+theta*2.0)*2.0\
 		                 +(eps*eps)*r*sin(gamma-theta))/(eps*eps+r*r-eps*r*cos(delta+theta)*2.0)-eps*r*sin(delta+theta)*1.0/pow(eps*eps+r*r-eps*r*\
@@ -521,7 +521,7 @@ void airfoil_init_velocity(Data_airfoil_mapping* mapping, double U_inf, double x
 	std::complex<double> z, vel;
 
 	//u_n component :
-	if(u_n!=NULL){ 
+	if(u_n!=NULL){
 		r = r0 + fact2*exp(xi1*fact1) - fact2;
 		z = r*std::exp(I * xi2);
 
@@ -530,11 +530,11 @@ void airfoil_init_velocity(Data_airfoil_mapping* mapping, double U_inf, double x
 		/(1.0 - b*b/(std::pow(z-eps*std::exp(-I*delta),2.0))))*std::exp(I*gamma);
 
 		*u_n = std::real(vel)*cos(theta_mesh) - std::imag(vel)*sin(theta_mesh);
-	} 
+	}
 
 
 	//u_theta component :
-	if(u_theta!=NULL){ 
+	if(u_theta!=NULL){
 		r = r0+ fact2*exp( xi1*fact1 ) - fact2;
 		z = r*std::exp(I * xi2);
 
@@ -543,7 +543,7 @@ void airfoil_init_velocity(Data_airfoil_mapping* mapping, double U_inf, double x
                   /(1.0 - b*b/(std::pow(z-eps*std::exp(-I*delta),2.0))))*std::exp(I*gamma);
 
 		*u_theta = -std::real(vel)*sin(theta_mesh) - std::imag(vel)*cos(theta_mesh);
-	}          
+	}
 }
 
 void airfoil_init_pressure(Data_airfoil_mapping* mapping, double U_inf, double xi1, double xi2, double * P){
