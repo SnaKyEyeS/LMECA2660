@@ -1,6 +1,5 @@
-
-#include <mpi.h>
 #include "poisson.h"
+
 
 /*Called by poisson_solver at each time step
   More than probably, you should need to add arguments to the prototype ...
@@ -20,7 +19,7 @@ void computeRHS(double *rhs, PetscInt rowStart, PetscInt rowEnd)
   Modification to do :
       - Change the call to computeRHS as you have to modify its prototype too
       - Copy solution of the equation into your vector PHI*/
-void poisson_solver(Poisson_data *data)
+void poisson_solver(PoissonData *data)
 {
 
     /* Solve the linear system Ax = b for a 2-D poisson equation on a structured grid */
@@ -77,13 +76,12 @@ void computeLaplacianMatrix(Mat A, int rowStart, int rowEnd)
   Modification to do in this function :
       -Specify the number of unknows
       -Specify the number of non-zero diagonals in the sparse matrix*/
-PetscErrorCode initialize_poisson_solver(Poisson_data* data)
-{
+PetscErrorCode initialize_poisson_solver(PoissonData* data, OrthogonalMesh *mesh) {
     PetscInt rowStart; /*rowStart = 0*/
     PetscInt rowEnd; /*rowEnd = the number of unknows*/
     PetscErrorCode ierr;
 
-	int nphi = 5; /*WRITE HERE THE NUMBER OF UNKNOWS*/
+	int nphi = mesh->n; /*WRITE HERE THE NUMBER OF UNKNOWS*/
 
     /* Create the right-hand-side vector : b */
     VecCreate(PETSC_COMM_WORLD, &(data->b));
@@ -99,7 +97,7 @@ PetscErrorCode initialize_poisson_solver(Poisson_data* data)
     MatCreate(PETSC_COMM_WORLD, &(data->A));
     MatSetSizes(data->A, PETSC_DECIDE, PETSC_DECIDE, nphi , nphi);
     MatSetType(data->A, MATAIJ);
-    MatSeqAIJSetPreallocation(data->A,5, NULL); // /*SET HERE THE NUMBER OF NON-ZERO DIAGONALS*/
+    MatSeqAIJSetPreallocation(data->A, 5, NULL); // /*SET HERE THE NUMBER OF NON-ZERO DIAGONALS*/
     MatGetOwnershipRange(data->A, &rowStart, &rowEnd);
 
     computeLaplacianMatrix(data->A, rowStart, rowEnd);
@@ -133,7 +131,7 @@ PetscErrorCode initialize_poisson_solver(Poisson_data* data)
 
 /*To call after the simulation to free the vectors needed for Poisson equation
   Modification to do : nothing */
-void free_poisson_solver(Poisson_data* data){
+void free_poisson_solver(PoissonData* data){
     MatDestroy(&(data->A));
     VecDestroy(&(data->b));
     VecDestroy(&(data->x));

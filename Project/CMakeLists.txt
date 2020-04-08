@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.10.2)
 project(Project CXX)
 
 # Exec name
-set(EXEC_NAME Project)
+set(EXEC_NAME project)
 
 # CMake module
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")

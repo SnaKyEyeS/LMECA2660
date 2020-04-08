@@ -12,10 +12,10 @@ typedef enum {AIRFOIL, CYLINDER} MappingType;
 typedef struct {
     // Mapping
     MappingType type;
-    void *mapping;
 
-    // Number of unknowns
+    // Number of unknowns & discretization
     int n, n_xi1, n_xi2;
+    double dxi1, dxi2;
 
     // Mesh data
     double *data;

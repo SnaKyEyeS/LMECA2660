@@ -45,16 +45,14 @@ int main(int argc, char *argv[]){
 
     PetscInitialize(&argc, &argv, 0, 0);
 
-
-    OrthogonalMesh *mesh = init_mesh(AIRFOIL);
+    // Initialize Mesh
+    OrthogonalMesh *mesh = init_mesh(CYLINDER);
     save_mesh(mesh);
     free_mesh(mesh);
 
-
-    // FILE *fp = fopen("../data/mesh.txt", "w+");
-    // for () {
-    //     fprintf(fp, "%s\n", );
-    // }
+    // Initialize Poisson solver
+    PoissonData *poisson = (PoissonData *) malloc(sizeof(PoissonData));
+    initialize_poisson_solver(poisson, mesh);
 
     PetscFinalize();
 

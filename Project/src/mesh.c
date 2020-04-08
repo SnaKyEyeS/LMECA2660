@@ -10,10 +10,11 @@ OrthogonalMesh *init_mesh(MappingType type) {
         case AIRFOIL: {     // Airfoil - Joukowsky mapping
             AirfoilMapping *mapping = init_airfoil_mapping();
             mesh->type = type;
-            mesh->mapping = mapping;
             mesh->n_xi1 = mapping->n_xi1;
             mesh->n_xi2 = mapping->n_xi2;
             mesh->n = mesh->n_xi1 * mesh->n_xi2;
+            mesh->dxi1 = mapping->dxi1;
+            mesh->dxi2 = mapping->dxi2;
 
             // Allocate mesh data
             mesh->data = (double *) malloc(14*mesh->n*sizeof(double));
@@ -38,8 +39,8 @@ OrthogonalMesh *init_mesh(MappingType type) {
             for (int i = 0; i < mesh->n_xi1; i++) {
                 for (int j = 0; j < mesh->n_xi2; j++) {
                     ind = i*mesh->n_xi2 + j;
-                    xi1 = mapping->xi1_lim[0] + i*mapping->dxi1;
-                    xi2 = mapping->xi2_lim[0] + j*mapping->dxi2;
+                    xi1 = mapping->xi1_lim[0] + (mapping->xi1_lim[1]-mapping->xi1_lim[0])*i*mapping->dxi1;
+                    xi2 = mapping->xi2_lim[0] + (mapping->xi1_lim[1]-mapping->xi1_lim[0])*j*mapping->dxi2;
                     airfoil_metrics(mapping, xi1, xi2, &mesh->x[ind], &mesh->y[ind], &mesh->h1[ind], &mesh->h2[ind],
                                     &mesh->dh1_d1[ind], &mesh->dh1_d2[ind], &mesh->dh2_d1[ind], &mesh->dh2_d2[ind],
                                     &mesh->ddh1_d1d2[ind], &mesh->ddh2_d1d2[ind], &mesh->theta[ind]);
@@ -47,15 +48,18 @@ OrthogonalMesh *init_mesh(MappingType type) {
                     airfoil_init_pressure(mapping, U_INF, xi1, xi2, &mesh->p[ind]);
                 }
             }
+
+            free(mapping);
             break; }
 
         case CYLINDER: {    // Cylinder
             CylinderMapping *mapping = init_cylinder_mapping();
             mesh->type = type;
-            mesh->mapping = mapping;
             mesh->n_xi1 = mapping->n_xi1;
             mesh->n_xi2 = mapping->n_xi2;
             mesh->n = mesh->n_xi1 * mesh->n_xi2;
+            mesh->dxi1 = mapping->dxi1;
+            mesh->dxi2 = mapping->dxi2;
 
             // Allocate mesh data
             mesh->data = (double *) malloc(14*mesh->n*sizeof(double));
@@ -80,8 +84,8 @@ OrthogonalMesh *init_mesh(MappingType type) {
             for (int i = 0; i < mesh->n_xi1; i++) {
                 for (int j = 0; j < mesh->n_xi2; j++) {
                     ind = i*mesh->n_xi2 + j;
-                    xi1 = mapping->xi1_lim[0] + i*mapping->dxi1;
-                    xi2 = mapping->xi2_lim[0] + j*mapping->dxi2;
+                    xi1 = mapping->xi1_lim[0] + (mapping->xi1_lim[1]-mapping->xi1_lim[0])*i*mapping->dxi1;
+                    xi2 = mapping->xi2_lim[0] + (mapping->xi1_lim[1]-mapping->xi1_lim[0])*j*mapping->dxi2;
                     cylinder_metrics(mapping, xi1, xi2, &mesh->x[ind], &mesh->y[ind], &mesh->h1[ind], &mesh->h2[ind],
                                     &mesh->dh1_d1[ind], &mesh->dh1_d2[ind], &mesh->dh2_d1[ind], &mesh->dh2_d2[ind],
                                     &mesh->ddh1_d1d2[ind], &mesh->ddh2_d1d2[ind], &mesh->theta[ind]);
@@ -89,6 +93,8 @@ OrthogonalMesh *init_mesh(MappingType type) {
                     cylinder_init_pressure(mapping, U_INF, xi1, xi2, &mesh->p[ind]);
                 }
             }
+
+            free(mapping);
             break; }
 
         default:
@@ -101,7 +107,6 @@ OrthogonalMesh *init_mesh(MappingType type) {
 
 void free_mesh(OrthogonalMesh *mesh) {
     free(mesh->data);
-    free(mesh->mapping);
     free(mesh);
 }
 

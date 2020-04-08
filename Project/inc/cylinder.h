@@ -3,6 +3,7 @@
 
 #include <math.h>
 #include "const.h"
+#include "stdio.h"
 
 typedef struct {
     // Number of points
@@ -35,7 +36,7 @@ typedef struct {
 
 // Function declarations
 CylinderMapping*    init_cylinder_mapping();
-void                cylinder_metrics(CylinderMapping *mapping, double xi1, double xi2, double *x, double *y,
+void cylinder_metrics(CylinderMapping *mapping, double xi1, double xi2, double *x, double *y,
                                       double *h1, double *h2, double *dh1_dxi1, double *dh1_dxi2, double *dh2_dxi1, double *dh2_dxi2,
                                       double *d2h1_dxi1dxi2, double *d2h2_dxi1dxi2, double *theta_mesh);
 void cylinder_init_velocity(CylinderMapping *mapping, double U_inf, double xi1, double xi2, double *u_n, double *u_theta);

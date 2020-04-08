@@ -1,24 +1,22 @@
 #ifndef _POISSON_H_
 #define _POISSON_H_
 
-/*To include in the file in which you will call initialize_poisson_solver and poisson_solver*/
-
+#include <mpi.h>
 #include <petsc.h>
 #include <petscsys.h>
+#include "mesh.h"
 
 //Structure storing petsc vectors
 typedef struct {
-
 	Vec b;
 	Vec x;
 	Mat A;
 	KSP sles;
 
-} Poisson_data;
+} PoissonData;
 
-PetscErrorCode initialize_poisson_solver(Poisson_data* data);
-void poisson_solver(Poisson_data *data);
-void free_poisson_solver(Poisson_data* data);
+PetscErrorCode initialize_poisson_solver(PoissonData* data, OrthogonalMesh *mesh);
+void poisson_solver(PoissonData *data);
+void free_poisson_solver(PoissonData* data);
 
 #endif
-
