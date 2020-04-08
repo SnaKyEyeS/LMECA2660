@@ -1,13 +1,7 @@
-#include <iostream>
-#include <complex>
-#include <math.h>
-#include <cmath>
-#include <stdio.h>
-#include <limits>
-
 #include "airfoil.h"
 
-void airfoil_init_mapping(Data_airfoil_mapping* mapping){
+AirfoilMapping *init_airfoil_mapping() {
+	AirfoilMapping *mapping = (AirfoilMapping*) malloc(sizeof(AirfoilMapping));
 
 	mapping->Str_normal = 1.015;
 	mapping->h_wall_normal = 2.0e-4;
@@ -38,10 +32,14 @@ void airfoil_init_mapping(Data_airfoil_mapping* mapping){
 	mapping->xi1_lim[1] = mapping->xi1_lim[0] + mapping->L;
 	mapping->xi2_lim[1] = mapping->xi2_lim[0] + mapping->H;
 	mapping->dxi2 = mapping->H/mapping->n_xi2;
+
+	return mapping;
 }
 
 
-void airfoil_metrics(Data_airfoil_mapping* mapping, double xi1, double xi2, double * x, double * y, \
+
+
+void airfoil_metrics(AirfoilMapping* mapping, double xi1, double xi2, double * x, double * y, \
 							  double * h1, double * h2, double * dh1_dxi1, double * dh1_dxi2,\
 							  double * dh2_dxi1, double * dh2_dxi2, \
 							  double * d2h1_dxi1dxi2, double * d2h2_dxi1dxi2, \
@@ -494,7 +492,7 @@ void airfoil_metrics(Data_airfoil_mapping* mapping, double xi1, double xi2, doub
 
 }
 
-void airfoil_init_velocity(Data_airfoil_mapping* mapping, double U_inf, double xi1, double xi2, double * u_n, double *u_theta){
+void airfoil_init_velocity(AirfoilMapping* mapping, double U_inf, double xi1, double xi2, double * u_n, double *u_theta){
 
 	std::complex<double> I(0,1);
 
@@ -546,7 +544,7 @@ void airfoil_init_velocity(Data_airfoil_mapping* mapping, double U_inf, double x
 	}
 }
 
-void airfoil_init_pressure(Data_airfoil_mapping* mapping, double U_inf, double xi1, double xi2, double * P){
+void airfoil_init_pressure(AirfoilMapping* mapping, double U_inf, double xi1, double xi2, double * P){
 
 	std::complex<double> I(0,1);
 

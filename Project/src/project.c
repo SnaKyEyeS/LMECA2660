@@ -1,5 +1,8 @@
 #include "poisson.h"
 #include "airfoil.h"
+#include "cylinder.h"
+#include "mesh.h"
+#include "stdio.h"
 
 /*Example : discretization of \nabla \cdot \mathbf{u}. Do not compile this code, it will not; that's a example.
   In this example, I have :
@@ -42,28 +45,16 @@ int main(int argc, char *argv[]){
 
     PetscInitialize(&argc, &argv, 0, 0);
 
-    /*Examples when calling airfoil mapping functions :*/
-    Data_airfoil_mapping mapping;
-    airfoil_init_mapping(&mapping);
 
-    double x,y,h1,h2, dh1_dxi1, dh1_dxi2, dh2_dxi1, dh2_dxi2, d2h1_dxi1dxi2, d2h2_dxi1dxi2, theta_mesh;
-    airfoil_metrics(&mapping, 0.5, 0.0, &x, &y, \
-							  &h1, & h2, &dh1_dxi1, &dh1_dxi2,\
-							  &dh2_dxi1, &dh2_dxi2, \
-							  &d2h1_dxi1dxi2, &d2h2_dxi1dxi2, \
-							  &theta_mesh);
-
-    double u_n, u_theta;
-    double U_inf = 1.0;
-    airfoil_init_velocity(&mapping, U_inf, 0.5, 0.0, &u_n, &u_theta);
-
-    double P;
-    airfoil_init_pressure(&mapping, U_inf, 0.5, 0.0, &P);
+    OrthogonalMesh *mesh = init_mesh(AIRFOIL);
+    save_mesh(mesh);
+    free_mesh(mesh);
 
 
-
-    /*WRITE YOUR PROJECT ...*/
-
+    // FILE *fp = fopen("../data/mesh.txt", "w+");
+    // for () {
+    //     fprintf(fp, "%s\n", );
+    // }
 
     PetscFinalize();
 

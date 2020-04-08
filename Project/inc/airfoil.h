@@ -1,6 +1,13 @@
 #ifndef _AIRFOIL_H_
 #define _AIRFOIL_H_
 
+#include <iostream>
+#include <complex>
+#include <math.h>
+#include <cmath>
+#include <stdio.h>
+#include <limits>
+
 typedef struct {
 
 	//IMPORTANT FOR STUDENTS : number of cell without the ghosts in the normal and tangential direction.
@@ -31,11 +38,11 @@ typedef struct {
 	double xi2_lim[2]; //Limit values for x2_1 in the computational domain.
 
 
-} Data_airfoil_mapping;
+} AirfoilMapping;
 
-/*PRE : mapping != NULL
-  POST : Initialize the structure mapping for a Joukowski tranformation :*/
-void airfoil_init_mapping(Data_airfoil_mapping* mapping);
+
+// Function declarations
+AirfoilMapping *init_airfoil_mapping();
 
 /*PRE : - Mapping must be initialized with function airfoil_init_mapping before calling this function
 		- xi1 and xi2 are mesh point coordinates the computational domain.
@@ -47,7 +54,7 @@ void airfoil_init_mapping(Data_airfoil_mapping* mapping);
 			- theta_mesh : local orientation of the mesh in the physical domain
 		 If a information is not needed, replace its argument by NULL
 		    Ex : theta_mesh is not needed => theta_mesh = NULL*/
-void airfoil_metrics(Data_airfoil_mapping* mapping, double xi1, double xi2, double * x, double * y, \
+void airfoil_metrics(AirfoilMapping* mapping, double xi1, double xi2, double * x, double * y, \
 							  double * h1, double * h2, double * dh1_dxi1, double * dh1_dxi2,\
 							  double * dh2_dxi1, double * dh2_dxi2, \
 							  double * d2h1_dxi1dxi2, double * d2h2_dxi1dxi2, \
@@ -61,7 +68,7 @@ void airfoil_metrics(Data_airfoil_mapping* mapping, double xi1, double xi2, doub
 			- u_n, u_theta : the normal and tangential component velocity of a potential flow.
 		 If a information is not needed, replace its argument by NULL
 		    Ex : u_n is not needed => u_n = NULL*/
-void airfoil_init_velocity(Data_airfoil_mapping* mapping, double U_inf, double xi1, double xi2, double * u_n, double *u_theta);
+void airfoil_init_velocity(AirfoilMapping* mapping, double U_inf, double xi1, double xi2, double * u_n, double *u_theta);
 
 /*PRE : - Mapping must be initialized with function airfoil_init_mapping before calling this function
 		- xi1 and xi2 are mesh point coordinates the computational domain.
@@ -69,6 +76,6 @@ void airfoil_init_velocity(Data_airfoil_mapping* mapping, double U_inf, double x
   POST : Based on the Joukowski transformation, this function computes :
   			- x, y : mesh point coordinates in the physical domain
 			- u_n, u_theta : the normal and tangential component velocity of a potential flow*/
-void airfoil_init_pressure(Data_airfoil_mapping* mapping, double U_inf, double xi1, double xi2, double * P);
+void airfoil_init_pressure(AirfoilMapping* mapping, double U_inf, double xi1, double xi2, double * P);
 
 #endif
