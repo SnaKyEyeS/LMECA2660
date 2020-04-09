@@ -47,13 +47,18 @@ int main(int argc, char *argv[]){
 
     // Initialize Mesh
     OrthogonalMesh *mesh = init_mesh(CYLINDER);
-    save_mesh(mesh);
-    free_mesh(mesh);
 
     // Initialize Poisson solver
     PoissonData *poisson = (PoissonData *) malloc(sizeof(PoissonData));
     initialize_poisson_solver(poisson, mesh);
 
+    // Compute Poisson Solution
+    poisson_solver(poisson, mesh);
+    save_mesh(mesh);
+
+    // Free memory
+    free_mesh(mesh);
+    free_poisson_solver(poisson);
     PetscFinalize();
 
 }

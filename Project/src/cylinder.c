@@ -5,7 +5,7 @@ CylinderMapping *init_cylinder_mapping() {
     CylinderMapping *mapping = (CylinderMapping *) malloc(sizeof(CylinderMapping));
 
     // Fixed parameters
-    mapping->D = 1.0;                           // Fixé arbitrairement ???
+    mapping->D = 0.2;                           // Fixé arbitrairement ???
     mapping->R = mapping->D / 2.0;
     mapping->H = 50*mapping->D;                 // H = 50D, OK
     mapping->h_wall_normal = 2.0e-4;            // On doit déterminer ces param pour avoir
@@ -26,6 +26,7 @@ CylinderMapping *init_cylinder_mapping() {
     mapping->xi2_lim[0] = 0.0;
     mapping->xi2_lim[1] = 2*M_PI;
 
+    printf("%d, %d\n", mapping->n_xi1);
     return mapping;
 }
 

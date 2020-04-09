@@ -5,21 +5,31 @@
   More than probably, you should need to add arguments to the prototype ...
   Modification to do :
       -Fill vector rhs*/
-void computeRHS(double *rhs, PetscInt rowStart, PetscInt rowEnd)
-{
-    int r;
-    for(r=rowStart; r<rowEnd ; r++){
-		rhs[r] = 5; /*WRITE HERE (nabla dot u_star)/dt at each mesh point r*/
+void computeRHS(OrthogonalMesh *mesh, double *rhs, PetscInt rowStart, PetscInt rowEnd) {
+    double r, theta, x, y;
+    for(int i = rowStart; i < rowEnd ; i++) {
+        x = mesh->x[i];
+        y = mesh->y[i];
+        r = sqrt(x*x + y*y);
+        if (r < 0.1) {
+            printf("caca boudin prout pipi caca\n");
+            r = 0.1;
+        }
+        theta = atan2(y, x);
+
+        double s = sin(M_PI*(0.1-r)/10);
+        double c = cos(2*theta);
+        rhs[i] = s*c*M_PI*M_PI / (10*10) + cos(M_PI*(0.1-r)/10)*c*M_PI / (10*r) + 4*s*c / (r*r);
     }
 }
 
 /*To call at each time step after computation of U_star. This function solves the poisson equation
-  and copies the solution of the equation into your vector Phi
+  and coM_PIes the solution of the equation into your vector Phi
   More than probably, you should need to add arguments to the prototype ...
   Modification to do :
       - Change the call to computeRHS as you have to modify its prototype too
       - Copy solution of the equation into your vector PHI*/
-void poisson_solver(PoissonData *data)
+void poisson_solver(PoissonData *data, OrthogonalMesh *mesh)
 {
 
     /* Solve the linear system Ax = b for a 2-D poisson equation on a structured grid */
@@ -34,7 +44,7 @@ void poisson_solver(PoissonData *data)
     /* Fill the right-hand-side vector : b */
     VecGetOwnershipRange(b, &rowStart, &rowEnd);
     VecGetArray(b, &rhs);
-    computeRHS(rhs, rowStart, rowEnd); /*MODIFY THE PROTOTYPE HERE*/
+    computeRHS(mesh, rhs, rowStart, rowEnd); /*MODIFY THE PROTOTYPE HERE*/
     VecRestoreArray(b, &rhs);
 
 
@@ -45,9 +55,8 @@ void poisson_solver(PoissonData *data)
 
     VecGetArray(x, &sol);
 
-    int r;
-    for(r=rowStart; r<rowEnd; r++){
-        /*YOUR VECTOR PHI[...]*/ // = sol[r];
+    for(int i = rowStart; i < rowEnd; i++){
+        mesh->p[i] = sol[i];
     }
 
     VecRestoreArray(x, &sol);
@@ -60,15 +69,42 @@ void poisson_solver(PoissonData *data)
   More than probably, you should need to add arguments to the prototype ... .
   Modification to do in this function :
       -Insert the correct factor in matrix A*/
-void computeLaplacianMatrix(Mat A, int rowStart, int rowEnd)
-{
+void computeLaplacianMatrix(OrthogonalMesh *mesh, Mat A, int rowStart, int rowEnd) {
+    double dx_sq = mesh->dxi1*mesh->dxi1;
+    double dy_sq = mesh->dxi2*mesh->dxi2;
 
-    int r;
-    for (r = rowStart; r < rowEnd; r++){
-        MatSetValue(A, r, r , 1.0, INSERT_VALUES);
-        /*USING MATSETVALUE FUNCTION, INSERT THE GOOD FACTOR AT THE GOOD PLACE*/
+    for (int i = rowStart; i < rowEnd; i++) {
+        MatSetValue(A, i, i , 1.0, INSERT_VALUES);  // Main diagonal
     }
-
+    // for (int i = rowStart; i < rowEnd; i++){
+    //     if (i < mesh->n_xi1)            { continue; }   // Lower border
+    //     if (i > mesh->n - mesh->n_xi1)  { continue; }   // Upper border
+    //     // if ((i % mesh->n_xi1) == 0)     {
+    //     //
+    //     // }   // Left  border
+    //     // if (((i+1) % mesh->n_xi1) == 0) { continue; }   // Right border
+    //
+    //     // Main diagonal
+    //     MatSetValue(A, i, i , -2*(1/dx_sq + 1/dy_sq), INSERT_VALUES);
+    //
+    //     // Left & Right elements
+    //     if (i < mesh->n_xi1) {                          // Left border
+    //         // MatSetValue(A, i, i+1, 1/dx_sq, INSERT_VALUES);
+    //         // MatSetValue(A, i, i+mesh->n_xi1-1, 1/dx_sq, INSERT_VALUES);
+    //
+    //     } else if (i > mesh->n - mesh->n_xi1) {         // Right border
+    //         // MatSetValue(A, i, i-mesh->n_xi1+1, 1/dx_sq, INSERT_VALUES);
+    //         // MatSetValue(A, i, i-1, 1/dx_sq, INSERT_VALUES);
+    //
+    //     } else {
+    //         MatSetValue(A, i, i+1, 1/dx_sq, INSERT_VALUES);
+    //         MatSetValue(A, i, i-1, 1/dx_sq, INSERT_VALUES);
+    //     }
+    //
+    //     // Up & Down elements
+    //     MatSetValue(A, i, i+mesh->n_xi2, 1/dy_sq, INSERT_VALUES);
+    //     MatSetValue(A, i, i-mesh->n_xi2, 1/dy_sq, INSERT_VALUES);
+    // }
 }
 
 /*To call during the initialization of your solver, before the begin of the time loop
@@ -100,7 +136,7 @@ PetscErrorCode initialize_poisson_solver(PoissonData* data, OrthogonalMesh *mesh
     MatSeqAIJSetPreallocation(data->A, 5, NULL); // /*SET HERE THE NUMBER OF NON-ZERO DIAGONALS*/
     MatGetOwnershipRange(data->A, &rowStart, &rowEnd);
 
-    computeLaplacianMatrix(data->A, rowStart, rowEnd);
+    computeLaplacianMatrix(mesh, data->A, rowStart, rowEnd);
     ierr = MatAssemblyBegin(data->A, MAT_FINAL_ASSEMBLY);
     CHKERRQ(ierr);
     ierr = MatAssemblyEnd(data->A, MAT_FINAL_ASSEMBLY);
