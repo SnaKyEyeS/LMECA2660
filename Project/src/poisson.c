@@ -57,7 +57,7 @@ void poisson_solver(PoissonData *data, Mesh *mesh)
     VecGetArray(x, &sol);
 
     for(int i = rowStart; i < rowEnd; i++){
-        mesh->p[i] = sol[i];
+        mesh->val2[i] = sol[i];
     }
 
     VecRestoreArray(x, &sol);
@@ -71,8 +71,8 @@ void poisson_solver(PoissonData *data, Mesh *mesh)
   Modification to do in this function :
       -Insert the correct factor in matrix A*/
 void computeLaplacianMatrix(Mesh *mesh, Mat A, int rowStart, int rowEnd) {
-    double d1 = mesh->dxi1;
-    double d2 = mesh->dxi2;
+    double d1 = mesh->d1;
+    double d2 = mesh->d2;
     double h1, h2, dh1_d1, dh1_d2, dh2_d1, dh2_d2, a, b;
     double phi, phi_i_plus, phi_i_minus, phi_j_plus, phi_j_minus;
     int i, j;
@@ -82,8 +82,8 @@ void computeLaplacianMatrix(Mesh *mesh, Mat A, int rowStart, int rowEnd) {
     // }
 
     for (int r = rowStart; r < rowEnd; r++){
-        i = r / mesh->n_xi2;
-        j = r % mesh->n_xi2;
+        i = r / mesh->n2;
+        j = r % mesh->n2;
 
         h1 = mesh->h1[r];
         h2 = mesh->h2[r];
@@ -101,7 +101,7 @@ void computeLaplacianMatrix(Mesh *mesh, Mat A, int rowStart, int rowEnd) {
 
         if (i == 0) {
             phi = -1/(d1*d1*h1*h1) -2/(d2*d2*h2*h2) + a/(2*d1);
-        } else if (i == mesh->n_xi1-1) {
+        } else if (i == mesh->n1-1) {
             phi = -1/(d1*d1*h1*h1) -2/(d2*d2*h2*h2) - a/(2*d1);
         } else {
             phi = -2/(d1*d1*h1*h1) -2/(d2*d2*h2*h2);
@@ -112,22 +112,22 @@ void computeLaplacianMatrix(Mesh *mesh, Mat A, int rowStart, int rowEnd) {
 
         // Right & left borders
         if (i > 0) {
-            MatSetValue(A, r, r-mesh->n_xi2, phi_i_minus, INSERT_VALUES);
+            MatSetValue(A, r, r-mesh->n2, phi_i_minus, INSERT_VALUES);
         }
-        if (i < mesh->n_xi1-1) {
-            MatSetValue(A, r, r+mesh->n_xi2, phi_i_plus, INSERT_VALUES);
+        if (i < mesh->n1-1) {
+            MatSetValue(A, r, r+mesh->n2, phi_i_plus, INSERT_VALUES);
         }
 
         // Upper & lower borders (those are periodic)
         if (j > 0) {
             MatSetValue(A, r, r-1, phi_j_minus, INSERT_VALUES);
         } else {
-            MatSetValue(A, r, r-1+mesh->n_xi2, phi_j_minus, INSERT_VALUES);
+            MatSetValue(A, r, r-1+mesh->n2, phi_j_minus, INSERT_VALUES);
         }
-        if (j < mesh->n_xi2-1) {
+        if (j < mesh->n2-1) {
             MatSetValue(A, r, r+1, phi_j_plus, INSERT_VALUES);
         } else {
-            MatSetValue(A, r, r+1-mesh->n_xi2, phi_j_plus, INSERT_VALUES);
+            MatSetValue(A, r, r+1-mesh->n2, phi_j_plus, INSERT_VALUES);
         }
     }
 }

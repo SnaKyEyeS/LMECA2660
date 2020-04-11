@@ -65,13 +65,13 @@ void cylinder_metrics(CylinderMapping *mapping, double xi1, double xi2, double *
     }
 }
 
-void cylinder_init_velocity(CylinderMapping *mapping, double U_inf, double xi1, double xi2, double *u_n, double *u_theta) {
+void cylinder_init_velocity(CylinderMapping *mapping, double U_inf, double xi1, double xi2, double *u_n, double *u_t) {
     // ...
     double theta;
     double r = mapping->R + mapping->beta*(exp(xi1*mapping->alpha) - 1);
     cylinder_metrics(mapping, xi1, xi2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &theta);
-    *u_n =       U_inf * (1 - (mapping->R*mapping->R) / (r*r)) * cos(theta);
-    *u_theta = - U_inf * (1 + (mapping->R*mapping->R) / (r*r)) * sin(theta);
+    if(u_n) { *u_n =   U_inf * (1 - (mapping->R*mapping->R) / (r*r)) * cos(theta); }
+    if(u_t) { *u_t = - U_inf * (1 + (mapping->R*mapping->R) / (r*r)) * sin(theta); }
 }
 
 void cylinder_init_pressure(CylinderMapping *mapping, double U_inf, double xi1, double xi2, double *p) {
