@@ -5,21 +5,22 @@
   More than probably, you should need to add arguments to the prototype ...
   Modification to do :
       -Fill vector rhs*/
-void computeRHS(OrthogonalMesh *mesh, double *rhs, PetscInt rowStart, PetscInt rowEnd) {
+void computeRHS(Mesh *mesh, double *rhs, PetscInt rowStart, PetscInt rowEnd) {
     double r, theta, x, y;
+    double r0 = 1;
+    double r1 = 20+1;
+    double R1R0 = 1/(r1-r0);
+    double n=2;
+
     for(int i = rowStart; i < rowEnd ; i++) {
         x = mesh->x[i];
         y = mesh->y[i];
         r = sqrt(x*x + y*y);
-        if (r < 0.1) {
-            printf("caca boudin prout pipi caca\n");
-            r = 0.1;
-        }
         theta = atan2(y, x);
 
-        double s = sin(M_PI*(0.1-r)/10);
-        double c = cos(2*theta);
-        rhs[i] = s*c*M_PI*M_PI / (10*10) + cos(M_PI*(0.1-r)/10)*c*M_PI / (10*r) + 4*s*c / (r*r);
+        rhs[i] = (1/r)*(M_PI*R1R0*sin(2*M_PI*(r-r0)*R1R0)*cos(n*theta))
+						+ (2*pow(M_PI*R1R0,2)*cos(2*M_PI*(r-r0)*R1R0)*cos(n*theta))
+						+ (1/(r*r))*(-pow(n,2)*pow(sin((r-r0)/(r1-r0)*M_PI),2)*cos(n*theta));
     }
 }
 
@@ -29,7 +30,7 @@ void computeRHS(OrthogonalMesh *mesh, double *rhs, PetscInt rowStart, PetscInt r
   Modification to do :
       - Change the call to computeRHS as you have to modify its prototype too
       - Copy solution of the equation into your vector PHI*/
-void poisson_solver(PoissonData *data, OrthogonalMesh *mesh)
+void poisson_solver(PoissonData *data, Mesh *mesh)
 {
 
     /* Solve the linear system Ax = b for a 2-D poisson equation on a structured grid */
@@ -69,42 +70,66 @@ void poisson_solver(PoissonData *data, OrthogonalMesh *mesh)
   More than probably, you should need to add arguments to the prototype ... .
   Modification to do in this function :
       -Insert the correct factor in matrix A*/
-void computeLaplacianMatrix(OrthogonalMesh *mesh, Mat A, int rowStart, int rowEnd) {
-    double dx_sq = mesh->dxi1*mesh->dxi1;
-    double dy_sq = mesh->dxi2*mesh->dxi2;
+void computeLaplacianMatrix(Mesh *mesh, Mat A, int rowStart, int rowEnd) {
+    double d1 = mesh->dxi1;
+    double d2 = mesh->dxi2;
+    double h1, h2, dh1_d1, dh1_d2, dh2_d1, dh2_d2, a, b;
+    double phi, phi_i_plus, phi_i_minus, phi_j_plus, phi_j_minus;
+    int i, j;
 
-    for (int i = rowStart; i < rowEnd; i++) {
-        MatSetValue(A, i, i , 1.0, INSERT_VALUES);  // Main diagonal
-    }
-    // for (int i = rowStart; i < rowEnd; i++){
-    //     if (i < mesh->n_xi1)            { continue; }   // Lower border
-    //     if (i > mesh->n - mesh->n_xi1)  { continue; }   // Upper border
-    //     // if ((i % mesh->n_xi1) == 0)     {
-    //     //
-    //     // }   // Left  border
-    //     // if (((i+1) % mesh->n_xi1) == 0) { continue; }   // Right border
-    //
-    //     // Main diagonal
-    //     MatSetValue(A, i, i , -2*(1/dx_sq + 1/dy_sq), INSERT_VALUES);
-    //
-    //     // Left & Right elements
-    //     if (i < mesh->n_xi1) {                          // Left border
-    //         // MatSetValue(A, i, i+1, 1/dx_sq, INSERT_VALUES);
-    //         // MatSetValue(A, i, i+mesh->n_xi1-1, 1/dx_sq, INSERT_VALUES);
-    //
-    //     } else if (i > mesh->n - mesh->n_xi1) {         // Right border
-    //         // MatSetValue(A, i, i-mesh->n_xi1+1, 1/dx_sq, INSERT_VALUES);
-    //         // MatSetValue(A, i, i-1, 1/dx_sq, INSERT_VALUES);
-    //
-    //     } else {
-    //         MatSetValue(A, i, i+1, 1/dx_sq, INSERT_VALUES);
-    //         MatSetValue(A, i, i-1, 1/dx_sq, INSERT_VALUES);
-    //     }
-    //
-    //     // Up & Down elements
-    //     MatSetValue(A, i, i+mesh->n_xi2, 1/dy_sq, INSERT_VALUES);
-    //     MatSetValue(A, i, i-mesh->n_xi2, 1/dy_sq, INSERT_VALUES);
+    // for (int i = rowStart; i < rowEnd; i++) {
+    //     MatSetValue(A, i, i , 1.0, INSERT_VALUES);  // Main diagonal
     // }
+
+    for (int r = rowStart; r < rowEnd; r++){
+        i = r / mesh->n_xi2;
+        j = r % mesh->n_xi2;
+
+        h1 = mesh->h1[r];
+        h2 = mesh->h2[r];
+        dh1_d1 = mesh->dh1_d1[r];
+        dh1_d2 = mesh->dh1_d2[r];
+        dh2_d1 = mesh->dh2_d1[r];
+        dh2_d2 = mesh->dh2_d2[r];
+        a = (dh2_d1*h1 - h2*dh1_d1)/(h1*h1*h1*h2);
+        b = (dh1_d2*h2 - h1*dh2_d2)/(h2*h2*h2*h1);
+
+        phi_i_plus = 1/(d1*d1*h1*h1) + a/(2*d1);
+        phi_i_minus = 1/(d1*d1*h1*h1) - a/(2*d1);
+        phi_j_plus = 1/(d2*d2*h2*h2) + b/(2*d2);
+        phi_j_minus = 1/(d2*d2*h2*h2) - b/(2*d2);
+
+        if (i == 0) {
+            phi = -1/(d1*d1*h1*h1) -2/(d2*d2*h2*h2) + a/(2*d1);
+        } else if (i == mesh->n_xi1-1) {
+            phi = -1/(d1*d1*h1*h1) -2/(d2*d2*h2*h2) - a/(2*d1);
+        } else {
+            phi = -2/(d1*d1*h1*h1) -2/(d2*d2*h2*h2);
+        }
+
+        // Main diagonal
+        MatSetValue(A, r, r, phi, INSERT_VALUES);
+
+        // Right & left borders
+        if (i > 0) {
+            MatSetValue(A, r, r-mesh->n_xi2, phi_i_minus, INSERT_VALUES);
+        }
+        if (i < mesh->n_xi1-1) {
+            MatSetValue(A, r, r+mesh->n_xi2, phi_i_plus, INSERT_VALUES);
+        }
+
+        // Upper & lower borders (those are periodic)
+        if (j > 0) {
+            MatSetValue(A, r, r-1, phi_j_minus, INSERT_VALUES);
+        } else {
+            MatSetValue(A, r, r-1+mesh->n_xi2, phi_j_minus, INSERT_VALUES);
+        }
+        if (j < mesh->n_xi2-1) {
+            MatSetValue(A, r, r+1, phi_j_plus, INSERT_VALUES);
+        } else {
+            MatSetValue(A, r, r+1-mesh->n_xi2, phi_j_plus, INSERT_VALUES);
+        }
+    }
 }
 
 /*To call during the initialization of your solver, before the begin of the time loop
@@ -112,7 +137,7 @@ void computeLaplacianMatrix(OrthogonalMesh *mesh, Mat A, int rowStart, int rowEn
   Modification to do in this function :
       -Specify the number of unknows
       -Specify the number of non-zero diagonals in the sparse matrix*/
-PetscErrorCode initialize_poisson_solver(PoissonData* data, OrthogonalMesh *mesh) {
+PetscErrorCode initialize_poisson_solver(PoissonData* data, Mesh *mesh) {
     PetscInt rowStart; /*rowStart = 0*/
     PetscInt rowEnd; /*rowEnd = the number of unknows*/
     PetscErrorCode ierr;
@@ -161,6 +186,15 @@ PetscErrorCode initialize_poisson_solver(PoissonData* data, OrthogonalMesh *mesh
     KSPGMRESSetPreAllocateVectors(data->sles);
 
     PetscPrintf(PETSC_COMM_WORLD, "Assembly of Matrix and Vectors is done \n");
+    if (0) {
+        PetscViewer viewer;
+        PetscViewerASCIIOpen(PETSC_COMM_WORLD, "../data/test.m", &viewer);
+        PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);
+        MatView(data->A,viewer);
+        PetscViewerPopFormat(viewer);
+        PetscViewerDestroy(&viewer);
+    }
+
 
     return ierr;
 }

@@ -15,8 +15,8 @@ typedef struct {
 
 } PoissonData;
 
-PetscErrorCode initialize_poisson_solver(PoissonData* data, OrthogonalMesh *mesh);
-void poisson_solver(PoissonData *data, OrthogonalMesh *mesh);
+PetscErrorCode initialize_poisson_solver(PoissonData* data, Mesh *mesh);
+void poisson_solver(PoissonData *data, Mesh *mesh);
 void free_poisson_solver(PoissonData* data);
 
 #endif

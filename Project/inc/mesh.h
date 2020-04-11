@@ -27,12 +27,12 @@ typedef struct {
     double *u_n, *u_theta;
     double *p;
 
-} OrthogonalMesh;
+} Mesh;
 
 
-OrthogonalMesh *init_mesh(MappingType type);
-void            free_mesh(OrthogonalMesh *mesh);
-void            save_mesh(OrthogonalMesh *mesh);
+Mesh *init_mesh(MappingType type);
+void            free_mesh(Mesh *mesh);
+void            save_mesh(Mesh *mesh);
 
 
 #endif

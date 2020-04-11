@@ -5,9 +5,9 @@ CylinderMapping *init_cylinder_mapping() {
     CylinderMapping *mapping = (CylinderMapping *) malloc(sizeof(CylinderMapping));
 
     // Fixed parameters
-    mapping->D = 0.2;                           // Fixé arbitrairement ???
+    mapping->D = 2;                           // Fixé arbitrairement ???
     mapping->R = mapping->D / 2.0;
-    mapping->H = 50*mapping->D;                 // H = 50D, OK
+    mapping->H = 20; //50*mapping->D;                 // H = 50D, OK
     mapping->h_wall_normal = 2.0e-4;            // On doit déterminer ces param pour avoir
     mapping->gamma = 1.015;                     // Re_w = abs(w)*h_max² / nu < 40 dans la région 12D.
     mapping->n_xi2 = 360;
@@ -26,7 +26,7 @@ CylinderMapping *init_cylinder_mapping() {
     mapping->xi2_lim[0] = 0.0;
     mapping->xi2_lim[1] = 2*M_PI;
 
-    printf("%d, %d\n", mapping->n_xi1);
+    printf("%d\n", mapping->n_xi1);
     return mapping;
 }
 
@@ -34,18 +34,23 @@ CylinderMapping *init_cylinder_mapping() {
 void cylinder_metrics(CylinderMapping *mapping, double xi1, double xi2, double *x, double *y,
                       double *h1, double *h2, double *dh1_dxi1, double *dh1_dxi2, double *dh2_dxi1, double *dh2_dxi2,
                       double *d2h1_dxi1dxi2, double *d2h2_dxi1dxi2, double *theta_mesh) {
+
+    double a = mapping->alpha;
+    double b = mapping->beta;
+    double R = mapping->R;
+
     // X and Y coordinates
-    if (x) { *x = (mapping->R + mapping->beta*(exp(xi1*mapping->alpha) - 1)) * cos(xi2); }
-    if (y) { *y = (mapping->R + mapping->beta*(exp(xi1*mapping->alpha) - 1)) * sin(xi2); }
+    if (x) { *x = (R + b*(exp(xi1*a) - 1)) * cos(xi2); }
+    if (y) { *y = (R + b*(exp(xi1*a) - 1)) * sin(xi2); }
 
     // Form factor H1 & H2
-    if (h1) { *h1 = SQRT_2 * mapping->alpha * mapping->beta * exp(xi1 * mapping->alpha); }
-    if (h2) { *h2 = SQRT_2 * (mapping->R + mapping->beta * (exp(xi1 * mapping->alpha) - 1)); }
+    if (h1) { *h1 = a * b * exp(xi1 * a); }
+    if (h2) { *h2 = R + b * (exp(xi1 * a) - 1); }
 
     // First derivative of the form factor
-    if (dh1_dxi1) { *dh1_dxi1 = SQRT_2 * mapping->alpha*mapping->alpha * mapping->beta * exp(xi1 * mapping->alpha); }
+    if (dh1_dxi1) { *dh1_dxi1 = a * a * b * exp(xi1 * a); }
     if (dh1_dxi2) { *dh1_dxi2 = 0.0; }
-    if (dh2_dxi1) { *dh2_dxi1 = SQRT_2 * mapping->alpha*mapping->alpha * mapping->beta * exp(xi1 * mapping->alpha); }
+    if (dh2_dxi1) { *dh2_dxi1 = a * b * exp(xi1 * a); }
     if (dh2_dxi2) { *dh2_dxi2 = 0.0; }
 
     // Second derivative of the form factor
@@ -53,7 +58,11 @@ void cylinder_metrics(CylinderMapping *mapping, double xi1, double xi2, double *
     if (d2h1_dxi1dxi2) { *d2h1_dxi1dxi2 = 0.0; }
 
     // Mesh orientation
-    if (theta_mesh) { *theta_mesh = xi2 + HALF_PI; }
+    if (theta_mesh) {
+        double dxdxi1 = a * b * exp(xi1*a) * cos(xi2);
+        double dydxi1 = a * b * exp(xi1*a) * sin(xi2);
+        *theta_mesh = atan2(dydxi1, dxdxi1);        // Verifier sa definition ?
+    }
 }
 
 void cylinder_init_velocity(CylinderMapping *mapping, double U_inf, double xi1, double xi2, double *u_n, double *u_theta) {

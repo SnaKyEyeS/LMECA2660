@@ -1,9 +1,9 @@
 #include "mesh.h"
 
 
-OrthogonalMesh *init_mesh(MappingType type) {
+Mesh *init_mesh(MappingType type) {
     // Initialize the Mesh
-    OrthogonalMesh *mesh = (OrthogonalMesh *) malloc(sizeof(OrthogonalMesh));
+    Mesh *mesh = (Mesh *) malloc(sizeof(Mesh));
 
     // Initialize the mesh
     switch (type) {
@@ -105,7 +105,7 @@ OrthogonalMesh *init_mesh(MappingType type) {
     return mesh;
 }
 
-void free_mesh(OrthogonalMesh *mesh) {
+void free_mesh(Mesh *mesh) {
     free(mesh->data);
     free(mesh);
 }
@@ -115,10 +115,10 @@ void free_mesh(OrthogonalMesh *mesh) {
  *  Column format:
  *  x, y, u_n, u_theta, p
  */
-void save_mesh(OrthogonalMesh *mesh) {
+void save_mesh(Mesh *mesh) {
     FILE *fp = fopen("../data/mesh.txt", "w+");
     for (int i = 0; i < mesh->n; i++) {
-        fprintf(fp, "%f, %f, %f, %f, %f\n", mesh->x[i], mesh->y[i], mesh->u_n[i], mesh->u_theta[i], mesh->p[i]);
+        fprintf(fp, "%.10f, %.10f, %.10f, %.10f, %.10f\n", mesh->x[i], mesh->y[i], mesh->u_n[i], mesh->u_theta[i], mesh->p[i]);
     }
     fclose(fp);
 }

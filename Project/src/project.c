@@ -46,7 +46,7 @@ int main(int argc, char *argv[]){
     PetscInitialize(&argc, &argv, 0, 0);
 
     // Initialize Mesh
-    OrthogonalMesh *mesh = init_mesh(CYLINDER);
+    Mesh *mesh = init_mesh(CYLINDER);
 
     // Initialize Poisson solver
     PoissonData *poisson = (PoissonData *) malloc(sizeof(PoissonData));
