@@ -4,6 +4,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import argparse
 import os
 
+
 def plot_mesh(filename='data/mesh.txt'):
     data = np.loadtxt(filename, delimiter=',')
     n_x = 360
@@ -16,7 +17,7 @@ def plot_mesh(filename='data/mesh.txt'):
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
-    ax.plot_surface(x, y, val_1)
+    ax.plot_surface(x, y, val_2)
     plt.show()
 
 
