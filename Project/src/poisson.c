@@ -84,90 +84,30 @@ void computeLaplacianMatrix(MACMesh *mesh, Mat A, int rowStart, int rowEnd) {
     // }
 
     // Première méthode de discrétisation
-    // for (int r = rowStart; r < rowEnd; r++) {
-    //     i = r / mesh->p->n2;
-    //     j = r % mesh->p->n2;
-    //
-    //     h1 = mesh->p->h1[r];
-    //     h2 = mesh->p->h2[r];
-    //     dh1_d1 = mesh->p->dh1_d1[r];
-    //     dh1_d2 = mesh->p->dh1_d2[r];
-    //     dh2_d1 = mesh->p->dh2_d1[r];
-    //     dh2_d2 = mesh->p->dh2_d2[r];
-    //     a = (dh2_d1*h1 - h2*dh1_d1)/(h1*h1*h1*h2);
-    //     b = (dh1_d2*h2 - h1*dh2_d2)/(h2*h2*h2*h1);
-    //
-    //     phi_i_plus = 1/(d1*d1*h1*h1) + a/(2*d1);
-    //     phi_i_minus = 1/(d1*d1*h1*h1) - a/(2*d1);
-    //     phi_j_plus = 1/(d2*d2*h2*h2) + b/(2*d2);
-    //     phi_j_minus = 1/(d2*d2*h2*h2) - b/(2*d2);
-    //
-    //     if (i == 0) {
-    //         phi = -1/(d1*d1*h1*h1) - 2/(d2*d2*h2*h2) + a/(2*d1);
-    //     } else if (i == mesh->p->n1-1) {
-    //         phi = -1/(d1*d1*h1*h1) - 2/(d2*d2*h2*h2) - a/(2*d1);
-    //     } else {
-    //         phi = -2/(d1*d1*h1*h1) - 2/(d2*d2*h2*h2);
-    //     }
-    //
-    //     // Main diagonal
-    //     MatSetValue(A, r, r, phi, INSERT_VALUES);
-    //
-    //     // Right & left borders
-    //     if (i > 0) {
-    //         MatSetValue(A, r, r-mesh->p->n2, phi_i_minus, INSERT_VALUES);
-    //     }
-    //     if (i < mesh->p->n1-1) {
-    //         MatSetValue(A, r, r+mesh->p->n2, phi_i_plus, INSERT_VALUES);
-    //     }
-    //
-    //     // Upper & lower borders (those are periodic)
-    //     if (j > 0) {
-    //         MatSetValue(A, r, r-1, phi_j_minus, INSERT_VALUES);
-    //     } else {
-    //         MatSetValue(A, r, r-1+mesh->p->n2, phi_j_minus, INSERT_VALUES);
-    //     }
-    //     if (j < mesh->p->n2-1) {
-    //         MatSetValue(A, r, r+1, phi_j_plus, INSERT_VALUES);
-    //     } else {
-    //         MatSetValue(A, r, r+1-mesh->p->n2, phi_j_plus, INSERT_VALUES);
-    //     }
-    // }
-
-    // Deuxième méthode de discrétisation
-    double h1h2;
-    double form_i_plus;
-    double form_i_minus;
-    double form_j_plus;
-    double form_j_minus;
-    for (int r = rowStart; r < rowEnd; r++){
+    for (int r = rowStart; r < rowEnd; r++) {
         i = r / mesh->p->n2;
         j = r % mesh->p->n2;
 
-        h1h2 = mesh->p->h1[r] * mesh->p->h2[r];
-        form_i_plus = mesh->u->h2[(i+1)*(mesh->u->n2)+j] / mesh->u->h1[(i+1)*(mesh->u->n2)+j];
-        form_i_minus = mesh->u->h2[i*(mesh->u->n2)+j] / mesh->u->h1[i*(mesh->u->n2)+j];
-        form_j_minus = mesh->v->h1[r] / mesh->v->h2[r];
-        if (j < mesh->p->n2-1) {
-            form_j_plus = mesh->v->h1[r+1] / mesh->v->h2[r+1];
-        } else {
-            form_j_plus = mesh->v->h1[r+1-mesh->p->n2] / mesh->v->h2[r+1-mesh->p->n2];
-        }
+        h1 = mesh->p->h1[r];
+        h2 = mesh->p->h2[r];
+        dh1_d1 = mesh->p->dh1_d1[r];
+        dh1_d2 = mesh->p->dh1_d2[r];
+        dh2_d1 = mesh->p->dh2_d1[r];
+        dh2_d2 = mesh->p->dh2_d2[r];
+        a = (dh2_d1*h1 - h2*dh1_d1)/(h1*h1*h1*h2);
+        b = (dh1_d2*h2 - h1*dh2_d2)/(h2*h2*h2*h1);
 
-        phi_i_plus  = form_i_plus  / (h1h2*d1*d1);
-        phi_i_minus = form_i_minus / (h1h2*d1*d1);
-        phi_j_plus  = form_j_plus  / (h1h2*d2*d2);
-        phi_j_minus = form_j_minus / (h1h2*d2*d2);
+        phi_i_plus = 1/(d1*d1*h1*h1) + a/(2*d1);
+        phi_i_minus = 1/(d1*d1*h1*h1) - a/(2*d1);
+        phi_j_plus = 1/(d2*d2*h2*h2) + b/(2*d2);
+        phi_j_minus = 1/(d2*d2*h2*h2) - b/(2*d2);
 
         if (i == 0) {
-            phi = -(form_i_plus)                / (h1h2*d1*d1)
-                  -(form_j_plus + form_j_minus) / (h1h2*d2*d2);
+            phi = -1/(d1*d1*h1*h1) - 2/(d2*d2*h2*h2) + a/(2*d1);
         } else if (i == mesh->p->n1-1) {
-            phi = -(              form_i_minus) / (h1h2*d1*d1)
-                  -(form_j_plus + form_j_minus) / (h1h2*d2*d2);
+            phi = -1/(d1*d1*h1*h1) - 2/(d2*d2*h2*h2) - a/(2*d1);
         } else {
-            phi = -(form_i_plus + form_i_minus) / (h1h2*d1*d1)
-                  -(form_j_plus + form_j_minus) / (h1h2*d2*d2);
+            phi = -2/(d1*d1*h1*h1) - 2/(d2*d2*h2*h2);
         }
 
         // Main diagonal
@@ -193,6 +133,66 @@ void computeLaplacianMatrix(MACMesh *mesh, Mat A, int rowStart, int rowEnd) {
             MatSetValue(A, r, r+1-mesh->p->n2, phi_j_plus, INSERT_VALUES);
         }
     }
+
+    // Deuxième méthode de discrétisation
+    // double h1h2;
+    // double form_i_plus;
+    // double form_i_minus;
+    // double form_j_plus;
+    // double form_j_minus;
+    // for (int r = rowStart; r < rowEnd; r++){
+    //     i = r / mesh->p->n2;
+    //     j = r % mesh->p->n2;
+    //
+    //     h1h2 = mesh->p->h1[r] * mesh->p->h2[r];
+    //     form_i_plus = mesh->u->h2[(i+1)*(mesh->u->n2)+j] / mesh->u->h1[(i+1)*(mesh->u->n2)+j];
+    //     form_i_minus = mesh->u->h2[i*(mesh->u->n2)+j] / mesh->u->h1[i*(mesh->u->n2)+j];
+    //     form_j_minus = mesh->v->h1[r] / mesh->v->h2[r];
+    //     if (j < mesh->p->n2-1) {
+    //         form_j_plus = mesh->v->h1[r+1] / mesh->v->h2[r+1];
+    //     } else {
+    //         form_j_plus = mesh->v->h1[r+1-mesh->p->n2] / mesh->v->h2[r+1-mesh->p->n2];
+    //     }
+    //
+    //     phi_i_plus  = form_i_plus  / (h1h2*d1*d1);
+    //     phi_i_minus = form_i_minus / (h1h2*d1*d1);
+    //     phi_j_plus  = form_j_plus  / (h1h2*d2*d2);
+    //     phi_j_minus = form_j_minus / (h1h2*d2*d2);
+    //
+    //     if (i == 0) {
+    //         phi = -(form_i_plus)                / (h1h2*d1*d1)
+    //               -(form_j_plus + form_j_minus) / (h1h2*d2*d2);
+    //     } else if (i == mesh->p->n1-1) {
+    //         phi = -(              form_i_minus) / (h1h2*d1*d1)
+    //               -(form_j_plus + form_j_minus) / (h1h2*d2*d2);
+    //     } else {
+    //         phi = -(form_i_plus + form_i_minus) / (h1h2*d1*d1)
+    //               -(form_j_plus + form_j_minus) / (h1h2*d2*d2);
+    //     }
+    //
+    //     // Main diagonal
+    //     MatSetValue(A, r, r, phi, INSERT_VALUES);
+    //
+    //     // Right & left borders
+    //     if (i > 0) {
+    //         MatSetValue(A, r, r-mesh->p->n2, phi_i_minus, INSERT_VALUES);
+    //     }
+    //     if (i < mesh->p->n1-1) {
+    //         MatSetValue(A, r, r+mesh->p->n2, phi_i_plus, INSERT_VALUES);
+    //     }
+    //
+    //     // Upper & lower borders (those are periodic)
+    //     if (j > 0) {
+    //         MatSetValue(A, r, r-1, phi_j_minus, INSERT_VALUES);
+    //     } else {
+    //         MatSetValue(A, r, r-1+mesh->p->n2, phi_j_minus, INSERT_VALUES);
+    //     }
+    //     if (j < mesh->p->n2-1) {
+    //         MatSetValue(A, r, r+1, phi_j_plus, INSERT_VALUES);
+    //     } else {
+    //         MatSetValue(A, r, r+1-mesh->p->n2, phi_j_plus, INSERT_VALUES);
+    //     }
+    // }
 }
 
 /*To call during the initialization of your solver, before the begin of the time loop

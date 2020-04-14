@@ -20,8 +20,8 @@ MACMesh *init_mac_mesh(MappingType type) {
             for (int i = 0; i < mesh->w->n1; i++) {
                 for (int j = 0; j < mesh->w->n2; j++) {
                     ind = i*mesh->w->n2 + j;
-                    xi1 = mapping->xi1_lim[0] + (mapping->xi1_lim[1]-mapping->xi1_lim[0])*i*mapping->dxi1;
-                    xi2 = mapping->xi2_lim[0] + (mapping->xi1_lim[1]-mapping->xi1_lim[0])*j*mapping->dxi2;
+                    xi1 = mapping->xi1_lim[0] + i*mapping->dxi1;
+                    xi2 = mapping->xi2_lim[0] + j*mapping->dxi2;
                     airfoil_metrics(mapping, xi1, xi2, &mesh->w->x[ind], &mesh->w->y[ind], &mesh->w->h1[ind], &mesh->w->h2[ind],
                                     &mesh->w->dh1_d1[ind], &mesh->w->dh1_d2[ind], &mesh->w->dh2_d1[ind], &mesh->w->dh2_d2[ind],
                                     &mesh->w->ddh1_d1d2[ind], &mesh->w->ddh2_d1d2[ind], &mesh->w->theta[ind]);
@@ -34,8 +34,8 @@ MACMesh *init_mac_mesh(MappingType type) {
             for (int i = 0; i < mesh->u->n1; i++) {
                 for (int j = 0; j < mesh->u->n2; j++) {
                     ind = i*mesh->u->n2 + j;
-                    xi1 = mapping->xi1_lim[0] + (mapping->xi1_lim[1]-mapping->xi1_lim[0])*i*mapping->dxi1;
-                    xi2 = mapping->xi2_lim[0] + (mapping->xi1_lim[1]-mapping->xi1_lim[0])*j*mapping->dxi2 + mapping->dxi2/2.0;
+                    xi1 = mapping->xi1_lim[0] + i*mapping->dxi1;
+                    xi2 = mapping->xi2_lim[0] + j*mapping->dxi2 + mapping->dxi2/2.0;
                     airfoil_metrics(mapping, xi1, xi2, &mesh->u->x[ind], &mesh->u->y[ind], &mesh->u->h1[ind], &mesh->u->h2[ind],
                                     &mesh->u->dh1_d1[ind], &mesh->u->dh1_d2[ind], &mesh->u->dh2_d1[ind], &mesh->u->dh2_d2[ind],
                                     &mesh->u->ddh1_d1d2[ind], &mesh->u->ddh2_d1d2[ind], &mesh->u->theta[ind]);
@@ -48,8 +48,8 @@ MACMesh *init_mac_mesh(MappingType type) {
             for (int i = 0; i < mesh->v->n1; i++) {
                 for (int j = 0; j < mesh->v->n2; j++) {
                     ind = i*mesh->v->n2 + j;
-                    xi1 = mapping->xi1_lim[0] + (mapping->xi1_lim[1]-mapping->xi1_lim[0])*i*mapping->dxi1 + mapping->dxi1/2.0;
-                    xi2 = mapping->xi2_lim[0] + (mapping->xi1_lim[1]-mapping->xi1_lim[0])*j*mapping->dxi2;
+                    xi1 = mapping->xi1_lim[0] + i*mapping->dxi1 + mapping->dxi1/2.0;
+                    xi2 = mapping->xi2_lim[0] + j*mapping->dxi2;
                     airfoil_metrics(mapping, xi1, xi2, &mesh->v->x[ind], &mesh->v->y[ind], &mesh->v->h1[ind], &mesh->v->h2[ind],
                                     &mesh->v->dh1_d1[ind], &mesh->v->dh1_d2[ind], &mesh->v->dh2_d1[ind], &mesh->v->dh2_d2[ind],
                                     &mesh->v->ddh1_d1d2[ind], &mesh->v->ddh2_d1d2[ind], &mesh->v->theta[ind]);
@@ -62,8 +62,8 @@ MACMesh *init_mac_mesh(MappingType type) {
             for (int i = 0; i < mesh->p->n1; i++) {
                 for (int j = 0; j < mesh->p->n2; j++) {
                     ind = i*mesh->p->n2 + j;
-                    xi1 = mapping->xi1_lim[0] + (mapping->xi1_lim[1]-mapping->xi1_lim[0])*i*mapping->dxi1 + mapping->dxi1/2.0;
-                    xi2 = mapping->xi2_lim[0] + (mapping->xi1_lim[1]-mapping->xi1_lim[0])*j*mapping->dxi2 + mapping->dxi2/2.0;
+                    xi1 = mapping->xi1_lim[0] + i*mapping->dxi1 + mapping->dxi1/2.0;
+                    xi2 = mapping->xi2_lim[0] + j*mapping->dxi2 + mapping->dxi2/2.0;
                     airfoil_metrics(mapping, xi1, xi2, &mesh->p->x[ind], &mesh->p->y[ind], &mesh->p->h1[ind], &mesh->p->h2[ind],
                                     &mesh->p->dh1_d1[ind], &mesh->p->dh1_d2[ind], &mesh->p->dh2_d1[ind], &mesh->p->dh2_d2[ind],
                                     &mesh->p->ddh1_d1d2[ind], &mesh->p->ddh2_d1d2[ind], &mesh->p->theta[ind]);
@@ -92,8 +92,8 @@ MACMesh *init_mac_mesh(MappingType type) {
             for (int i = 0; i < mesh->w->n1; i++) {
                 for (int j = 0; j < mesh->w->n2; j++) {
                     ind = i*mesh->w->n2 + j;
-                    xi1 = mapping->xi1_lim[0] + (mapping->xi1_lim[1]-mapping->xi1_lim[0])*i*mapping->dxi1;
-                    xi2 = mapping->xi2_lim[0] + (mapping->xi1_lim[1]-mapping->xi1_lim[0])*j*mapping->dxi2;
+                    xi1 = mapping->xi1_lim[0] + i*mapping->dxi1;
+                    xi2 = mapping->xi2_lim[0] + j*mapping->dxi2;
                     cylinder_metrics(mapping, xi1, xi2, &mesh->w->x[ind], &mesh->w->y[ind], &mesh->w->h1[ind], &mesh->w->h2[ind],
                                     &mesh->w->dh1_d1[ind], &mesh->w->dh1_d2[ind], &mesh->w->dh2_d1[ind], &mesh->w->dh2_d2[ind],
                                     &mesh->w->ddh1_d1d2[ind], &mesh->w->ddh2_d1d2[ind], &mesh->w->theta[ind]);
@@ -106,8 +106,8 @@ MACMesh *init_mac_mesh(MappingType type) {
             for (int i = 0; i < mesh->u->n1; i++) {
                 for (int j = 0; j < mesh->u->n2; j++) {
                     ind = i*mesh->u->n2 + j;
-                    xi1 = mapping->xi1_lim[0] + (mapping->xi1_lim[1]-mapping->xi1_lim[0])*i*mapping->dxi1;
-                    xi2 = mapping->xi2_lim[0] + (mapping->xi1_lim[1]-mapping->xi1_lim[0])*j*mapping->dxi2 + mapping->dxi2/2.0;
+                    xi1 = mapping->xi1_lim[0] + i*mapping->dxi1;
+                    xi2 = mapping->xi2_lim[0] + j*mapping->dxi2 + mapping->dxi2/2.0;
                     cylinder_metrics(mapping, xi1, xi2, &mesh->u->x[ind], &mesh->u->y[ind], &mesh->u->h1[ind], &mesh->u->h2[ind],
                                     &mesh->u->dh1_d1[ind], &mesh->u->dh1_d2[ind], &mesh->u->dh2_d1[ind], &mesh->u->dh2_d2[ind],
                                     &mesh->u->ddh1_d1d2[ind], &mesh->u->ddh2_d1d2[ind], &mesh->u->theta[ind]);
@@ -120,8 +120,8 @@ MACMesh *init_mac_mesh(MappingType type) {
             for (int i = 0; i < mesh->v->n1; i++) {
                 for (int j = 0; j < mesh->v->n2; j++) {
                     ind = i*mesh->v->n2 + j;
-                    xi1 = mapping->xi1_lim[0] + (mapping->xi1_lim[1]-mapping->xi1_lim[0])*i*mapping->dxi1 + mapping->dxi1/2.0;
-                    xi2 = mapping->xi2_lim[0] + (mapping->xi1_lim[1]-mapping->xi1_lim[0])*j*mapping->dxi2;
+                    xi1 = mapping->xi1_lim[0] + i*mapping->dxi1 + mapping->dxi1/2.0;
+                    xi2 = mapping->xi2_lim[0] + j*mapping->dxi2;
                     cylinder_metrics(mapping, xi1, xi2, &mesh->v->x[ind], &mesh->v->y[ind], &mesh->v->h1[ind], &mesh->v->h2[ind],
                                     &mesh->v->dh1_d1[ind], &mesh->v->dh1_d2[ind], &mesh->v->dh2_d1[ind], &mesh->v->dh2_d2[ind],
                                     &mesh->v->ddh1_d1d2[ind], &mesh->v->ddh2_d1d2[ind], &mesh->v->theta[ind]);
@@ -134,8 +134,8 @@ MACMesh *init_mac_mesh(MappingType type) {
             for (int i = 0; i < mesh->p->n1; i++) {
                 for (int j = 0; j < mesh->p->n2; j++) {
                     ind = i*mesh->p->n2 + j;
-                    xi1 = mapping->xi1_lim[0] + (mapping->xi1_lim[1]-mapping->xi1_lim[0])*i*mapping->dxi1 + mapping->dxi1/2.0;
-                    xi2 = mapping->xi2_lim[0] + (mapping->xi1_lim[1]-mapping->xi1_lim[0])*j*mapping->dxi2 + mapping->dxi2/2.0;
+                    xi1 = mapping->xi1_lim[0] + i*mapping->dxi1 + mapping->dxi1/2.0;
+                    xi2 = mapping->xi2_lim[0] + j*mapping->dxi2 + mapping->dxi2/2.0;
                     cylinder_metrics(mapping, xi1, xi2, &mesh->p->x[ind], &mesh->p->y[ind], &mesh->p->h1[ind], &mesh->p->h2[ind],
                                     &mesh->p->dh1_d1[ind], &mesh->p->dh1_d2[ind], &mesh->p->dh2_d1[ind], &mesh->p->dh2_d2[ind],
                                     &mesh->p->ddh1_d1d2[ind], &mesh->p->ddh2_d1d2[ind], &mesh->p->theta[ind]);
