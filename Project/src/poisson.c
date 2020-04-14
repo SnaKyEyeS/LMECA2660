@@ -5,22 +5,24 @@
   More than probably, you should need to add arguments to the prototype ...
   Modification to do :
       -Fill vector rhs*/
-void computeRHS(Mesh *mesh, double *rhs, PetscInt rowStart, PetscInt rowEnd) {
+void computeRHS(MACMesh *mesh, double *rhs, PetscInt rowStart, PetscInt rowEnd) {
     double r, theta, x, y;
     double r0 = 1;
     double r1 = 20+1;
     double R1R0 = 1/(r1-r0);
     double n=2;
+    double fact;
 
-    for(int i = rowStart; i < rowEnd ; i++) {
-        x = mesh->x[i];
-        y = mesh->y[i];
+    for(int ind = rowStart; ind < rowEnd ; ind++) {
+        x = mesh->p->x[ind];
+        y = mesh->p->y[ind];
         r = sqrt(x*x + y*y);
         theta = atan2(y, x);
 
-        rhs[i] = (1/r)*(M_PI*R1R0*sin(2*M_PI*(r-r0)*R1R0)*cos(n*theta))
-						+ (2*pow(M_PI*R1R0,2)*cos(2*M_PI*(r-r0)*R1R0)*cos(n*theta))
-						+ (1/(r*r))*(-pow(n,2)*pow(sin((r-r0)/(r1-r0)*M_PI),2)*cos(n*theta));
+        fact = M_PI * (r0 - r) / (r1 - r0);
+        rhs[ind] = 2*cos(2*fact)*cos(2*theta)*M_PI*M_PI / pow(r1-r0, 2)
+                    - 2*cos(fact)*sin(fact)*cos(2*theta)*M_PI / ((r1-r0)*r)
+                    - 4*pow(sin(fact), 2)*cos(2*theta) / pow(r, 2);
     }
 }
 
@@ -30,7 +32,7 @@ void computeRHS(Mesh *mesh, double *rhs, PetscInt rowStart, PetscInt rowEnd) {
   Modification to do :
       - Change the call to computeRHS as you have to modify its prototype too
       - Copy solution of the equation into your vector PHI*/
-void poisson_solver(PoissonData *data, Mesh *mesh)
+void poisson_solver(PoissonData *data, MACMesh *mesh)
 {
 
     /* Solve the linear system Ax = b for a 2-D poisson equation on a structured grid */
@@ -57,7 +59,7 @@ void poisson_solver(PoissonData *data, Mesh *mesh)
     VecGetArray(x, &sol);
 
     for(int i = rowStart; i < rowEnd; i++){
-        mesh->val2[i] = sol[i];
+        mesh->p->val2[i] = sol[i];
     }
 
     VecRestoreArray(x, &sol);
@@ -70,27 +72,28 @@ void poisson_solver(PoissonData *data, Mesh *mesh)
   More than probably, you should need to add arguments to the prototype ... .
   Modification to do in this function :
       -Insert the correct factor in matrix A*/
-void computeLaplacianMatrix(Mesh *mesh, Mat A, int rowStart, int rowEnd) {
-    double d1 = mesh->d1;
-    double d2 = mesh->d2;
+void computeLaplacianMatrix(MACMesh *mesh, Mat A, int rowStart, int rowEnd) {
+    double d1 = mesh->p->d1;
+    double d2 = mesh->p->d2;
     double h1, h2, dh1_d1, dh1_d2, dh2_d1, dh2_d2, a, b;
     double phi, phi_i_plus, phi_i_minus, phi_j_plus, phi_j_minus;
     int i, j;
 
-    // for (int i = rowStart; i < rowEnd; i++) {
-    //     MatSetValue(A, i, i , 1.0, INSERT_VALUES);  // Main diagonal
+    // for (int r = rowStart; r < rowEnd; r++) {
+    //     MatSetValue(A, r, r, 1, INSERT_VALUES);
     // }
 
-    for (int r = rowStart; r < rowEnd; r++){
-        i = r / mesh->n2;
-        j = r % mesh->n2;
+    // Première méthode de discrétisation
+    for (int r = rowStart; r < rowEnd; r++) {
+        i = r / mesh->p->n2;
+        j = r % mesh->p->n2;
 
-        h1 = mesh->h1[r];
-        h2 = mesh->h2[r];
-        dh1_d1 = mesh->dh1_d1[r];
-        dh1_d2 = mesh->dh1_d2[r];
-        dh2_d1 = mesh->dh2_d1[r];
-        dh2_d2 = mesh->dh2_d2[r];
+        h1 = mesh->p->h1[r];
+        h2 = mesh->p->h2[r];
+        dh1_d1 = mesh->p->dh1_d1[r];
+        dh1_d2 = mesh->p->dh1_d2[r];
+        dh2_d1 = mesh->p->dh2_d1[r];
+        dh2_d2 = mesh->p->dh2_d2[r];
         a = (dh2_d1*h1 - h2*dh1_d1)/(h1*h1*h1*h2);
         b = (dh1_d2*h2 - h1*dh2_d2)/(h2*h2*h2*h1);
 
@@ -100,11 +103,11 @@ void computeLaplacianMatrix(Mesh *mesh, Mat A, int rowStart, int rowEnd) {
         phi_j_minus = 1/(d2*d2*h2*h2) - b/(2*d2);
 
         if (i == 0) {
-            phi = -1/(d1*d1*h1*h1) -2/(d2*d2*h2*h2) + a/(2*d1);
-        } else if (i == mesh->n1-1) {
-            phi = -1/(d1*d1*h1*h1) -2/(d2*d2*h2*h2) - a/(2*d1);
+            phi = -1/(d1*d1*h1*h1) - 2/(d2*d2*h2*h2) + a/(2*d1);
+        } else if (i == mesh->p->n1-1) {
+            phi = -1/(d1*d1*h1*h1) - 2/(d2*d2*h2*h2) - a/(2*d1);
         } else {
-            phi = -2/(d1*d1*h1*h1) -2/(d2*d2*h2*h2);
+            phi = -2/(d1*d1*h1*h1) - 2/(d2*d2*h2*h2);
         }
 
         // Main diagonal
@@ -112,24 +115,84 @@ void computeLaplacianMatrix(Mesh *mesh, Mat A, int rowStart, int rowEnd) {
 
         // Right & left borders
         if (i > 0) {
-            MatSetValue(A, r, r-mesh->n2, phi_i_minus, INSERT_VALUES);
+            MatSetValue(A, r, r-mesh->p->n2, phi_i_minus, INSERT_VALUES);
         }
-        if (i < mesh->n1-1) {
-            MatSetValue(A, r, r+mesh->n2, phi_i_plus, INSERT_VALUES);
+        if (i < mesh->p->n1-1) {
+            MatSetValue(A, r, r+mesh->p->n2, phi_i_plus, INSERT_VALUES);
         }
 
         // Upper & lower borders (those are periodic)
         if (j > 0) {
             MatSetValue(A, r, r-1, phi_j_minus, INSERT_VALUES);
         } else {
-            MatSetValue(A, r, r-1+mesh->n2, phi_j_minus, INSERT_VALUES);
+            MatSetValue(A, r, r-1+mesh->p->n2, phi_j_minus, INSERT_VALUES);
         }
-        if (j < mesh->n2-1) {
+        if (j < mesh->p->n2-1) {
             MatSetValue(A, r, r+1, phi_j_plus, INSERT_VALUES);
         } else {
-            MatSetValue(A, r, r+1-mesh->n2, phi_j_plus, INSERT_VALUES);
+            MatSetValue(A, r, r+1-mesh->p->n2, phi_j_plus, INSERT_VALUES);
         }
     }
+
+    // Deuxième méthode de discrétisation
+    // double h1h2;
+    // double form_i_plus;
+    // double form_i_minus;
+    // double form_j_plus;
+    // double form_j_minus;
+    // for (int r = rowStart; r < rowEnd; r++){
+    //     i = r / mesh->p->n2;
+    //     j = r % mesh->p->n2;
+    //
+    //     h1h2 = mesh->p->h1[r] * mesh->p->h2[r];
+    //     form_i_plus = mesh->u->h2[(i+1)*(mesh->u->n2)+j] / mesh->u->h1[(i+1)*(mesh->u->n2)+j];
+    //     form_i_minus = mesh->u->h2[i*(mesh->u->n2)+j] / mesh->u->h1[i*(mesh->u->n2)+j];
+    //     form_j_minus = mesh->v->h1[r] / mesh->v->h2[r];
+    //     if (j < mesh->p->n2-1) {
+    //         form_j_plus = mesh->v->h1[r+1] / mesh->v->h2[r+1];
+    //     } else {
+    //         form_j_plus = mesh->v->h1[r+1-mesh->p->n2] / mesh->v->h2[r+1-mesh->p->n2];
+    //     }
+    //
+    //     phi_i_plus  = form_i_plus  / (h1h2*d1*d1);
+    //     phi_i_minus = form_i_minus / (h1h2*d1*d1);
+    //     phi_j_plus  = form_j_plus  / (h1h2*d2*d2);
+    //     phi_j_minus = form_j_minus / (h1h2*d2*d2);
+    //
+    //     if (i == 0) {
+    //         phi = -(form_i_plus)                / (h1h2*d1*d1)
+    //               -(form_j_plus + form_j_minus) / (h1h2*d2*d2);
+    //     } else if (i == mesh->p->n1-1) {
+    //         phi = -(              form_i_minus) / (h1h2*d1*d1)
+    //               -(form_j_plus + form_j_minus) / (h1h2*d2*d2);
+    //     } else {
+    //         phi = -(form_i_plus + form_i_minus) / (h1h2*d1*d1)
+    //               -(form_j_plus + form_j_minus) / (h1h2*d2*d2);
+    //     }
+    //
+    //     // Main diagonal
+    //     MatSetValue(A, r, r, phi, INSERT_VALUES);
+    //
+    //     // Right & left borders
+    //     if (i > 0) {
+    //         MatSetValue(A, r, r-mesh->p->n2, phi_i_minus, INSERT_VALUES);
+    //     }
+    //     if (i < mesh->p->n1-1) {
+    //         MatSetValue(A, r, r+mesh->p->n2, phi_i_plus, INSERT_VALUES);
+    //     }
+    //
+    //     // Upper & lower borders (those are periodic)
+    //     if (j > 0) {
+    //         MatSetValue(A, r, r-1, phi_j_minus, INSERT_VALUES);
+    //     } else {
+    //         MatSetValue(A, r, r-1+mesh->p->n2, phi_j_minus, INSERT_VALUES);
+    //     }
+    //     if (j < mesh->p->n2-1) {
+    //         MatSetValue(A, r, r+1, phi_j_plus, INSERT_VALUES);
+    //     } else {
+    //         MatSetValue(A, r, r+1-mesh->p->n2, phi_j_plus, INSERT_VALUES);
+    //     }
+    // }
 }
 
 /*To call during the initialization of your solver, before the begin of the time loop
@@ -137,12 +200,12 @@ void computeLaplacianMatrix(Mesh *mesh, Mat A, int rowStart, int rowEnd) {
   Modification to do in this function :
       -Specify the number of unknows
       -Specify the number of non-zero diagonals in the sparse matrix*/
-PetscErrorCode initialize_poisson_solver(PoissonData* data, Mesh *mesh) {
+PetscErrorCode initialize_poisson_solver(PoissonData* data, MACMesh *mesh) {
     PetscInt rowStart; /*rowStart = 0*/
     PetscInt rowEnd; /*rowEnd = the number of unknows*/
     PetscErrorCode ierr;
 
-	int nphi = mesh->n; /*WRITE HERE THE NUMBER OF UNKNOWS*/
+	int nphi = mesh->p->n; /*WRITE HERE THE NUMBER OF UNKNOWS*/
 
     /* Create the right-hand-side vector : b */
     VecCreate(PETSC_COMM_WORLD, &(data->b));

@@ -50,11 +50,11 @@ int main(int argc, char *argv[]){
 
     // Initialize Poisson solver
     PoissonData *poisson = (PoissonData *) malloc(sizeof(PoissonData));
-    initialize_poisson_solver(poisson, mesh->p);
+    initialize_poisson_solver(poisson, mesh);
 
 
     // Compute Poisson Solution
-    poisson_solver(poisson, mesh->p);
+    poisson_solver(poisson, mesh);
     save_mesh(mesh->p);
 
     // Free memory
