@@ -30,7 +30,7 @@ MACMesh *init_mac_mesh(MappingType type) {
                 }
             }
 
-            mesh->u = init_mesh(mesh->n1+1, mesh->n2, mesh->d1, mesh->d2);
+            mesh->u = init_mesh(mesh->n1+1, mesh->n2+1, mesh->d1, mesh->d2);
             for (int i = 0; i < mesh->u->n1; i++) {
                 for (int j = 0; j < mesh->u->n2; j++) {
                     ind = i*mesh->u->n2 + j;
@@ -58,7 +58,7 @@ MACMesh *init_mac_mesh(MappingType type) {
                 }
             }
 
-            mesh->p = init_mesh(mesh->n1, mesh->n2, mesh->d1, mesh->d2);
+            mesh->p = init_mesh(mesh->n1, mesh->n2+1, mesh->d1, mesh->d2);
             for (int i = 0; i < mesh->p->n1; i++) {
                 for (int j = 0; j < mesh->p->n2; j++) {
                     ind = i*mesh->p->n2 + j;
@@ -102,7 +102,7 @@ MACMesh *init_mac_mesh(MappingType type) {
                 }
             }
 
-            mesh->u = init_mesh(mesh->n1+1, mesh->n2, mesh->d1, mesh->d2);
+            mesh->u = init_mesh(mesh->n1+1, mesh->n2+1, mesh->d1, mesh->d2);
             for (int i = 0; i < mesh->u->n1; i++) {
                 for (int j = 0; j < mesh->u->n2; j++) {
                     ind = i*mesh->u->n2 + j;
@@ -130,7 +130,7 @@ MACMesh *init_mac_mesh(MappingType type) {
                 }
             }
 
-            mesh->p = init_mesh(mesh->n1, mesh->n2, mesh->d1, mesh->d2);
+            mesh->p = init_mesh(mesh->n1, mesh->n2+1, mesh->d1, mesh->d2);
             for (int i = 0; i < mesh->p->n1; i++) {
                 for (int j = 0; j < mesh->p->n2; j++) {
                     ind = i*mesh->p->n2 + j;
@@ -203,7 +203,7 @@ void free_mesh(Mesh *mesh) {
 void save_mesh(Mesh *mesh) {
     FILE *fp = fopen("../data/mesh.txt", "w+");
     for (int i = 0; i < mesh->n; i++) {
-        fprintf(fp, "%.10f, %.10f, %.10f, %.10f\n", mesh->x[i], mesh->y[i], mesh->val1[i], mesh->val2[i]);
+        fprintf(fp, "%.20f, %.20f, %.20f, %.20f\n", mesh->x[i], mesh->y[i], mesh->val1[i], mesh->val2[i]);
     }
     fclose(fp);
 }

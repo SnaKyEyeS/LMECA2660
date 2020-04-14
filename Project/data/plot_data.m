@@ -24,10 +24,11 @@ R = 1;
 
 r = sqrt(x.^2 + y.^2);
 theta = atan2(y,x);
+a = (R-r)/H*pi;
 
-phi = sin(pi*(r-R)/H).^2.*cos(2*theta);§è!
-% a = (R-r)/H;
-% f =  2*cos(2*a).*cos(2*theta)*pi^2/H^2 - 2*cos(a).*sin(a).*cos(2*theta)*pi./(H*r) + 4*sin(a).^2.*cos(2*theta)./r^2;
+phi = sin(a).^2.*cos(2*theta);
+
+f =  2*cos(2*a).*cos(2*theta)*pi^2./H^2 - 2*cos(a).*sin(a).*cos(2*theta)*pi./(H*r) - 4*sin(a).^2.*cos(2*theta)./r.^2;
 
 figure; hold on;
 surf(x,y,phi, 'EdgeColor', 'none')
