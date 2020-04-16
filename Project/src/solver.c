@@ -95,6 +95,17 @@ void compute_grad_scalar(MACMesh *mesh, double *res_x, double *res_y, int p_or_p
             }
         }
     }
+}
 
 
+/*
+ *  Computes w = rot(u).
+ *  Evalutes it at points (i+1/2,j+1/2) and stores it in the associated mesh points.
+ */
+void compute_omega(MACMesh *mesh) {
+    for (int i = 0; i < mesh->w->n1; i++) {
+        for (int j = 0; j < mesh->w->n2; j++) {
+
+        }
+    }
 }

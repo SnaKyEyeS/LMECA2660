@@ -5,9 +5,9 @@ CylinderMapping *init_cylinder_mapping() {
     CylinderMapping *mapping = (CylinderMapping *) malloc(sizeof(CylinderMapping));
 
     // Fixed parameters
-    mapping->D = 2;                           // Fixé arbitrairement ???
+    mapping->D = 1.0;                           // Fixé arbitrairement ???
     mapping->R = mapping->D / 2.0;
-    mapping->H = 20; //50*mapping->D;                 // H = 50D, OK
+    mapping->H = 50*mapping->D;                 // H = 50D, OK
     mapping->h_wall_normal = 2.0e-4;            // On doit déterminer ces param pour avoir
     mapping->gamma = 1.015;                     // Re_w = abs(w)*h_max² / nu < 40 dans la région 12D.
     mapping->n_xi2 = 360;
@@ -21,7 +21,7 @@ CylinderMapping *init_cylinder_mapping() {
 
     // Mapping limits
     mapping->xi1_lim[0] = 0.0;
-    mapping->xi1_lim[1] = 1.0;
+    mapping->xi1_lim[1] = mapping->n_xi1*mapping->dxi1;
 
     mapping->xi2_lim[0] = 0.0;
     mapping->xi2_lim[1] = 2*M_PI;

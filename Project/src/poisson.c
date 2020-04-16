@@ -7,9 +7,8 @@
       -Fill vector rhs*/
 void computeRHS(MACMesh *mesh, double *rhs, PetscInt rowStart, PetscInt rowEnd) {
     double r, theta, x, y;
-    double r0 = 1;
-    double r1 = 20+1;
-    double R1R0 = 1/(r1-r0);
+    double r0 = .5;
+    double r1 = 50 + r0;
     double n=2;
     double fact;
 
@@ -220,7 +219,7 @@ PetscErrorCode initialize_poisson_solver(PoissonData* data, MACMesh *mesh) {
     MatCreate(PETSC_COMM_WORLD, &(data->A));
     MatSetSizes(data->A, PETSC_DECIDE, PETSC_DECIDE, nphi , nphi);
     MatSetType(data->A, MATAIJ);
-    MatSeqAIJSetPreallocation(data->A, 5, NULL); // /*SET HERE THE NUMBER OF NON-ZERO DIAGONALS*/
+    MatSeqAIJSetPreallocation(data->A, 7, NULL); // /*SET HERE THE NUMBER OF NON-ZERO DIAGONALS*/
     MatGetOwnershipRange(data->A, &rowStart, &rowEnd);
 
     computeLaplacianMatrix(mesh, data->A, rowStart, rowEnd);
