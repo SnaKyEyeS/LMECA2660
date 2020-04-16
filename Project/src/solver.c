@@ -103,9 +103,41 @@ void compute_grad_scalar(MACMesh *mesh, double *res_x, double *res_y, int p_or_p
  *  Evalutes it at points (i+1/2,j+1/2) and stores it in the associated mesh points.
  */
 void compute_omega(MACMesh *mesh) {
+    int ind;
+    double d1 = mesh->w->d1;
+    double d2 = mesh->w->d2;
+    double h1, h2;
+    double dh2_d1, dh1_d2;
+    double dv_d1, du_d2;
+    double *u = mesh->u->val1;
+    double *v = mesh->v->val2;
+
     for (int i = 0; i < mesh->w->n1; i++) {
         for (int j = 0; j < mesh->w->n2; j++) {
+            ind = i*mesh->v->n2 + j;
+            h1 = mesh->w->h1[ind];
+            h2 = mesh->w->h2[ind];
+            dh2_d1 = mesh->w->dh2_d1[ind];
+            dh1_d2 = mesh->w->dh1_d2[ind];
 
+            // 4th order finite differences
+            // We use decentered schemes for the wall points.
+            if (i == 0) {
+                dv_d1 = (-26*v[i*mesh->v->n2+j] + 57*v[(i+1)*mesh->v->n2+j] - 42*v[(i+2)*mesh->v->n2+j] + 11*v[(i+3)*mesh->v->n2+j]) / (3*d1);
+            } else if (i == 1) {
+                dv_d1 = (-11*v[(i-1)*mesh->v->n2+j] + 6*v[i*mesh->v->n2+j] + 8*v[(i+1)*mesh->v->n2+j] - 3*v[(i+2)*mesh->v->n2+j]) / (12*d1);
+            } else if (i == mesh->u->n1-1) {
+                dv_d1 =  (3*v[(i-3)*mesh->v->n2+j] - 8*v[(i-2)*mesh->v->n2+j] - 6*v[(i-1)*mesh->v->n2+j] + 11*v[i*mesh->v->n2+j]) / (12*d1);
+            } else if (i == mesh->u->n1-2) {
+                dv_d1 = (26*v[(i-4)*mesh->v->n2+j] - 57*v[(i-3)*mesh->v->n2+j] + 42*v[(i-2)*mesh->v->n2+j] - 11*v[(i-1)*mesh->v->n2+j]) / (3*d1);
+            } else {
+                dv_d1 = FOUR_THIRD*(v[i*mesh->v->n2+j] - v[(i-1)*mesh->v->n2+j])/d1 + ONE_SIXTH*(v[(i+1)*mesh->v->n2+j] - v[(i-2)*mesh->v->n2+j])/d1;
+            }
+            // We can use the periodicity in the xi2 direction (using the modulo operator)
+            du_d2 = FOUR_THIRD* (u[i*mesh->u->n2+(j%mesh->u->n2)]     - u[i*mesh->u->n2+((j-1+mesh->u->n2)%mesh->u->n2)]) / d2
+                  + ONE_SIXTH * (u[i*mesh->u->n2+((j+1)%mesh->u->n2)] - u[i*mesh->u->n2+((j-2+mesh->u->n2)%mesh->u->n2)]) / d2;
+
+            mesh->w->val1[ind] = ((h2*dv_d1 + dh2_d1*v[ind]) - (h1*du_d2 + dh1_d2*u[ind])) / (h1*h2);
         }
     }
 }
