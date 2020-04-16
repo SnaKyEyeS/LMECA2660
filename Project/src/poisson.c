@@ -97,17 +97,16 @@ void computeLaplacianMatrix(MACMesh *mesh, Mat A, int rowStart, int rowEnd) {
         a = (dh2_d1*h1 - h2*dh1_d1)/(h1*h1*h1*h2);
         b = (dh1_d2*h2 - h1*dh2_d2)/(h2*h2*h2*h1);
 
+        phi = -2/(d1*d1*h1*h1) - 2/(d2*d2*h2*h2);
         phi_i_plus = 1/(d1*d1*h1*h1) + a/(2*d1);
         phi_i_minus = 1/(d1*d1*h1*h1) - a/(2*d1);
         phi_j_plus = 1/(d2*d2*h2*h2) + b/(2*d2);
         phi_j_minus = 1/(d2*d2*h2*h2) - b/(2*d2);
 
         if (i == 0) {
-            phi = -1/(d1*d1*h1*h1) - 2/(d2*d2*h2*h2) + a/(2*d1);
+            phi += phi_i_minus;
         } else if (i == mesh->p->n1-1) {
-            phi = -1/(d1*d1*h1*h1) - 2/(d2*d2*h2*h2) - a/(2*d1);
-        } else {
-            phi = -2/(d1*d1*h1*h1) - 2/(d2*d2*h2*h2);
+            phi += phi_i_plus;
         }
 
         // Main diagonal
