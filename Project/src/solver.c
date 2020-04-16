@@ -68,7 +68,7 @@ void compute_grad_scalar(MACMesh *mesh, double *res_x, double *res_y, int p_or_p
     int ind;
     double d1 = mesh->p->d1;
     double d2 = mesh->p->d2;
-    doublle h1, h2;
+    double h1, h2;
 
     // First, compute in the x-direction
     for (int i = 1; i < mesh->u->n1-1; i++) {
