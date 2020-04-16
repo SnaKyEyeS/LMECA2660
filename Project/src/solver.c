@@ -23,17 +23,21 @@ void compute_rhs(MACMesh *mesh, double *result, double dt) {
             dh1_d2 = mesh->p->dh1_d2[ind];
             dh2_d1 = mesh->p->dh2_d1[ind];
 
+            // Between u(i+1/2, j) and u(i-1/2, j) there is d1 in xi1 distance,
+            // so du(i, j) = 1/2 * (u(i+1/2, j) - u(i-1/2, j)) / (d1 / 2).
+            // Same applies in xi2 direction.
+
             // Compute du*/dxi1
-            du_d1 = (u_star[(i+1)*mesh->u->n2+j] - u_star[i*mesh->u->n2+j]) / (2*d1);
+            du_d1 = (u_star[(i+1)*mesh->u->n2+j] - u_star[i*mesh->u->n2+j]) / d1;
 
             // Compute dv*/dxi2
             if (j == mesh->p->n2-1) {   // We gotta pay attention to the periodicity
-                dv_d2 = (v_star[i*mesh->v->n2]       - v_star[i*mesh->v->n2+j]) / (2*d2);
+                dv_d2 = (v_star[i*mesh->v->n2]       - v_star[i*mesh->v->n2+j]) / d2;
             } else {
-                dv_d2 = (v_star[i*mesh->v->n2+(j+1)] - v_star[i*mesh->v->n2+j]) / (2*d2);
+                dv_d2 = (v_star[i*mesh->v->n2+(j+1)] - v_star[i*mesh->v->n2+j]) / d2;
             }
 
-            // Compute u_ij & v_ij
+            // Compute u_ij & v_ij, the means of speeds are +-1/2 the current index
             u_ij = (u_star[i*mesh->u->n2+j] + u_star[(i+1)*mesh->u->n2+j] ) / 2.0;
             if (j == mesh->p->n2-1) {
                 v_ij = (v_star[i*mesh->v->n2+j] + v_star[i*mesh->v->n2      ]) / 2.0;
@@ -147,6 +151,8 @@ void compute_omega(MACMesh *mesh) {
  *  Computes the diffusive term nu*lapl(u).
  */
 void compute_diffusive(MACMesh *mesh, double *res_x, double *res_y, double nu) {
+    // We need to compute omega first
+    compute_omega(mesh);
     // Init some vars
     int ind;
     double d1 = mesh->p->d1;
@@ -160,6 +166,46 @@ void compute_diffusive(MACMesh *mesh, double *res_x, double *res_y, double nu) {
             ind = i*mesh->u->n2 + j;
             h1 = mesh->u->h1[ind];
             h2 = mesh->u->h2[ind];
+
+            if (j == mesh->w->n2) {
+                res_x[ind] = -nu * (w[i*mesh->w->n2      ] - w[i*mesh->w->n2+j]) / (d2*h2);
+            } else {
+                res_x[ind] = -nu * (w[i*mesh->w->n2+(j+1)] - w[i*mesh->w->n2+j]) / (d2*h2);
+            }
+        }
+    }
+
+    // Then compute in the y-direction
+    for (int i = 1; i < mesh->v->n1-1; i++) {
+        for (int j = 0; j < mesh->v->n2; j++) {
+            ind = i*mesh->v->n2 + j;
+            h1 = mesh->v->h1[ind];
+            h2 = mesh->v->h2[ind];
+
+            res_y = nu * (w[(i+1)*mesh->w->n2+j] - w[i*mesh->w->n2+j]) / (d1*h1);
+        }
+    }
+}
+
+// Compute h = u . grad u
+// TODO !
+compute_h(MACMesh mesh, double *res_x, double *res_y) {
+    // Init some vars
+    int ind;
+    double d1 = mesh->p->d1;
+    double d2 = mesh->p->d2;
+    double h1, h2;
+    double dh2_d1, dh1_d2;
+    double *w = mesh->w->val1;
+
+    // First, compute the x-composant
+    for (int i = 1; i < mesh->u->n1-1; i++) {
+        for (int j = 0; j < mesh->u->n2; j++) {
+            ind = i*mesh->u->n2 + j;
+            h1 = mesh->u->h1[ind];
+            h2 = mesh->u->h2[ind];
+            dh2_d1 = mesh->u->dh2_d1[ind];
+            dh1_d2 = mesh->u->dh1_d2[ind];
 
             if (j == mesh->w->n2) {
                 res_x[ind] = -nu * (w[i*mesh->w->n2      ] - w[i*mesh->w->n2+j]) / (d2*h2);
