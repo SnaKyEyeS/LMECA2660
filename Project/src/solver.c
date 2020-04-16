@@ -123,19 +123,19 @@ void compute_omega(MACMesh *mesh) {
             // 4th order finite differences
             // We use decentered schemes for the wall points.
             if (i == 0) {
-                dv_d1 = (-26*v[i*mesh->v->n2+j] + 57*v[(i+1)*mesh->v->n2+j] - 42*v[(i+2)*mesh->v->n2+j] + 11*v[(i+3)*mesh->v->n2+j]) / (3*d1);
+                dv_d1 = (-71*v[i*mesh->v->n2+j] + 141*v[(i+1)*mesh->v->n2+j] - -93*v[(i+2)*mesh->v->n2+j] + 23*v[(i+3)*mesh->v->n2+j]) / (24*d1);
             } else if (i == 1) {
-                dv_d1 = (-11*v[(i-1)*mesh->v->n2+j] + 6*v[i*mesh->v->n2+j] + 8*v[(i+1)*mesh->v->n2+j] - 3*v[(i+2)*mesh->v->n2+j]) / (12*d1);
-            } else if (i == mesh->w->n1-1) {
-                dv_d1 = (26*v[(i-4)*mesh->v->n2+j] - 57*v[(i-3)*mesh->v->n2+j] + 42*v[(i-2)*mesh->v->n2+j] - 11*v[(i-1)*mesh->v->n2+j]) / (3*d1);
+                dv_d1 = (-23*v[(i-1)*mesh->v->n2+j] + 21*v[i*mesh->v->n2+j] + 3*v[(i+1)*mesh->v->n2+j] - 1*v[(i+2)*mesh->v->n2+j]) / (24*d1);
             } else if (i == mesh->w->n1-2) {
-                dv_d1 =  (3*v[(i-3)*mesh->v->n2+j] - 8*v[(i-2)*mesh->v->n2+j] - 6*v[(i-1)*mesh->v->n2+j] + 11*v[i*mesh->v->n2+j]) / (12*d1);
+                dv_d1 =  (1*v[(i-3)*mesh->v->n2+j] - 3*v[(i-2)*mesh->v->n2+j] - -21*v[(i-1)*mesh->v->n2+j] + 23*v[i*mesh->v->n2+j]) / (24*d1);
+            } else if (i == mesh->w->n1-1) {
+                dv_d1 = (-23*v[(i-4)*mesh->v->n2+j] + 93*v[(i-3)*mesh->v->n2+j] - 141*v[(i-2)*mesh->v->n2+j] + 71*v[(i-1)*mesh->v->n2+j]) / (24*d1);
             } else {
-                dv_d1 = FOUR_THIRD*(v[i*mesh->v->n2+j] - v[(i-1)*mesh->v->n2+j])/d1 + ONE_SIXTH*(v[(i+1)*mesh->v->n2+j] - v[(i-2)*mesh->v->n2+j])/d1;
+                dv_d1 = (1*v[(i-2)*mesh->v->n2+j] - 27*v[(i-1)*mesh->v->n2+j] + 27*v[i*mesh->v->n2+j] - 1*v[(i+1)*mesh->v->n2+j]) / (24*d1);
             }
             // We can use the periodicity in the xi2 direction (using the modulo operator)
-            du_d2 = FOUR_THIRD* (u[i*mesh->u->n2+(j%mesh->u->n2)]     - u[i*mesh->u->n2+((j-1+mesh->u->n2)%mesh->u->n2)]) / d2
-                  + ONE_SIXTH * (u[i*mesh->u->n2+((j+1)%mesh->u->n2)] - u[i*mesh->u->n2+((j-2+mesh->u->n2)%mesh->u->n2)]) / d2;
+            du_d2 = ( 1*u[i*mesh->u->n2+((j-2+mesh->u->n2)%mesh->u->n2)] - 27*u[i*mesh->u->n2+((j-1+mesh->u->n2)%mesh->u->n2)]
+                   + 27*u[i*mesh->u->n2+(j%mesh->u->n2)]                  -  1*u[i*mesh->u->n2+((j+1)%mesh->u->n2)])              / (24*d2);
 
             mesh->w->val1[ind] = ((h2*dv_d1 + dh2_d1*v[ind]) - (h1*du_d2 + dh1_d2*u[ind])) / (h1*h2);
         }
