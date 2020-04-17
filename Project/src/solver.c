@@ -60,12 +60,23 @@ void compute_rhs(MACMesh *mesh, double *result, double dt) {
  *  p_or_phi > 0 -> grad(pressure)
  *  p_or_phi < 0 -> grad(phi)
  */
-void compute_grad_scalar(MACMesh *mesh, double *res_x, double *res_y, int p_or_phi) {
+void compute_grad_scalar(MACMesh *mesh, double *res_x, double *res_y, GradientType T) {
     double *field;
-    if (p_or_phi > 0) {
-        field = mesh->p->val1;
-    } else {
-        field = mesh->p->val2;
+    switch (T) {
+        case PRESSURE:
+        {
+            field = mesh->p->val1;
+        }
+            break;
+        case PHI:
+        {
+            field = mesh->p->val2;
+            break;
+        }
+
+        default:
+            printf("Gradient type not recognized !\n");
+            exit(0);
     }
 
     // Init some vars
@@ -251,4 +262,13 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
             res_y[ind] = u_avg*dv_d1/h1 + v[ind]*dv_d2/h2 + u_avg*(v[ind]*dh2_d1 - u_avg*dh1_d2)/(h1*h2);
         }
     }
+}
+
+/*
+ * Complete one full iteration, ie.:
+ * 1) compute u_star
+ * 2) 
+ */
+void iterate(MACMesh *mesh, double dt) {
+
 }

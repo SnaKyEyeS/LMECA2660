@@ -3,9 +3,210 @@
 #include "cylinder.h"
 #include "mesh.h"
 #include "stdio.h"
+#include "solver.h"
 
+typedef struct {
+    int n;          // Current iteration
+
+    // Cache
+    double *new_h_x, *new_h_y;
+    double *old_h_x, *old_h_y;
+    double *grad_P_x, *grad_P_y;
+    double *grad_Phi_x, *grad_Phi_y;
+    double *nu_lapl_u_x, *nu_lapl_u_y;
+
+} IterateCache;
+
+IterateCache *initIterateCache() {
+    IterateCache *ic = (IterateCache *) malloc(sizeof(IterateCache));
+
+    ic->n = 0;
+
+    ic->new_h_x = (double *) malloc(sizeof(double) * mesh ->u->n);
+    ic->new_h_y = (double *) malloc(sizeof(double) * mesh ->v->n);
+
+    ic->old_h_x = (double *) malloc(sizeof(double) * mesh ->u->n);
+    ic->old_h_y = (double *) malloc(sizeof(double) * mesh ->v->n);
+
+    ic->grad_P_x = (double *) malloc(sizeof(double) * mesh ->u->n);
+    ic->grad_P_y = (double *) malloc(sizeof(double) * mesh ->v->n);
+
+    ic->grad_Phi_x = (double *) malloc(sizeof(double) * mesh ->u->n);
+    ic->grad_Phi_y = (double *) malloc(sizeof(double) * mesh ->v->n);
+
+    ic->nu_lapl_u_x = (double *) malloc(sizeof(double) * mesh ->u->n);
+    ic->nu_lapl_u_y = (double *) malloc(sizeof(double) * mesh ->v->n);
+
+    return ic;
+}
+
+void freeIterateCache(IterateCache *ic) {
+    free(ic->new_h_x);
+    free(ic->new_h_y);
+
+    free(ic->old_h_x);
+    free(ic->old_h_y);
+
+    free(ic->grad_P_x);
+    free(ic->grad_P_y);
+
+    free(ic->grad_Phi_x);
+    free(ic->grad_Phi_y);
+
+    free(ic->nu_lapl_u_x);
+    free(ic->nu_lapl_u_y);
+
+    free(ic);
+}
+
+/*
+ * Set the new value of H to be the old value, so we can over-writte new H.
+ * Also increment the variable n by 1.
+ */
+void icUpdateH(IterateCache *ic) {
+    double *temp_x, *temp_y;
+
+    temp_x = ic->old_h_x;
+    temp_x = ic->old_h_y;
+
+    ic->old_h_x = ic->new_h_x;
+    ic->old_h_y = ic->new_h_y;
+
+    ic->new_h_x = temp_x;
+    ic->new_h_y = temp_y;
+
+    ic->n += 1;
+}
+
+/*
+ * Complete one full iteration, ie.:
+ * 1) compute u_star
+ * 2) compute phi via poisson solver
+ * 3) compute u_n+1
+ * 4) compute P^n+1
+ */
+void iterate(MACMesh *mesh, PoissonData *poisson, double dt, double nu, IterateCache *ic) {
+    double *new_h_x, *new_h_y;
+    double *old_h_x, *old_h_y;
+    double *u_star, *v_star;
+    double *u, *v;
+    double *grad_P_x, *grad_P_y;
+    double *grad_Phi_x, *grad_Phi_y;
+    double *nu_lapl_u_x, *nu_lapl_u_y;
+
+    // u, v, u*, v* assign
+
+    u = mesh->u->val1;
+    v = mesh->v->val1;
+
+    u_star = mesh->u->val2;
+    v_star = mesh->v->val2;
+
+    // Assign from the cache
+
+    new_h_x = ic->new_h_x;
+    new_h_y = ic->new_h_y;
+
+    old_h_x = ic->old_h_x;
+    old_h_y = ic->old_h_y;
+
+    grad_P_x = ic->grad_P_x;
+    grad_P_y = ic->grad_P_y;
+
+    grad_Phi_x = ic->grad_Phi_x;
+    grad_Phi_y = ic->grad_Phi_y;
+
+    nu_lapl_u_x = ic->nu_lapl_u_x;
+    nu_lapl_u_y = ic->nu_lapl_u_y;
+
+    // (1) Compute H, grad_P and nu_lapl
+
+    compute_h(mesh, new_h_x, new_h_y);
+    compute_diffusive(mesh, nu_lapl_u_x, nu_lapl_u_y, nu);
+    compute_grad_scalar(mesh, grad_P_x, grad_P_y, PRESSURE);
+
+    // If first iteration, we use euler explicit
+    if (ic->n == 0) {
+        // u*
+        for (int i = 0; i < mesh->u->n1; i++) {
+            for (int j = 0; j < mesh->u->n2; j++) {
+                ind = i*mesh->u->n2 + j;
+
+                u_star[ind] = u[ind] + dt * (-new_h_x[ind] - grad_P_x[ind] + nu_lapl_u_x[index]);
+            }
+        }
+
+        // v*
+        for (int i = 0; i < mesh->v->n1; i++) {
+            for (int j = 0; j < mesh->v->n2; j++) {
+                ind = i*mesh->v->n2 + j;
+
+                v_star[ind] = v[ind] + dt * (-new_h_y[ind] - grad_P_y[ind] + nu_lapl_u_y[index]);
+            }
+        }
+    }
+    else {
+        // u*
+        for (int i = 0; i < mesh->u->n1; i++) {
+            for (int j = 0; j < mesh->u->n2; j++) {
+                ind = i*mesh->u->n2 + j;
+
+                u_star[ind] = u[ind] + dt * (-0.5 * (3 * new_h_x[ind] - old_h_x[ind]) - grad_P_x[ind] + nu_lapl_u_x[index]);
+            }
+        }
+
+        // v*
+        for (int i = 0; i < mesh->v->n1; i++) {
+            for (int j = 0; j < mesh->v->n2; j++) {
+                ind = i*mesh->v->n2 + j;
+
+                v_star[ind] = v[ind] + dt * (-0.5 * (3 * new_h_y[ind] - old_h_y[ind]) - grad_P_y[ind] + nu_lapl_u_y[index]);
+            }
+        }
+    }
+
+    // (2) Poisson solver
+
+    poisson_solver(poisson, mesh);
+
+    // (3) new speeds
+
+    compute_grad_scalar(mesh, grad_Phi_x, grad_Phi_y, PHI);
+
+    // u
+    for (int i = 0; i < mesh->u->n1; i++) {
+        for (int j = 0; j < mesh->u->n2; j++) {
+            ind = i*mesh->u->n2 + j;
+
+            u[ind] = u_star[ind] - dt * grad_Phi_x[ind];
+        }
+    }
+
+    // v
+    for (int i = 0; i < mesh->v->n1; i++) {
+        for (int j = 0; j < mesh->v->n2; j++) {
+            ind = i*mesh->v->n2 + j;
+
+            [ind] = v_star[ind] - dt * grad_Phi_y[ind];
+        }
+    }
+
+    // (4) new P
+
+    for (int i = 0; i < mesh->p->n1; i++) {
+        for (int j = 0; j < mesh->p->n2; j++) {
+            ind = i*mesh->p->n2 + j;
+
+            mesh->p->val1[ind] += mesh->p->val2[ind];
+        }
+    }
+
+    icUpdateH(ic);
+}
 
 int main(int argc, char *argv[]){
+
+    IterateCache *ic = initIterateCache(); 
 
     PetscInitialize(&argc, &argv, 0, 0);
 
@@ -15,7 +216,6 @@ int main(int argc, char *argv[]){
     // Initialize Poisson solver
     PoissonData *poisson = (PoissonData *) malloc(sizeof(PoissonData));
     initialize_poisson_solver(poisson, mesh);
-
 
     // Compute Poisson Solution
     poisson_solver(poisson, mesh);
