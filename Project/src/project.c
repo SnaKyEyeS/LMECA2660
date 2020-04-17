@@ -224,6 +224,7 @@ int main(int argc, char *argv[]){
     // Free memory
     free_mac_mesh(mesh);
     free_poisson_solver(poisson);
+    freeIterateCache(ic);
     PetscFinalize();
 
 }
