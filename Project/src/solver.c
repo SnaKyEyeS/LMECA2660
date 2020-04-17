@@ -241,7 +241,6 @@ void compute_diffusive(MACMesh *mesh, double *res_x, double *res_y, double nu) {
 }
 
 // Compute h = u . grad u
-// TODO !
 void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
     // Init some vars
     int ind;
@@ -256,8 +255,8 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
     double *v = mesh->v->val1;
 
     // First, compute the x-composant
-    // Again, we do not need the values et Ri and Re since those are
-    // boundary conditions.
+    // Again, we do not need the values at Ri and Re since those are
+    // boundary conditions, thus are imposed.
     double du_d1, du_d2, v_avg;
     for (int i = 1; i < mesh->u->n1-1; i++) {
         for (int j = 0; j < mesh->u->n2; j++) {
@@ -288,11 +287,14 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
         }
     }
 
+    int ind_w_wall;
+    int ind_v_right_right, ind_v_left_left;
     int ind_v_left, ind_v_right, ind_v_up, ind_v_bottom;
     int ind_u_bottom_left, ind_u_bottom_right, ind_u_up_left, ind_u_up_right;
     double theta_u_up_right, theta_u_bottom_right;
     double u_wall_up_right, u_wall_bottom_right;
-    double v_wall_left, v_wall_right;
+    double v_ghost_left, v_ghost_right;
+    double v_wall_right;
 
     // Then compute in the y-direction
     double dv_d1, dv_d2, u_avg;
@@ -300,32 +302,39 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
         for (int j = 0; j < mesh->v->n2; j++) {
             ind = i*mesh->v->n2 + j;
 
-            ind_v_left  = index(i, j, mesh->v->n1, mesh->v->n2, -1, 0);
-            ind_v_right = index(i, j, mesh->v->n1, mesh->v->n2, 1, 0);
-            ind_v_up  = index(i, j, mesh->v->n1, mesh->v->n2, 0, 1);
-            ind_v_bottom = index(i, j, mesh->v->n1, mesh->v->n2, 0, -1);
+            ind_v_left  = index(i, j, mesh->v->n2, -1, 0);
+            ind_v_right = index(i, j, mesh->v->n2, 1, 0);
+            ind_v_up  = index(i, j, mesh->v->n2, 0, 1);
+            ind_v_bottom = index(i, j, mesh->v->n2, 0, -1);
 
-            ind_u_bottom_left  = index(i, j, mesh->u->n1, mesh->u->n2, 0, -1);
-            ind_u_bottom_right = index(i, j, mesh->u->n1, mesh->u->n2, 1, -1);
-            ind_u_up_left  = index(i, j, mesh->u->n1, mesh->u->n2, 0, 0);
-            ind_u_up_right = index(i, j, mesh->u->n1, mesh->u->n2, 1, 0);
+            ind_u_bottom_left  = index(i, j, mesh->u->n2, 0, -1);
+            ind_u_bottom_right = index(i, j, mesh->u->n2, 1, -1);
+            ind_u_up_left  = index(i, j, mesh->u->n2, 0, 0);
+            ind_u_up_right = index(i, j, mesh->u->n2, 1, 0);
 
             h1 = mesh->v->h1[ind];
             h2 = mesh->v->h2[ind];
             dh2_d1 = mesh->v->dh2_d1[ind];
             dh1_d2 = mesh->v->dh1_d2[ind];
 
-            if (i == 0) { // If near r = Ri
-                // v_wall_left = TODO
-                dv_d1 = (v[ind_v_right] - v_wall_left)     / (2*d1);
+            if (i == 0) {                                   // If at r = Ri
+                ind_v_right_right = index(i, j, mesh->v->n2, 2, 0);
+                v_ghost_left = -(v[ind_v_right_right] - 5*v[ind_v_right] + 15*v[ind] - 16*0)/5;   // We want v_wall = 0 !
+                dv_d1 = (v[ind_v_right] - v_ghost_left)    / (2*d1);
                 dv_d2 = (v[ind_u_up]    - v[ind_v_bottom]) / (2*d2);
                 u_avg = (   0.0      + u[ind_u_bottom_right]
                         +   0.0      + u[ind_u_up_right]    ) / 4;
             }
-            else if (i == mesh->v->n1-1) { // If near r = Re
-                // v_wall_right = TODO f(theta)
-                dv_d1 = (v_wall_right - v[ind_v_left])   / (2*d1);
-                dv_d2 = (v[ind_u_up]  - v[ind_v_bottom]) / (2*d2);
+            // need to check the interpolation (I took the opposite of that of the left wall)
+            // and the wall velocity for v !
+            else if (i == mesh->v->n1-1) {                      // If at r = Re
+                ind_w_wall = index(i, j, mesh->w->n2, 1, 0);    // We need the orientation of the mesh at the wall
+                ind_v_left_left = index(i, j, mesh->v->n2, -2, 0);
+                theta = mesh->w->theta[ind_w_wall];
+                v_wall_right = -U_INF * sin(theta) + U_PERT * cos(theta);
+                v_ghost_right = (v[ind_v_left_left] - 5*v[ind_v_left] + 15*v[ind] - 16*v_wall_right)/5;
+                dv_d1 = (v_ghost_right - v[ind_v_left])   / (2*d1);
+                dv_d2 = (v[ind_u_up]   - v[ind_v_bottom]) / (2*d2);
                 u_avg = (   u[ind_u_bottom_left]  + u[ind_u_bottom_right]
                         +   u[ind_v_up_left]      + u[ind_u_up_right]    ) / 4;
             }
