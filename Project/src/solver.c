@@ -15,6 +15,10 @@ void compute_rhs(MACMesh *mesh, double *result, double dt) {
     double *v_star = mesh->v->val2;
 
     int ind;
+
+    int ind_u_left, ind_u_right;
+    int ind_v_bottom, ind_v_up;
+
     double d1 = mesh->p->d1;
     double d2 = mesh->p->d2;
     double u_ij, v_ij;
@@ -28,27 +32,25 @@ void compute_rhs(MACMesh *mesh, double *result, double dt) {
             dh1_d2 = mesh->p->dh1_d2[ind];
             dh2_d1 = mesh->p->dh2_d1[ind];
 
+            ind_u_left = index(i, j, mesh->u->n2, 0, 0);
+            ind_u_right = index(i, j, mesh->u->n2, 1, 0);
+
+            ind_v_bottom = index(i, j, mesh->v->n2, 0, 0);
+            ind_v_up = index(i, j, mesh->v->n2, 0, 1);
+
             // Between u(i+1/2, j) and u(i-1/2, j) there is d1 in xi1 distance,
             // so du(i, j) = 1/2 * (u(i+1/2, j) - u(i-1/2, j)) / (d1 / 2).
             // Same applies in xi2 direction.
 
             // Compute du*/dxi1
-            du_d1 = (u_star[(i+1)*mesh->u->n2+j] - u_star[i*mesh->u->n2+j]) / d1;
+            du_d1 = (u_star[ind_u_right] - u_star[ind_u_left]) / d1;
 
             // Compute dv*/dxi2
-            if (j == mesh->p->n2-1) {   // We gotta pay attention to the periodicity
-                dv_d2 = (v_star[i*mesh->v->n2]       - v_star[i*mesh->v->n2+j]) / d2;
-            } else {
-                dv_d2 = (v_star[i*mesh->v->n2+(j+1)] - v_star[i*mesh->v->n2+j]) / d2;
-            }
+            dv_d2 = (v_star[ind_v_up] - v_star[ind_v_bottom]) / d2;
 
             // Compute u_ij & v_ij, the means of speeds are +-1/2 the current index
-            u_ij = (u_star[i*mesh->u->n2+j] + u_star[(i+1)*mesh->u->n2+j] ) / 2.0;
-            if (j == mesh->p->n2-1) {
-                v_ij = (v_star[i*mesh->v->n2+j] + v_star[i*mesh->v->n2      ]) / 2.0;
-            } else {
-                v_ij = (v_star[i*mesh->v->n2+j] + v_star[i*mesh->v->n2+(j+1)]) / 2.0;
-            }
+            u_ij = (u_star[ind_u_right] + u_star[ind_u_left]) / 2.0;
+            v_ij = (v_star[ind_v_up] + v_star[ind_v_bottom]) / d2;
 
             // Compute the complete term
             result[ind] = ((h2*du_d1 + dh2_d1*u_ij) + (h1*dv_d2 + dh1_d2*v_ij)) / (h1*h2*dt);
@@ -83,6 +85,9 @@ void compute_grad_scalar(MACMesh *mesh, double *res_x, double *res_y, GradientTy
 
     // Init some vars
     int ind;
+
+    int ind_p_left, ind_p_right, ind_p_bottom, ind_p_up;
+
     double d1 = mesh->p->d1;
     double d2 = mesh->p->d2;
     double h1, h2;
@@ -96,7 +101,10 @@ void compute_grad_scalar(MACMesh *mesh, double *res_x, double *res_y, GradientTy
             h1 = mesh->u->h1[ind];
             h2 = mesh->u->h2[ind];
 
-            res_x[ind] = (field[(i+1)*mesh->p->n2+j] - field[i*mesh->p->n2+j]) / (d1*h1);
+            ind_p_left = index(i, j, mesh->p->n2, 0, 0);
+            ind_p_right = index(i, j, mesh->p->n2, 1, 0);
+
+            res_x[ind] = (field[ind_p_right] - field[ind_p_left]) / (d1*h1);
         }
     }
 
@@ -107,11 +115,10 @@ void compute_grad_scalar(MACMesh *mesh, double *res_x, double *res_y, GradientTy
             h1 = mesh->v->h1[ind];
             h2 = mesh->v->h2[ind];
 
-            if (j == mesh->v->n2-1) {
-                res_y[ind] = (field[i*mesh->p->n2]       - field[i*mesh->p->n2+j]) / (d2*h2);
-            } else {
-                res_y[ind] = (field[i*mesh->p->n2+(j+1)] - field[i*mesh->p->n2+j]) / (d2*h2);
-            }
+            ind_p_bottom = index(i, j, mesh->p->n2, 0, 0);
+            ind_p_up = index(i, j, mesh->p->n2, 0, 1);
+
+            res_y[ind] = (field[ind_p_up] - field[ind_p_bottom]) / (d2*h2);
         }
     }
 }
@@ -123,6 +130,11 @@ void compute_grad_scalar(MACMesh *mesh, double *res_x, double *res_y, GradientTy
  */
 void compute_omega(MACMesh *mesh) {
     int ind;
+    int ind_u_bottomx1, ind_u_bottomx2;
+    int ind_u_upx1, ind_u_upx2;
+    int ind_v_rightx1, ind_v_rightx2,  ind_v_rightx3;
+    int ind_v_leftx1, ind_v_leftx2,  ind_v_leftx3;
+
     double d1 = mesh->w->d1;
     double d2 = mesh->w->d2;
     double h1, h2;
@@ -140,28 +152,40 @@ void compute_omega(MACMesh *mesh) {
             dh2_d1 = mesh->w->dh2_d1[ind];
             dh1_d2 = mesh->w->dh1_d2[ind];
 
+            ind_u_upx2 = index(i, j, mesh->u->n2, 0, 1);
+            ind_u_upx1 = index(i, j, mesh->u->n2, 0, 0);
+            ind_u_bottomx1 = index(i, j, mesh->u->n2, 0, -1);
+            ind_u_bottomx2 = index(i, j, mesh->u->n2, 0, -2);
+
+            ind_v_rightx3 = index(i, j, mesh->v->n2, 2, 0);
+            ind_v_rightx2 = index(i, j, mesh->v->n2, 1, 0);
+            ind_v_rightx1 = index(i, j, mesh->v->n2, 0, 0);
+            ind_v_leftx1 = index(i, j, mesh->v->n2, -1, 0);
+            ind_v_leftx2 = index(i, j, mesh->v->n2, -2, 0);
+            ind_v_leftx3 = index(i, j, mesh->v->n2, -3, 0);
+
             // 4th order finite differences
             // We use decentered schemes for the wall points
             // and a ghost point whose value is dictated by the BC for v.
             if (i == 0) {
                 v_ghost = 0;    // COMPUTE THE VALUE using a polynomial
-                dv_d1 = (-23*v_ghost                + 21*v[i*mesh->v->n2+j]    + 3 *v[(i+1)*mesh->v->n2+j] - 1*v[(i+2)*mesh->v->n2+j]) / (24*d1);
+                dv_d1 = (-23*v_ghost         + 21*v[ind_v_rightx1]    + 3 *v[ind_v_rightx2] - 1*v[ind_v_rightx3]) / (24*d1);
             } else if (i == 1) {
-                dv_d1 = (-23*v[(i-1)*mesh->v->n2+j] + 21*v[i*mesh->v->n2+j]    + 3 *v[(i+1)*mesh->v->n2+j] - 1*v[(i+2)*mesh->v->n2+j]) / (24*d1);
+                dv_d1 = (-23*v[ind_v_leftx1] + 21*v[ind_v_rightx1]    + 3 *v[ind_v_rightx2] - 1*v[ind_v_rightx3]) / (24*d1);
 
             } else if (i == mesh->w->n1-2) {
-                dv_d1 = (1*  v[(i-3)*mesh->v->n2+j] - 3*v[(i-2)*mesh->v->n2+j] - 21*v[(i-1)*mesh->v->n2+j] + 23*v[i*mesh->v->n2+j]) / (24*d1);
+                dv_d1 = (1*  v[ind_v_leftx3] - 3*v[ind_v_leftx2] - 21*v[ind_v_leftx1] + 23*v[ind_v_rightx1]) / (24*d1);
             } else if (i == mesh->w->n1-1) {
                 v_ghost = 0;    // COMPUTE THE VALUE using a polynomial
-                dv_d1 = (1*  v[(i-3)*mesh->v->n2+j] - 3*v[(i-2)*mesh->v->n2+j] - 21*v[(i-1)*mesh->v->n2+j] + 23*v_ghost           ) / (24*d1);
+                dv_d1 = (1*  v[ind_v_leftx3] - 3*v[ind_v_leftx2] - 21*v[ind_v_leftx1] + 23*v_ghost           ) / (24*d1);
 
             } else {
-                dv_d1 = (1*  v[(i-2)*mesh->v->n2+j] - 27*v[(i-1)*mesh->v->n2+j] + 27*v[i*mesh->v->n2+j] - 1*v[(i+1)*mesh->v->n2+j]) / (24*d1);
+                dv_d1 = (1*  v[ind_v_leftx2] - 27*v[ind_v_leftx1] + 27*v[ind_v_rightx1] - 1*v[ind_v_rightx2]) / (24*d1);
             }
             // We can use the periodicity in the xi2 direction (using the modulo operator)
             // NB: the boundary conditions at the walls must be imposed in u[] before the call to this function !
-            du_d2 = ( 1*u[i*mesh->u->n2+((j-2+mesh->u->n2)%mesh->u->n2)] - 27*u[i*mesh->u->n2+((j-1+mesh->u->n2)%mesh->u->n2)]
-                   + 27*u[i*mesh->u->n2+(j%mesh->u->n2)]                 -  1*u[i*mesh->u->n2+((j+1)%mesh->u->n2)])              / (24*d2);
+            du_d2 = ( 1*u[ind_u_bottomx2] - 27*u[ind_u_bottomx1]
+                   + 27*u[ind_u_upx1]     -  1*u[ind_u_upx2])              / (24*d2);
 
             mesh->w->val1[ind] = ((h2*dv_d1 + dh2_d1*v[ind]) - (h1*du_d2 + dh1_d2*u[ind])) / (h1*h2);
         }
@@ -178,6 +202,9 @@ void compute_diffusive(MACMesh *mesh, double *res_x, double *res_y, double nu) {
 
     // Init some vars
     int ind;
+
+    int ind_w_left, ind_w_right, ind_w_bottom, ind_w_up;
+
     double d1 = mesh->p->d1;
     double d2 = mesh->p->d2;
     double h1, h2;
@@ -191,11 +218,10 @@ void compute_diffusive(MACMesh *mesh, double *res_x, double *res_y, double nu) {
             h1 = mesh->u->h1[ind];
             h2 = mesh->u->h2[ind];
 
-            if (j == mesh->w->n2) {
-                res_x[ind] = -nu * (w[i*mesh->w->n2      ] - w[i*mesh->w->n2+j]) / (d2*h2);
-            } else {
-                res_x[ind] = -nu * (w[i*mesh->w->n2+(j+1)] - w[i*mesh->w->n2+j]) / (d2*h2);
-            }
+            ind_w_bottom = index(i, j, mesh->w->n2, 0, 0);
+            ind_w_up = index(i, j, mesh->w->n2, 0, 1);
+
+            res_x[ind] = -nu * (w[ind_w_up] - w[ind_w_bottom]) / (d2*h2);
         }
     }
 
@@ -206,7 +232,10 @@ void compute_diffusive(MACMesh *mesh, double *res_x, double *res_y, double nu) {
             h1 = mesh->v->h1[ind];
             h2 = mesh->v->h2[ind];
 
-            res_y[ind] = nu * (w[(i+1)*mesh->w->n2+j] - w[i*mesh->w->n2+j]) / (d1*h1);
+            ind_w_left = index(i, j, mesh->w->n2, 0, 0);
+            ind_w_right = index(i, j, mesh->w->n2, 1, 0);
+
+            res_y[ind] = nu * (w[ind_w_right] - w[ind_w_left]) / (d1*h1);
         }
     }
 }
