@@ -64,15 +64,12 @@ void compute_grad_scalar(MACMesh *mesh, double *res_x, double *res_y, GradientTy
     double *field;
     switch (T) {
         case PRESSURE:
-        {
             field = mesh->p->val1;
-        }
             break;
+
         case PHI:
-        {
             field = mesh->p->val2;
             break;
-        }
 
         default:
             printf("Gradient type not recognized !\n");
@@ -267,7 +264,7 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
 /*
  * Complete one full iteration, ie.:
  * 1) compute u_star
- * 2) 
+ * 2)
  */
 void iterate(MACMesh *mesh, double dt) {
 
