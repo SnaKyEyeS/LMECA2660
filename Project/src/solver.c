@@ -128,23 +128,27 @@ void compute_omega(MACMesh *mesh) {
             dh1_d2 = mesh->w->dh1_d2[ind];
 
             // 4th order finite differences
-            // We use decentered schemes for the wall points.
+            // We use decentered schemes for the wall points
+            // and a ghost point whose value is dictated by the BC for v.
             if (i == 0) {
                 v_ghost = 0;    // COMPUTE THE VALUE using a polynomial
                 dv_d1 = (-23*v_ghost                + 21*v[i*mesh->v->n2+j]    + 3 *v[(i+1)*mesh->v->n2+j] - 1*v[(i+2)*mesh->v->n2+j]) / (24*d1);
             } else if (i == 1) {
                 dv_d1 = (-23*v[(i-1)*mesh->v->n2+j] + 21*v[i*mesh->v->n2+j]    + 3 *v[(i+1)*mesh->v->n2+j] - 1*v[(i+2)*mesh->v->n2+j]) / (24*d1);
+
             } else if (i == mesh->w->n1-2) {
                 dv_d1 = (1*  v[(i-3)*mesh->v->n2+j] - 3*v[(i-2)*mesh->v->n2+j] - 21*v[(i-1)*mesh->v->n2+j] + 23*v[i*mesh->v->n2+j]) / (24*d1);
             } else if (i == mesh->w->n1-1) {
                 v_ghost = 0;    // COMPUTE THE VALUE using a polynomial
                 dv_d1 = (1*  v[(i-3)*mesh->v->n2+j] - 3*v[(i-2)*mesh->v->n2+j] - 21*v[(i-1)*mesh->v->n2+j] + 23*v_ghost           ) / (24*d1);
+
             } else {
                 dv_d1 = (1*  v[(i-2)*mesh->v->n2+j] - 27*v[(i-1)*mesh->v->n2+j] + 27*v[i*mesh->v->n2+j] - 1*v[(i+1)*mesh->v->n2+j]) / (24*d1);
             }
             // We can use the periodicity in the xi2 direction (using the modulo operator)
+            // NB: the boundary conditions at the walls must be imposed in u[] before the call to this function !
             du_d2 = ( 1*u[i*mesh->u->n2+((j-2+mesh->u->n2)%mesh->u->n2)] - 27*u[i*mesh->u->n2+((j-1+mesh->u->n2)%mesh->u->n2)]
-                   + 27*u[i*mesh->u->n2+(j%mesh->u->n2)]                  -  1*u[i*mesh->u->n2+((j+1)%mesh->u->n2)])              / (24*d2);
+                   + 27*u[i*mesh->u->n2+(j%mesh->u->n2)]                 -  1*u[i*mesh->u->n2+((j+1)%mesh->u->n2)])              / (24*d2);
 
             mesh->w->val1[ind] = ((h2*dv_d1 + dh2_d1*v[ind]) - (h1*du_d2 + dh1_d2*u[ind])) / (h1*h2);
         }
