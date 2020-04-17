@@ -7,6 +7,7 @@
 #include "cylinder.h"
 
 #define U_INF 1.0
+#define U_PERT 0.0
 
 typedef enum {AIRFOIL, CYLINDER} MappingType;
 

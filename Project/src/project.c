@@ -22,11 +22,12 @@ IterateCache *initIterateCache(MACMesh *mesh) {
 
     ic->n = 0;
 
-    ic->new_h_x = (double *) malloc(sizeof(double) * mesh->u->n);
-    ic->new_h_y = (double *) malloc(sizeof(double) * mesh->v->n);
+    // WE do calloc to have, by default, zeros at places we will never change (see B.C.)
+    ic->new_h_x = (double *) calloc(sizeof(double), mesh->u->n);
+    ic->new_h_y = (double *) calloc(sizeof(double), mesh->v->n);
 
-    ic->old_h_x = (double *) malloc(sizeof(double) * mesh->u->n);
-    ic->old_h_y = (double *) malloc(sizeof(double) * mesh->v->n);
+    ic->old_h_x = (double *) calloc(sizeof(double), mesh->u->n);
+    ic->old_h_y = (double *) calloc(sizeof(double), mesh->v->n);
 
     ic->grad_P_x = (double *) malloc(sizeof(double) * mesh->u->n);
     ic->grad_P_y = (double *) malloc(sizeof(double) * mesh->v->n);

@@ -1,5 +1,10 @@
 #include "solver.h"
 
+// Compute indexes to handle periodicity
+int index(int i, int j, int M, int N, int i_shift, int j_shift) {
+    return ((M+i+i_shift) % M) * N + ((N+j+j_shift) % N);
+}
+
 
 /*
  *  Computes 1/dt * div(u*) at the mesh points (i,j)
@@ -211,6 +216,9 @@ void compute_diffusive(MACMesh *mesh, double *res_x, double *res_y, double nu) {
 void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
     // Init some vars
     int ind;
+    int ind_u_left, ind_u_right, ind_u_up, ind_u_bottom;
+    int ind_v_bottom_left, ind_v_bottom_right, ind_v_up_left, ind_v_up_right;
+    double theta, u_wall;
     double d1 = mesh->d1;
     double d2 = mesh->d2;
     double h1, h2;
@@ -225,47 +233,103 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
     for (int i = 1; i < mesh->u->n1-1; i++) {
         for (int j = 0; j < mesh->u->n2; j++) {
             ind = i*mesh->u->n2 + j;
+
+            ind_u_left  = index(i, j, mesh->u->n1, mesh->u->n2, -1, 0);
+            ind_u_right = index(i, j, mesh->u->n1, mesh->u->n2, 1, 0);
+            ind_u_up  = index(i, j, mesh->u->n1, mesh->u->n2, 0, 1);
+            ind_u_bottom = index(i, j, mesh->u->n1, mesh->u->n2, 0, -1);
+
+            ind_v_bottom_left  = index(i, j, mesh->v->n1, mesh->v->n2, -1, 0);
+            ind_v_bottom_right = index(i, j, mesh->v->n1, mesh->v->n2, 0, 0);
+            ind_v_up_left  = index(i, j, mesh->v->n1, mesh->v->n2, -1, 1);
+            ind_v_up_right = index(i, j, mesh->v->n1, mesh->v->n2, 0, 1);
+
             h1 = mesh->u->h1[ind];
             h2 = mesh->u->h2[ind];
             dh2_d1 = mesh->u->dh2_d1[ind];
             dh1_d2 = mesh->u->dh1_d2[ind];
 
-            // TODO/ periodic BC
-            du_d1 = (u[ind+mesh->u->n2] - u[ind-mesh->u->n2]) / (2*d1);
-            du_d2 = (u[ind+1]           - u[ind-1])           / (2*d2);
-            v_avg = (v[(i-1)*mesh->v->n2+j] + v[(i-1)*mesh->v->n2+(j+1)]
-                   + v[i*mesh->v->n2+(j+1)] + v[i*mesh->v->n2+j]         ) / 4;
+            if (i == 1) { // r = Ri + d1
+                du_d1 = (u[ind_u_right] - 0.0) / (2*d1);
+                du_d2 = (u[ind_u_up]           - u[ind_u_bottom])           / (2*d2);
+                v_avg = (   v[ind_v_bottom_left]  + v[ind_v_bottom_right]
+                        +   v[ind_v_up_left]      + v[ind_v_up_right]    ) / 4;
+            }
+            else if (i == mesh->u->n1-2) { // r = Re - d1
+                theta = atan2(mesh->u->y[ind_u_right], mesh->u->x[ind_u_right]);
+                u_wall = U_INF * cos(theta) + U_PERT * sin(theta);
+                du_d1 = (u_wall - u[ind-mesh->u->n2]) / (2*d1);
+                du_d2 = (u[ind_u_up]           - u[ind_u_bottom])           / (2*d2);
+                v_avg = (   v[ind_v_bottom_left]  + v[ind_v_bottom_right]
+                        +   v[ind_v_up_left]      + v[ind_v_up_right]    ) / 4;
+            }
+            else {
+                du_d1 = (u[ind_u_right] - u[ind_u_left]) / (2*d1);
+                du_d2 = (u[ind_u_up]           - u[ind_u_bottom])           / (2*d2);
+                v_avg = (   v[ind_v_bottom_left]  + v[ind_v_bottom_right]
+                        +   v[ind_v_up_left]      + v[ind_v_up_right]    ) / 4;
+            }
 
             res_x[ind] = u[ind]*du_d1/h1 + v_avg*du_d2/h2 + v_avg*(u[ind]*dh1_d2 - v_avg*dh2_d1)/(h1*h2);
         }
     }
+
+    int ind_v_left, ind_v_right, ind_v_up, ind_v_bottom;
+    int ind_u_bottom_left, ind_u_bottom_right, ind_u_up_left, ind_u_up_right;
+    double theta_u_up_right, theta_u_bottom_right;
+    double u_wall_up_right, u_wall_bottom_right;
+    double v_wall_left, v_wall_right;
 
     // Then compute in the y-direction
     double dv_d1, dv_d2, u_avg;
     for (int i = 0; i < mesh->v->n1; i++) {
         for (int j = 0; j < mesh->v->n2; j++) {
             ind = i*mesh->v->n2 + j;
+
+            ind_v_left  = index(i, j, mesh->v->n1, mesh->v->n2, -1, 0);
+            ind_v_right = index(i, j, mesh->v->n1, mesh->v->n2, 1, 0);
+            ind_v_up  = index(i, j, mesh->v->n1, mesh->v->n2, 0, 1);
+            ind_v_bottom = index(i, j, mesh->v->n1, mesh->v->n2, 0, -1);
+
+            ind_u_bottom_left  = index(i, j, mesh->u->n1, mesh->u->n2, 0, -1);
+            ind_u_bottom_right = index(i, j, mesh->u->n1, mesh->u->n2, 1, -1);
+            ind_u_up_left  = index(i, j, mesh->u->n1, mesh->u->n2, 0, 0);
+            ind_u_up_right = index(i, j, mesh->u->n1, mesh->u->n2, 1, 0);
+
             h1 = mesh->v->h1[ind];
             h2 = mesh->v->h2[ind];
             dh2_d1 = mesh->v->dh2_d1[ind];
             dh1_d2 = mesh->v->dh1_d2[ind];
 
-            // TODO/ periodic BC
-            dv_d1 = (v[ind+mesh->v->n2] - v[ind+mesh->v->n2]) / (2*d1);
-            dv_d2 = (v[ind+1]           - v[ind-1])           / (2*d2);
-            u_avg = (u[i*mesh->u->n2+(j-1)] + u[i*mesh->u->n2+j]
-                    +u[(i+1)*mesh->u->n2+j] + u[(i+1)*mesh->u->n2+(j-1)]) / 4;
+            if (i == 0) { // If near r = Ri
+                // v_wall_left = TODO
+                dv_d1 = (v[ind_v_right] - v_wall_left) / (2*d1);
+                dv_d2 = (v[ind_u_up]           - v[ind_v_bottom])           / (2*d2);
+                u_avg = (   0.0      + u[ind_u_bottom_right]
+                        +   0.0      + u[ind_u_up_right]    ) / 4;
+            }
+            else if (i == mesh->v->n1-1) { // If near r = Re
+                theta = atan2(mesh->v->y[ind], mesh->v->y[ind]); // Angle for v
+                // v_wall_right = TODO f(theta)
+
+                theta_u_bottom_right = atan2(mesh->u->y[ind_u_bottom_right], mesh->u->x[ind_u_bottom_right]);
+                theta_u_up_right = atan2(mesh->u->y[ind_u_up_right], mesh->u->x[ind_u_up_right]);
+                u_wall_bottom_right = U_INF * cos(theta_u_bottom_right) + U_PERT * sin(theta);
+                u_wall_up_right = U_INF * cos(theta_u_up_right) + U_PERT * sin(theta);
+
+                dv_d1 = (v_wall_right - v[ind_v_left]) / (2*d1);
+                dv_d2 = (v[ind_u_up]           - v[ind_v_bottom])           / (2*d2);
+                u_avg = (   u[ind_u_bottom_left]  + u_wall_bottom_right
+                        +   u[ind_v_up_left]      + u_wall_up_right    ) / 4;
+            }
+            else {
+                dv_d1 = (v[ind_v_right] - v[ind_v_left]) / (2*d1);
+                dv_d2 = (v[ind_u_up]           - v[ind_v_bottom])           / (2*d2);
+                u_avg = (   u[ind_u_bottom_left]  + u[ind_u_bottom_right]
+                        +   u[ind_v_up_left]      + u[ind_u_up_right]    ) / 4;
+            }
 
             res_y[ind] = u_avg*dv_d1/h1 + v[ind]*dv_d2/h2 + u_avg*(v[ind]*dh2_d1 - u_avg*dh1_d2)/(h1*h2);
         }
     }
-}
-
-/*
- * Complete one full iteration, ie.:
- * 1) compute u_star
- * 2)
- */
-void iterate(MACMesh *mesh, double dt) {
-
 }
