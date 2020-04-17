@@ -75,6 +75,8 @@ void compute_grad_scalar(MACMesh *mesh, double *res_x, double *res_y, int p_or_p
     double h1, h2;
 
     // First, compute in the x-direction
+    // We do not need the values at the boundaries Re and Ri, since those are
+    // boundary conditions.
     for (int i = 1; i < mesh->u->n1-1; i++) {
         for (int j = 0; j < mesh->u->n2; j++) {
             ind = i*mesh->u->n2 + j;
@@ -153,6 +155,7 @@ void compute_omega(MACMesh *mesh) {
 void compute_diffusive(MACMesh *mesh, double *res_x, double *res_y, double nu) {
     // We need to compute omega first
     compute_omega(mesh);
+
     // Init some vars
     int ind;
     double d1 = mesh->p->d1;
@@ -160,7 +163,8 @@ void compute_diffusive(MACMesh *mesh, double *res_x, double *res_y, double nu) {
     double h1, h2;
     double *w = mesh->w->val1;
 
-    // First, compute the x-composant
+    // First, compute the x-composant --> the values at R_e and R_i are not needed
+    // (boundary conditions).
     for (int i = 1; i < mesh->u->n1-1; i++) {
         for (int j = 0; j < mesh->u->n2; j++) {
             ind = i*mesh->u->n2 + j;
@@ -176,29 +180,33 @@ void compute_diffusive(MACMesh *mesh, double *res_x, double *res_y, double nu) {
     }
 
     // Then compute in the y-direction
-    for (int i = 1; i < mesh->v->n1-1; i++) {
+    for (int i = 0; i < mesh->v->n1; i++) {
         for (int j = 0; j < mesh->v->n2; j++) {
             ind = i*mesh->v->n2 + j;
             h1 = mesh->v->h1[ind];
             h2 = mesh->v->h2[ind];
 
-            res_y = nu * (w[(i+1)*mesh->w->n2+j] - w[i*mesh->w->n2+j]) / (d1*h1);
+            res_y[ind] = nu * (w[(i+1)*mesh->w->n2+j] - w[i*mesh->w->n2+j]) / (d1*h1);
         }
     }
 }
 
 // Compute h = u . grad u
 // TODO !
-compute_h(MACMesh mesh, double *res_x, double *res_y) {
+void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
     // Init some vars
     int ind;
-    double d1 = mesh->p->d1;
-    double d2 = mesh->p->d2;
+    double d1 = mesh->d1;
+    double d2 = mesh->d2;
     double h1, h2;
     double dh2_d1, dh1_d2;
-    double *w = mesh->w->val1;
+    double *u = mesh->u->val1;
+    double *v = mesh->v->val1;
 
     // First, compute the x-composant
+    // Again, we do not need the values et Ri and Re since those are
+    // boundary conditions.
+    double du_d1, du_d2, v_avg;
     for (int i = 1; i < mesh->u->n1-1; i++) {
         for (int j = 0; j < mesh->u->n2; j++) {
             ind = i*mesh->u->n2 + j;
@@ -207,22 +215,33 @@ compute_h(MACMesh mesh, double *res_x, double *res_y) {
             dh2_d1 = mesh->u->dh2_d1[ind];
             dh1_d2 = mesh->u->dh1_d2[ind];
 
-            if (j == mesh->w->n2) {
-                res_x[ind] = -nu * (w[i*mesh->w->n2      ] - w[i*mesh->w->n2+j]) / (d2*h2);
-            } else {
-                res_x[ind] = -nu * (w[i*mesh->w->n2+(j+1)] - w[i*mesh->w->n2+j]) / (d2*h2);
-            }
+            // TODO/ periodic BC
+            du_d1 = (u[ind+mesh->u->n2] - u[ind-mesh->u->n2]) / (2*d1);
+            du_d2 = (u[ind+1]           - u[ind-1])           / (2*d2);
+            v_avg = (v[(i-1)*mesh->v->n2+j] + v[(i-1)*mesh->v->n2+(j+1)]
+                   + v[i*mesh->v->n2+(j+1)] + v[i*mesh->v->n2+j]         ) / 4;
+
+            res_x[ind] = u[ind]*du_d1/h1 + v_avg*du_d2/h2 + v_avg*(u[ind]*dh1_d2 - v_avg*dh2_d1)/(h1*h2);
         }
     }
 
     // Then compute in the y-direction
-    for (int i = 1; i < mesh->v->n1-1; i++) {
+    double dv_d1, dv_d2, u_avg;
+    for (int i = 0; i < mesh->v->n1; i++) {
         for (int j = 0; j < mesh->v->n2; j++) {
             ind = i*mesh->v->n2 + j;
             h1 = mesh->v->h1[ind];
             h2 = mesh->v->h2[ind];
+            dh2_d1 = mesh->v->dh2_d1[ind];
+            dh1_d2 = mesh->v->dh1_d2[ind];
 
-            res_y = nu * (w[(i+1)*mesh->w->n2+j] - w[i*mesh->w->n2+j]) / (d1*h1);
+            // TODO/ periodic BC
+            dv_d1 = (v[ind+mesh->v->n2] - v[ind+mesh->v->n2]) / (2*d1);
+            dv_d2 = (v[ind+1]           - v[ind-1])           / (2*d2);
+            u_avg = (u[i*mesh->u->n2+(j-1)] + u[i*mesh->u->n2+j]
+                    +u[(i+1)*mesh->u->n2+j] + u[(i+1)*mesh->u->n2+(j-1)]) / 4;
+
+            res_y[ind] = u_avg*dv_d1/h1 + v[ind]*dv_d2/h2 + u_avg*(v[ind]*dh2_d1 - u_avg*dh1_d2)/(h1*h2);
         }
     }
 }
