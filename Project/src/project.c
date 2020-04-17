@@ -17,25 +17,25 @@ typedef struct {
 
 } IterateCache;
 
-IterateCache *initIterateCache() {
+IterateCache *initIterateCache(MACMesh *mesh) {
     IterateCache *ic = (IterateCache *) malloc(sizeof(IterateCache));
 
     ic->n = 0;
 
-    ic->new_h_x = (double *) malloc(sizeof(double) * mesh ->u->n);
-    ic->new_h_y = (double *) malloc(sizeof(double) * mesh ->v->n);
+    ic->new_h_x = (double *) malloc(sizeof(double) * mesh->u->n);
+    ic->new_h_y = (double *) malloc(sizeof(double) * mesh->v->n);
 
-    ic->old_h_x = (double *) malloc(sizeof(double) * mesh ->u->n);
-    ic->old_h_y = (double *) malloc(sizeof(double) * mesh ->v->n);
+    ic->old_h_x = (double *) malloc(sizeof(double) * mesh->u->n);
+    ic->old_h_y = (double *) malloc(sizeof(double) * mesh->v->n);
 
-    ic->grad_P_x = (double *) malloc(sizeof(double) * mesh ->u->n);
-    ic->grad_P_y = (double *) malloc(sizeof(double) * mesh ->v->n);
+    ic->grad_P_x = (double *) malloc(sizeof(double) * mesh->u->n);
+    ic->grad_P_y = (double *) malloc(sizeof(double) * mesh->v->n);
 
-    ic->grad_Phi_x = (double *) malloc(sizeof(double) * mesh ->u->n);
-    ic->grad_Phi_y = (double *) malloc(sizeof(double) * mesh ->v->n);
+    ic->grad_Phi_x = (double *) malloc(sizeof(double) * mesh->u->n);
+    ic->grad_Phi_y = (double *) malloc(sizeof(double) * mesh->v->n);
 
-    ic->nu_lapl_u_x = (double *) malloc(sizeof(double) * mesh ->u->n);
-    ic->nu_lapl_u_y = (double *) malloc(sizeof(double) * mesh ->v->n);
+    ic->nu_lapl_u_x = (double *) malloc(sizeof(double) * mesh->u->n);
+    ic->nu_lapl_u_y = (double *) malloc(sizeof(double) * mesh->v->n);
 
     return ic;
 }
@@ -94,6 +94,8 @@ void iterate(MACMesh *mesh, PoissonData *poisson, double dt, double nu, IterateC
     double *grad_Phi_x, *grad_Phi_y;
     double *nu_lapl_u_x, *nu_lapl_u_y;
 
+    int ind;
+
     // u, v, u*, v* assign
 
     u = mesh->u->val1;
@@ -132,7 +134,7 @@ void iterate(MACMesh *mesh, PoissonData *poisson, double dt, double nu, IterateC
             for (int j = 0; j < mesh->u->n2; j++) {
                 ind = i*mesh->u->n2 + j;
 
-                u_star[ind] = u[ind] + dt * (-new_h_x[ind] - grad_P_x[ind] + nu_lapl_u_x[index]);
+                u_star[ind] = u[ind] + dt * (-new_h_x[ind] - grad_P_x[ind] + nu_lapl_u_x[ind]);
             }
         }
 
@@ -141,7 +143,7 @@ void iterate(MACMesh *mesh, PoissonData *poisson, double dt, double nu, IterateC
             for (int j = 0; j < mesh->v->n2; j++) {
                 ind = i*mesh->v->n2 + j;
 
-                v_star[ind] = v[ind] + dt * (-new_h_y[ind] - grad_P_y[ind] + nu_lapl_u_y[index]);
+                v_star[ind] = v[ind] + dt * (-new_h_y[ind] - grad_P_y[ind] + nu_lapl_u_y[ind]);
             }
         }
     }
@@ -151,7 +153,7 @@ void iterate(MACMesh *mesh, PoissonData *poisson, double dt, double nu, IterateC
             for (int j = 0; j < mesh->u->n2; j++) {
                 ind = i*mesh->u->n2 + j;
 
-                u_star[ind] = u[ind] + dt * (-0.5 * (3 * new_h_x[ind] - old_h_x[ind]) - grad_P_x[ind] + nu_lapl_u_x[index]);
+                u_star[ind] = u[ind] + dt * (-0.5 * (3 * new_h_x[ind] - old_h_x[ind]) - grad_P_x[ind] + nu_lapl_u_x[ind]);
             }
         }
 
@@ -160,7 +162,7 @@ void iterate(MACMesh *mesh, PoissonData *poisson, double dt, double nu, IterateC
             for (int j = 0; j < mesh->v->n2; j++) {
                 ind = i*mesh->v->n2 + j;
 
-                v_star[ind] = v[ind] + dt * (-0.5 * (3 * new_h_y[ind] - old_h_y[ind]) - grad_P_y[ind] + nu_lapl_u_y[index]);
+                v_star[ind] = v[ind] + dt * (-0.5 * (3 * new_h_y[ind] - old_h_y[ind]) - grad_P_y[ind] + nu_lapl_u_y[ind]);
             }
         }
     }
@@ -187,7 +189,7 @@ void iterate(MACMesh *mesh, PoissonData *poisson, double dt, double nu, IterateC
         for (int j = 0; j < mesh->v->n2; j++) {
             ind = i*mesh->v->n2 + j;
 
-            [ind] = v_star[ind] - dt * grad_Phi_y[ind];
+            v[ind] = v_star[ind] - dt * grad_Phi_y[ind];
         }
     }
 
@@ -206,12 +208,12 @@ void iterate(MACMesh *mesh, PoissonData *poisson, double dt, double nu, IterateC
 
 int main(int argc, char *argv[]){
 
-    IterateCache *ic = initIterateCache(); 
-
     PetscInitialize(&argc, &argv, 0, 0);
 
     // Initialize Mesh
     MACMesh *mesh = init_mac_mesh(CYLINDER);
+
+    IterateCache *ic = initIterateCache(mesh); 
 
     // Initialize Poisson solver
     PoissonData *poisson = (PoissonData *) malloc(sizeof(PoissonData));
