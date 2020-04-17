@@ -95,8 +95,6 @@ void iterate(MACMesh *mesh, PoissonData *poisson, double dt, double nu, IterateC
     double *nu_lapl_u_x, *nu_lapl_u_y;
     int ind;
 
-    int ind;
-
     // u, v, u*, v* assign
 
     u = mesh->u->val1;
@@ -215,8 +213,6 @@ int main(int argc, char *argv[]){
     // Initialize Mesh
     MACMesh *mesh = init_mac_mesh(CYLINDER);
     IterateCache *ic = initIterateCache(mesh);
-
-    IterateCache *ic = initIterateCache(mesh); 
 
     // Initialize Poisson solver
     PoissonData *poisson = (PoissonData *) malloc(sizeof(PoissonData));
