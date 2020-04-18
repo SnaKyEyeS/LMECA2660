@@ -139,7 +139,7 @@ void compute_omega(MACMesh *mesh) {
     double dv_d1, du_d2;
     double *u = mesh->u->val1;
     double *v = mesh->v->val1;
-    double v_ghost, v_avg, u_avg, v_wall;
+    double v_ghost, v_avg, u_avg, v_wall, theta;
 
     for (int i = 0; i < mesh->w->n1; i++) {
         for (int j = 0; j < mesh->w->n2; j++) {
@@ -176,7 +176,8 @@ void compute_omega(MACMesh *mesh) {
                 dv_d1 = (1*  v[ind_v_leftx3] - 3*v[ind_v_leftx2] - 21*v[ind_v_leftx1] + 23*v[ind_v_rightx1]) / (24*d1);
             } else if (i == mesh->w->n1-1) {
                 ind_v_leftx4 = index(i, j, mesh->v->n2, -4, 0);
-                v_wall = 0.0; // TODO: valeur de v_wall en r = R_ext ????
+                theta = mesh->w->theta[ind];
+                v_wall = -U_INF * sin(theta) + U_PERT * cos(theta); // TODO: valeur de v_wall en r = R_ext ????
                 v_ghost = (5*v[ind_v_leftx4] - 28*v[ind_v_leftx3] + 70*v[ind_v_leftx2] - 140*v[ind_v_leftx1] + 128*v_wall)/35;
                 dv_d1 = (1*  v[ind_v_leftx3] - 3*v[ind_v_leftx2] - 21*v[ind_v_leftx1] + 23*v_ghost           ) / (24*d1);
 
@@ -192,7 +193,9 @@ void compute_omega(MACMesh *mesh) {
             if (i == 0) {
                 v_avg = 0;
             } else if (i == mesh->w->n1) {
-                v_avg = 0;  // TODO: trouver quelle est la valeur de v sur le mur, je sais pas ce que ça vaut :(
+                theta = mesh->w->theta[ind];
+                v_avg = -U_INF * sin(theta) + U_PERT * cos(theta);
+                            // TODO: trouver quelle est la valeur de v sur le mur, je sais pas ce que ça vaut :(
                             // doit être calculée telle que w_wall = 0...
             } else {
                 v_avg = (v[ind_v_rightx1] + v[ind_v_leftx1])   / 2;
