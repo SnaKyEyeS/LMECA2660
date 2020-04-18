@@ -74,7 +74,7 @@ if __name__ == '__main__':
     print(args)
     if args['r']:
         os.system('./run_project.sh')
-    if 'plot' in args and 'mesh' in args['plot']:
+    if args['plot'] and 'mesh' in args['plot']:
         filename = 'data/' + args['plot'] + '.txt'
         if args['plot_type']:
             plot_mesh(filename, plot_type=args['plot_type'])
