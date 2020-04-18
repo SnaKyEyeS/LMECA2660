@@ -127,6 +127,7 @@ void iterate(MACMesh *mesh, PoissonData *poisson, double dt, double nu, IterateC
     compute_diffusive(mesh, nu_lapl_u_x, nu_lapl_u_y, nu);
     compute_grad_scalar(mesh, grad_P_x, grad_P_y, PRESSURE);
 
+
     // If first iteration, we use euler explicit
     if (ic->n == 0) {
         // u*
@@ -242,7 +243,7 @@ int main(int argc, char *argv[]){
 
     printf("Beginning iterations\n");
     while (state < endState) {
-        printf("\tIterate... ");
+        printf("\tIterate... \n");
         iterate(mesh, poisson, dt, nu, ic);
 
         state += dt;

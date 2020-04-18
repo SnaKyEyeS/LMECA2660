@@ -47,11 +47,6 @@ void poisson_solver(PoissonData *data, MACMesh *mesh)
     VecGetOwnershipRange(b, &rowStart, &rowEnd);
     VecGetArray(b, &rhs);
     // computeRHS(mesh, rhs, rowStart, rowEnd); // This is to test the poisson solver !
-
-    PetscPrintf(PETSC_COMM_WORLD, "rowStart = %d\n", rowStart);
-    PetscPrintf(PETSC_COMM_WORLD, "rowEnd   = %d\n", rowEnd);
-    PetscPrintf(PETSC_COMM_WORLD, "Our n    = %d\n", mesh->p->n);
-
     compute_rhs(mesh, rhs, mesh->dt);
     VecRestoreArray(b, &rhs);
 
