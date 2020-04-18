@@ -341,7 +341,7 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
                 ind_w_wall = index(i, j, mesh->w->n2, 1, 0);    // We need the orientation of the mesh at the wall
                 ind_v_left_left = index(i, j, mesh->v->n2, -2, 0);
                 theta = mesh->w->theta[ind_w_wall];
-                v_wall_right = -U_INF * sin(theta) + U_PERT * cos(theta);
+                v_wall_right = -U_INF * sin(theta) + U_PERT * cos(theta);       // TODO valeur de v_wall en r = Ri... j'suis pas sur de ce truc
                 v_ghost_right = -(v[ind_v_left_left] - 5*v[ind_v_left] + 15*v[ind] - 16*v_wall_right)/5;
                 dv_d1 = (v_ghost_right - v[ind_v_left])   / (2*d1);
                 dv_d2 = (v[ind_u_up]   - v[ind_v_bottom]) / (2*d2);
