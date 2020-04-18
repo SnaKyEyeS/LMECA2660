@@ -49,8 +49,8 @@ void compute_rhs(MACMesh *mesh, double *result, double dt) {
             dv_d2 = (v_star[ind_v_up] - v_star[ind_v_bottom]) / d2;
 
             // Compute u_ij & v_ij, the means of speeds are +-1/2 the current index
-            u_ij = (u_star[ind_u_right] + u_star[ind_u_left]) / 2.0;
-            v_ij = (v_star[ind_v_up] + v_star[ind_v_bottom]) / d2;
+            u_ij = (u_star[ind_u_right] + u_star[ind_u_left])   / 2.0;
+            v_ij = (v_star[ind_v_up]    + v_star[ind_v_bottom]) / 2.0;
 
             // Compute the complete term
             result[ind] = ((h2*du_d1 + dh2_d1*u_ij) + (h1*dv_d2 + dh1_d2*v_ij)) / (h1*h2*dt);
@@ -64,12 +64,10 @@ void compute_rhs(MACMesh *mesh, double *result, double dt) {
  *  Computes the pressure gradient.
  *  On the border, we do not calculate those values: the velocities are known,
  *  therefore we do not need it.
- *  p_or_phi > 0 -> grad(pressure)
- *  p_or_phi < 0 -> grad(phi)
  */
-void compute_grad_scalar(MACMesh *mesh, double *res_x, double *res_y, GradientType T) {
+void compute_grad_scalar(MACMesh *mesh, double *res_x, double *res_y, GradientType type) {
     double *field;
-    switch (T) {
+    switch (type) {
         case PRESSURE:
             field = mesh->p->val1;
             break;
@@ -85,7 +83,6 @@ void compute_grad_scalar(MACMesh *mesh, double *res_x, double *res_y, GradientTy
 
     // Init some vars
     int ind;
-
     int ind_p_left, ind_p_right, ind_p_bottom, ind_p_up;
 
     double d1 = mesh->p->d1;
@@ -141,12 +138,12 @@ void compute_omega(MACMesh *mesh) {
     double dh2_d1, dh1_d2;
     double dv_d1, du_d2;
     double *u = mesh->u->val1;
-    double *v = mesh->v->val2;
-    double v_ghost;
+    double *v = mesh->v->val1;
+    double v_ghost, v_avg, u_avg;
 
     for (int i = 0; i < mesh->w->n1; i++) {
         for (int j = 0; j < mesh->w->n2; j++) {
-            ind = i*mesh->v->n2 + j;
+            ind = i*mesh->w->n2 + j;
             h1 = mesh->w->h1[ind];
             h2 = mesh->w->h2[ind];
             dh2_d1 = mesh->w->dh2_d1[ind];
@@ -168,7 +165,7 @@ void compute_omega(MACMesh *mesh) {
             // We use decentered schemes for the wall points
             // and a ghost point whose value is dictated by the BC for v.
             if (i == 0) {
-                v_ghost = 0;    // COMPUTE THE VALUE using a polynomial
+                v_ghost = 0;    // TODO: COMPUTE THE VALUE using a polynomial
                 dv_d1 = (-23*v_ghost         + 21*v[ind_v_rightx1]    + 3 *v[ind_v_rightx2] - 1*v[ind_v_rightx3]) / (24*d1);
             } else if (i == 1) {
                 dv_d1 = (-23*v[ind_v_leftx1] + 21*v[ind_v_rightx1]    + 3 *v[ind_v_rightx2] - 1*v[ind_v_rightx3]) / (24*d1);
@@ -176,7 +173,7 @@ void compute_omega(MACMesh *mesh) {
             } else if (i == mesh->w->n1-2) {
                 dv_d1 = (1*  v[ind_v_leftx3] - 3*v[ind_v_leftx2] - 21*v[ind_v_leftx1] + 23*v[ind_v_rightx1]) / (24*d1);
             } else if (i == mesh->w->n1-1) {
-                v_ghost = 0;    // COMPUTE THE VALUE using a polynomial
+                v_ghost = 0;    // TODO: COMPUTE THE VALUE using a polynomial
                 dv_d1 = (1*  v[ind_v_leftx3] - 3*v[ind_v_leftx2] - 21*v[ind_v_leftx1] + 23*v_ghost           ) / (24*d1);
 
             } else {
@@ -184,10 +181,20 @@ void compute_omega(MACMesh *mesh) {
             }
             // We can use the periodicity in the xi2 direction (using the modulo operator)
             // NB: the boundary conditions at the walls must be imposed in u[] before the call to this function !
-            du_d2 = ( 1*u[ind_u_bottomx2] - 27*u[ind_u_bottomx1]
-                   + 27*u[ind_u_upx1]     -  1*u[ind_u_upx2])              / (24*d2);
+            du_d2 = ( 1*u[ind_u_bottomx2] - 27*u[ind_u_bottomx1] + 27*u[ind_u_upx1] - 1*u[ind_u_upx2]) / (24*d2);
 
-            mesh->w->val1[ind] = ((h2*dv_d1 + dh2_d1*v[ind]) - (h1*du_d2 + dh1_d2*u[ind])) / (h1*h2);
+            // Compute v & u averaged
+            u_avg = (u[ind_u_upx1]    + u[ind_u_bottomx1]) / 2;
+            if (i == 0) {
+                v_avg = 0;
+            } else if (i == mesh->w->n1) {
+                v_avg = 0;  // TODO: trouver quelle est la valeur de v sur le mur, je sais pas ce que ça vaut :(
+                            // doit être calculée telle que w_wall = 0...
+            } else {
+                v_avg = (v[ind_v_rightx1] + v[ind_v_leftx1])   / 2;
+            }
+
+            mesh->w->val1[ind] = ((h2*dv_d1 + dh2_d1*v_avg) - (h1*du_d2 + dh1_d2*u_avg)) / (h1*h2);
         }
     }
 }
@@ -212,7 +219,7 @@ void compute_diffusive(MACMesh *mesh, double *res_x, double *res_y, double nu) {
 
     // First, compute the x-composant --> the values at R_e and R_i are not needed
     // (boundary conditions).
-    for (int i = 1; i < mesh->u->n1-1; i++) {
+    for (int i = 0; i < mesh->u->n1; i++) {
         for (int j = 0; j < mesh->u->n2; j++) {
             ind = i*mesh->u->n2 + j;
             h1 = mesh->u->h1[ind];
