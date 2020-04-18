@@ -39,8 +39,6 @@ typedef struct {
     int n1, n2;         // Number of cell in the (1) and (2) direction
     double d1, d2;      // Size of the cells
 
-    double dt;          // Timestep for the numerical integration scheme
-
     Mesh *w;
     Mesh *u;
     Mesh *v;

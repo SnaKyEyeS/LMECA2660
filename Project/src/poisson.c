@@ -24,7 +24,7 @@ void computeRHS(MACMesh *mesh, double *rhs, PetscInt rowStart, PetscInt rowEnd) 
     //                 - 4*pow(sin(fact), 2)*cos(2*theta) / pow(r, 2);
     // }
 
-    compute_rhs(mesh, rhs, mesh->dt);
+    compute_rhs(mesh, rhs, 0.1);
 }
 
 /*To call at each time step after computation of U_star. This function solves the poisson equation

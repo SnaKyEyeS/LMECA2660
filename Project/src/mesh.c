@@ -72,8 +72,6 @@ MACMesh *init_mac_mesh(MappingType type) {
                 }
             }
 
-            double dt_min_fourier = FOURIER_MAX * mapping->h_wall_normal / NU
-
             free(mapping);
             break;
         }
