@@ -221,8 +221,8 @@ int main(int argc, char *argv[]){
     initialize_poisson_solver(poisson, mesh);
 
     double state = 0.0;     // time
-    double dt    = 0.001;   // detla-time
-    double nu    = 1;
+    double dt    = mesh->dt;   // detla-time
+    double nu    = NU;
 
     double endState = 1;
 
