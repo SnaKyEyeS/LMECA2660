@@ -177,7 +177,7 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic) {
 
     for (int j = 0; j < mesh->u->n2; j++) {
         ind_inner = j;
-        ind_outer = (mesh->v->n1-1)*(mesh->u->n2) + j;
+        ind_outer = (mesh->u->n1-1)*(mesh->u->n2) + j;
 
         u_star[ind_inner] = u[ind_inner];
         u_star[ind_outer] = u[ind_outer];
