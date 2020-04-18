@@ -34,7 +34,6 @@ AirfoilMapping *init_airfoil_mapping() {
 	mapping->dxi2 = mapping->H/mapping->n_xi2;
 
 	mapping->c = mapping->bj;
-	printf("%d\n", mapping->n_xi1);
 	return mapping;
 }
 

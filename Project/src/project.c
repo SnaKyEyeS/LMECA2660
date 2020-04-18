@@ -98,7 +98,6 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic) {
 
     double dt = mesh->dt;
     double nu = NU;
-
     // u, v, u*, v* assign
 
     u = mesh->u->val1;
@@ -258,7 +257,7 @@ int main(int argc, char *argv[]){
 
     printf("Beginning iterations\n");
     while (state < endState) {
-        printf("\tIterate t=%.5fs... ", state);
+        printf("\tIterate t=%.5fs... \n", state);
         iterate(mesh, poisson, ic);
 
         state += dt;

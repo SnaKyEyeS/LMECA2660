@@ -26,7 +26,6 @@ CylinderMapping *init_cylinder_mapping() {
     mapping->xi2_lim[0] = 0.0;
     mapping->xi2_lim[1] = 2*M_PI;
 
-    printf("%d\n", mapping->n_xi1);
     return mapping;
 }
 

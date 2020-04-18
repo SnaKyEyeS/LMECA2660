@@ -24,7 +24,6 @@ typedef struct {
     double d1, d2;  // Step between each node
 
     // Mesh data
-    double *data;
     double *x, *y;
     double *h1, *h2;
     double *dh1_d1, *dh1_d2, *dh2_d1, *dh2_d2;
