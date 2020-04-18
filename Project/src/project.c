@@ -219,6 +219,44 @@ int main(int argc, char *argv[]){
     PoissonData *poisson = (PoissonData *) malloc(sizeof(PoissonData));
     initialize_poisson_solver(poisson, mesh);
 
+    double state = 0.0;     // time
+    double dt    = 0.001;   // detla-time
+    double nu    = 1;
+
+    double endState = 1;
+
+    printf("Opening files\n");
+    Mesh *meshes[N_MESH] = {mesh->w, mesh->u, mesh->v, mesh->p};
+    FILE *files[N_MESH]  = {
+        fopen("../data/mesh_w.txt", "w+"),
+        fopen("../data/mesh_u.txt", "w+"),
+        fopen("../data/mesh_v.txt", "w+"),
+        fopen("../data/mesh_p.txt", "w+")
+    };
+
+    printf("Writing headers and initial states\n");
+    for (int i = 0; i < N_MESH; i++) {
+        save_mesh_header(meshes[i], files[i]);
+        save_mesh_state(meshes[i], state, files[i]);
+    }
+
+    printf("Beginning iterations\n");
+    while (state < endState) {
+        printf("\tIterate... ");
+        iterate(mesh, poisson, dt, nu, ic);
+
+        state += dt;
+
+        printf("done ! Saving state.\n");
+        for (int i = 0; i < N_MESH; i++) {
+            save_mesh_state(meshes[i], state, files[i]);
+        }
+    }
+
+    for (int i = 0; i < N_MESH; i++) {
+        fclose(files[i]);
+    }
+
     // Compute Poisson Solution
     poisson_solver(poisson, mesh);
     save_mesh(mesh->p);

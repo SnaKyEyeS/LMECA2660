@@ -8,6 +8,7 @@
 
 #define U_INF 1.0
 #define U_PERT 0.0
+#define N_MESH 4
 
 typedef enum {AIRFOIL, CYLINDER} MappingType;
 
@@ -47,6 +48,9 @@ void        free_mac_mesh(MACMesh *mesh);
 
 Mesh   *init_mesh(int n1, int n2, double d1, double d2);
 void    free_mesh(Mesh *mesh);
+void    save_array(double *arr, int size, FILE *fp);
+void    save_mesh_header(Mesh *mesh, FILE *fp);
+void    save_mesh_state(Mesh *mesh, double state, FILE *fp);
 void    save_mesh(Mesh *mesh);
 
 

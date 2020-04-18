@@ -195,6 +195,26 @@ void free_mesh(Mesh *mesh) {
     free(mesh);
 }
 
+void save_array(double *arr, int size, FILE *fp) {
+    for (int i = 0; i < size - 1; i++) {
+        fprintf(fp, "%.20f, ", arr[i]);
+    }
+    fprintf(fp, "%.20f\n", arr[size-1]);
+}
+
+void save_mesh_header(Mesh *mesh, FILE *fp) {
+    fprintf(fp, "{n: %d, n1: %d, n2: %d, d1: %.20f, d2: %.20f}\n", mesh->n, mesh->n1, mesh->n2, mesh->d1, mesh->d2);
+    save_array(mesh->x, mesh->n, fp);
+    save_array(mesh->y, mesh->n, fp);
+}
+
+void save_mesh_state(Mesh *mesh, double state, FILE *fp) {
+    fprintf(fp, "%.20f, ", state);
+    save_array(mesh->val1, mesh->n, fp);
+    fprintf(fp, "%.20f, ", state);
+    save_array(mesh->val2, mesh->n, fp);
+}
+
 /*
  *  Saves the mesh to a file
  *  Column format:

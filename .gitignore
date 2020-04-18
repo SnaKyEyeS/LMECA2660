@@ -26,3 +26,11 @@ Project/__pycache__/differentiate_methods.cpython-36.pyc
 Project/__pycache__/differentiate_methods.cpython-37.pyc
 
 Project/__pycache__/polynomial_interpolation.cpython-36.pyc
+
+Project/data/mesh_p.txt
+
+Project/data/mesh_u.txt
+
+Project/data/mesh_v.txt
+
+Project/data/mesh_w.txt
