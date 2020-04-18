@@ -47,6 +47,11 @@ void poisson_solver(PoissonData *data, MACMesh *mesh)
     VecGetOwnershipRange(b, &rowStart, &rowEnd);
     VecGetArray(b, &rhs);
     // computeRHS(mesh, rhs, rowStart, rowEnd); // This is to test the poisson solver !
+
+    PetscPrintf(PETSC_COMM_WORLD, "rowStart = %d\n", rowStart);
+    PetscPrintf(PETSC_COMM_WORLD, "rowEnd   = %d\n", rowEnd);
+    PetscPrintf(PETSC_COMM_WORLD, "Our n    = %d\n", mesh->p->n);
+
     compute_rhs(mesh, rhs, mesh->dt);
     VecRestoreArray(b, &rhs);
 
@@ -215,7 +220,6 @@ PetscErrorCode initialize_poisson_solver(PoissonData* data, MACMesh *mesh) {
     VecCreate(PETSC_COMM_WORLD, &(data->x));
     VecSetSizes(data->x, PETSC_DECIDE, nphi);
     VecSetType(data->x,VECSTANDARD);
-
     /* Create and assemble the Laplacian matrix : A  */
     MatCreate(PETSC_COMM_WORLD, &(data->A));
     MatSetSizes(data->A, PETSC_DECIDE, PETSC_DECIDE, nphi , nphi);
