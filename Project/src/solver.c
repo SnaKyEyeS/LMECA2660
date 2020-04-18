@@ -129,8 +129,8 @@ void compute_omega(MACMesh *mesh) {
     int ind;
     int ind_u_bottomx1, ind_u_bottomx2;
     int ind_u_upx1, ind_u_upx2;
-    int ind_v_rightx1, ind_v_rightx2,  ind_v_rightx3;
-    int ind_v_leftx1, ind_v_leftx2,  ind_v_leftx3;
+    int ind_v_rightx1, ind_v_rightx2,  ind_v_rightx3, ind_v_rightx4;
+    int ind_v_leftx1, ind_v_leftx2,  ind_v_leftx3, ind_v_leftx4;
 
     double d1 = mesh->w->d1;
     double d2 = mesh->w->d2;
@@ -139,7 +139,7 @@ void compute_omega(MACMesh *mesh) {
     double dv_d1, du_d2;
     double *u = mesh->u->val1;
     double *v = mesh->v->val1;
-    double v_ghost, v_avg, u_avg;
+    double v_ghost, v_avg, u_avg, v_wall;
 
     for (int i = 0; i < mesh->w->n1; i++) {
         for (int j = 0; j < mesh->w->n2; j++) {
@@ -165,7 +165,9 @@ void compute_omega(MACMesh *mesh) {
             // We use decentered schemes for the wall points
             // and a ghost point whose value is dictated by the BC for v.
             if (i == 0) {
-                v_ghost = 0;    // TODO: COMPUTE THE VALUE using a polynomial
+                ind_v_rightx4 = index(i, j, mesh->v->n2, 3, 0);
+                v_wall = 0;
+                v_ghost = (5*v[ind_v_rightx4] - 28*v[ind_v_rightx3] + 70*v[ind_v_rightx2] - 140*v[ind_v_rightx1] - 128*v_wall)/35;
                 dv_d1 = (-23*v_ghost         + 21*v[ind_v_rightx1]    + 3 *v[ind_v_rightx2] - 1*v[ind_v_rightx3]) / (24*d1);
             } else if (i == 1) {
                 dv_d1 = (-23*v[ind_v_leftx1] + 21*v[ind_v_rightx1]    + 3 *v[ind_v_rightx2] - 1*v[ind_v_rightx3]) / (24*d1);
@@ -173,7 +175,8 @@ void compute_omega(MACMesh *mesh) {
             } else if (i == mesh->w->n1-2) {
                 dv_d1 = (1*  v[ind_v_leftx3] - 3*v[ind_v_leftx2] - 21*v[ind_v_leftx1] + 23*v[ind_v_rightx1]) / (24*d1);
             } else if (i == mesh->w->n1-1) {
-                v_ghost = 0;    // TODO: COMPUTE THE VALUE using a polynomial
+                v_wall = 0.0; // TODO: valeur de v_wall en r = R_ext ????
+                v_ghost = (5*v[ind_v_leftx4] - 28*v[ind_v_leftx3] + 70*v[ind_v_leftx2] - 140*v[ind_v_leftx1] - 128*v_wall)/35;
                 dv_d1 = (1*  v[ind_v_leftx3] - 3*v[ind_v_leftx2] - 21*v[ind_v_leftx1] + 23*v_ghost           ) / (24*d1);
 
             } else {
@@ -339,7 +342,7 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
                 ind_v_left_left = index(i, j, mesh->v->n2, -2, 0);
                 theta = mesh->w->theta[ind_w_wall];
                 v_wall_right = -U_INF * sin(theta) + U_PERT * cos(theta);
-                v_ghost_right = (v[ind_v_left_left] - 5*v[ind_v_left] + 15*v[ind] - 16*v_wall_right)/5;
+                v_ghost_right = -(v[ind_v_left_left] - 5*v[ind_v_left] + 15*v[ind] - 16*v_wall_right)/5;
                 dv_d1 = (v_ghost_right - v[ind_v_left])   / (2*d1);
                 dv_d2 = (v[ind_u_up]   - v[ind_v_bottom]) / (2*d2);
                 u_avg = (   u[ind_u_bottom_left]  + u[ind_u_bottom_right]
