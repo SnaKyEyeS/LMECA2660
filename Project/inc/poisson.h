@@ -5,6 +5,7 @@
 #include <petsc.h>
 #include <petscsys.h>
 #include "mesh.h"
+#include "solver.h"
 
 //Structure storing petsc vectors
 typedef struct {

@@ -6,23 +6,25 @@
   Modification to do :
       -Fill vector rhs*/
 void computeRHS(MACMesh *mesh, double *rhs, PetscInt rowStart, PetscInt rowEnd) {
-    double r, theta, x, y;
-    double r0 = .5;
-    double r1 = 50 + r0;
-    double n=2;
-    double fact;
+    // double r, theta, x, y;
+    // double r0 = .5;
+    // double r1 = 50 + r0;
+    // double n=2;
+    // double fact;
+    //
+    // for(int ind = rowStart; ind < rowEnd ; ind++) {
+    //     x = mesh->p->x[ind];
+    //     y = mesh->p->y[ind];
+    //     r = sqrt(x*x + y*y);
+    //     theta = atan2(y, x);
+    //
+    //     fact = M_PI * (r0 - r) / (r1 - r0);
+    //     rhs[ind] = 2*cos(2*fact)*cos(2*theta)*M_PI*M_PI / pow(r1-r0, 2)
+    //                 - 2*cos(fact)*sin(fact)*cos(2*theta)*M_PI / ((r1-r0)*r)
+    //                 - 4*pow(sin(fact), 2)*cos(2*theta) / pow(r, 2);
+    // }
 
-    for(int ind = rowStart; ind < rowEnd ; ind++) {
-        x = mesh->p->x[ind];
-        y = mesh->p->y[ind];
-        r = sqrt(x*x + y*y);
-        theta = atan2(y, x);
-
-        fact = M_PI * (r0 - r) / (r1 - r0);
-        rhs[ind] = 2*cos(2*fact)*cos(2*theta)*M_PI*M_PI / pow(r1-r0, 2)
-                    - 2*cos(fact)*sin(fact)*cos(2*theta)*M_PI / ((r1-r0)*r)
-                    - 4*pow(sin(fact), 2)*cos(2*theta) / pow(r, 2);
-    }
+    compute_rhs(mesh, rhs, mesh->dt);
 }
 
 /*To call at each time step after computation of U_star. This function solves the poisson equation
