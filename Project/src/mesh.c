@@ -211,7 +211,7 @@ void save_array(double *arr, int size, FILE *fp) {
 }
 
 void save_mesh_header(Mesh *mesh, FILE *fp) {
-    fprintf(fp, "{n: %d, n1: %d, n2: %d, d1: %.20f, d2: %.20f}\n", mesh->n, mesh->n1, mesh->n2, mesh->d1, mesh->d2);
+    fprintf(fp, "{'n': %d, 'n1': %d, 'n2': %d, 'd1': %.20f, 'd2': %.20f}\n", mesh->n, mesh->n1, mesh->n2, mesh->d1, mesh->d2);
     save_array(mesh->x, mesh->n, fp);
     save_array(mesh->y, mesh->n, fp);
 }
