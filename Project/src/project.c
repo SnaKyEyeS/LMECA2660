@@ -68,7 +68,7 @@ void icUpdateH(IterateCache *ic) {
     double *temp_x, *temp_y;
 
     temp_x = ic->old_h_x;
-    temp_x = ic->old_h_y;
+    temp_y = ic->old_h_y;
 
     ic->old_h_x = ic->new_h_x;
     ic->old_h_y = ic->new_h_y;
@@ -124,11 +124,9 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic) {
     nu_lapl_u_y = ic->nu_lapl_u_y;
 
     // (1) Compute H, grad_P and nu_lapl
-
     compute_h(mesh, new_h_x, new_h_y);
     compute_diffusive(mesh, nu_lapl_u_x, nu_lapl_u_y, nu);
     compute_grad_scalar(mesh, grad_P_x, grad_P_y, PRESSURE);
-
 
     // If first iteration, we use euler explicit
     if (ic->n == 0) {
