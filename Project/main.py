@@ -57,12 +57,12 @@ def plot_mesh(filename, plot_type='pcolor', value=1, vector=normal):
             print("Unkwown plot type!")
             os._exit(1)
 
-        #plt.savefig(f'test{i}.pdf')
+        # plt.savefig(f'test{i}.svg')
         return plot,
     
-    anim = FuncAnimation(fig, update, frames=range(n_status), blit=False, repeat=True, interval=5000)
+    anim = FuncAnimation(fig, update, frames=range(n_status), blit=False, repeat=True, interval=1000)
     output = os.path.splitext(filename)[0] + '.gif'
-    anim.save(output, writer='imagemagick')
+    anim.save(output, writer='imagemagick', dpi=300)
 
 
     print("Generated a .gif file at", output)

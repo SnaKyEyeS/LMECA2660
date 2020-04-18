@@ -86,7 +86,7 @@ void icUpdateH(IterateCache *ic) {
  * 3) compute u_n+1
  * 4) compute P^n+1
  */
-void iterate(MACMesh *mesh, PoissonData *poisson, double dt, double nu, IterateCache *ic) {
+void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic) {
     double *new_h_x, *new_h_y;
     double *old_h_x, *old_h_y;
     double *u_star, *v_star;
@@ -95,6 +95,9 @@ void iterate(MACMesh *mesh, PoissonData *poisson, double dt, double nu, IterateC
     double *grad_Phi_x, *grad_Phi_y;
     double *nu_lapl_u_x, *nu_lapl_u_y;
     int ind;
+
+    double dt = mesh->dt;
+    double nu = NU;
 
     // u, v, u*, v* assign
 
@@ -131,7 +134,7 @@ void iterate(MACMesh *mesh, PoissonData *poisson, double dt, double nu, IterateC
     // If first iteration, we use euler explicit
     if (ic->n == 0) {
         // u*
-        for (int i = 0; i < mesh->u->n1; i++) {
+        for (int i = 1; i < mesh->u->n1-1; i++) {
             for (int j = 0; j < mesh->u->n2; j++) {
                 ind = i*mesh->u->n2 + j;
 
@@ -150,7 +153,7 @@ void iterate(MACMesh *mesh, PoissonData *poisson, double dt, double nu, IterateC
     }
     else {
         // u*
-        for (int i = 0; i < mesh->u->n1; i++) {
+        for (int i = 1; i < mesh->u->n1-1; i++) {
             for (int j = 0; j < mesh->u->n2; j++) {
                 ind = i*mesh->u->n2 + j;
 
@@ -168,6 +171,18 @@ void iterate(MACMesh *mesh, PoissonData *poisson, double dt, double nu, IterateC
         }
     }
 
+    // Fill u* boundaries
+
+    int ind_inner, ind_outer;
+
+    for (int j = 0; j < mesh->u->n2; j++) {
+        ind_inner = j;
+        ind_outer = (mesh->v->n1-1)*(mesh->u->n2) + j;
+
+        u_star[ind_inner] = u[ind_inner];
+        u_star[ind_outer] = u[ind_outer];
+    }
+
     // (2) Poisson solver
 
     poisson_solver(poisson, mesh);
@@ -177,7 +192,7 @@ void iterate(MACMesh *mesh, PoissonData *poisson, double dt, double nu, IterateC
     compute_grad_scalar(mesh, grad_Phi_x, grad_Phi_y, PHI);
 
     // u
-    for (int i = 0; i < mesh->u->n1; i++) {
+    for (int i = 1; i < mesh->u->n1-1; i++) {
         for (int j = 0; j < mesh->u->n2; j++) {
             ind = i*mesh->u->n2 + j;
 
@@ -243,8 +258,8 @@ int main(int argc, char *argv[]){
 
     printf("Beginning iterations\n");
     while (state < endState) {
-        printf("\tIterate... \n");
-        iterate(mesh, poisson, dt, nu, ic);
+        printf("\tIterate t=%.5fs... ", state);
+        iterate(mesh, poisson, ic);
 
         state += dt;
 
