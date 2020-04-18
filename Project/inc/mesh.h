@@ -11,6 +11,7 @@
 #define U_PERT      0.0
 #define CFL_MAX     0.1
 #define FOURIER_MAX 0.1
+#define NU          1.0
 
 typedef enum {AIRFOIL, CYLINDER} MappingType;
 
@@ -38,6 +39,8 @@ typedef struct {
     int n_cell;         // Total number of cells
     int n1, n2;         // Number of cell in the (1) and (2) direction
     double d1, d2;      // Size of the cells
+
+    double dt;          // Timestep for the numerical integration scheme
 
     Mesh *w;
     Mesh *u;

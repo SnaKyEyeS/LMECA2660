@@ -72,6 +72,10 @@ MACMesh *init_mac_mesh(MappingType type) {
                 }
             }
 
+            double dt_min_fourier = FOURIER_MAX * mapping->h_wall_normal / NU;
+            double dt_min_CFL     = CFL_MAX * mapping->h_wall_normal / (2*U_INF);
+            mesh->dt = fmin(dt_min_fourier, dt_min_CFL);
+
             free(mapping);
             break;
         }
