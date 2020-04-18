@@ -35,6 +35,8 @@ def plot_mesh(filename, plot_type='pcolor', value=1, vector=normal):
 
     plt.xlabel('x')
     plt.ylabel('y')
+    plt.xlim([-.15, .15])
+    plt.ylim([-.15, .15])
 
 
     n_status = len(status[::2])
@@ -61,8 +63,8 @@ def plot_mesh(filename, plot_type='pcolor', value=1, vector=normal):
         return plot,
     
     anim = FuncAnimation(fig, update, frames=range(n_status), blit=False, repeat=True, interval=1000)
-    output = os.path.splitext(filename)[0] + '.gif'
-    anim.save(output, writer='imagemagick', dpi=300)
+    output = os.path.splitext(filename)[0] + '.mp4'
+    anim.save(output, writer='ffmpeg', dpi=300)
 
 
     print("Generated a .gif file at", output)
