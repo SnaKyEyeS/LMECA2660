@@ -19,7 +19,7 @@ typedef struct {
 	double dxi2;
 
 	//IMPORTANT FOR STUDENTS : chord length, useful to make your fields dimensionless...
-	double c; //Chord length.
+	double L; //Chord length.
 
 	//NOT IMPORTANT FOR STUDENTS
 	double fact1; //Factor alpha

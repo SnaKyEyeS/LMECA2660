@@ -31,6 +31,9 @@ typedef struct {
     double xi1_lim[2];
     double xi2_lim[2];
 
+    // Caracteristic length (for Reynolds numbers and such)
+    double L;
+
 } CylinderMapping;
 
 
