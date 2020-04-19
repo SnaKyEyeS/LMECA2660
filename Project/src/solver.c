@@ -56,7 +56,6 @@ void compute_rhs(MACMesh *mesh, double *result, double dt) {
             result[ind] = ((h2*du_d1 + dh2_d1*u_ij) + (h1*dv_d2 + dh1_d2*v_ij)) / (h1*h2*dt);
         }
     }
-
 }
 
 

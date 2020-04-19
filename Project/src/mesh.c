@@ -72,8 +72,10 @@ MACMesh *init_mac_mesh(MappingType type) {
                 }
             }
 
-            double dt_min_fourier = FOURIER_MAX * mapping->h_wall_normal / NU;
-            double dt_min_CFL     = CFL_MAX * mapping->h_wall_normal / U_INF;
+            double dt_min_fourier = FOURIER_MAX * mapping->h_wall_normal *mapping->h_wall_normal / NU;
+            double dt_min_CFL     = CFL_MAX * mapping->h_wall_normal / (2*U_INF);
+            printf("dt fourier = %.10f\n", dt_min_fourier);
+            printf("dt CFL     = %.10f\n", dt_min_CFL);
             mesh->dt = fmin(dt_min_fourier, dt_min_CFL);
 
             free(mapping);
@@ -186,8 +188,8 @@ Mesh *init_mesh(int n1, int n2, double d1, double d2) {
     mesh->ddh1_d1d2 = (double *) malloc(mesh->n*sizeof(double));
     mesh->ddh2_d1d2 = (double *) malloc(mesh->n*sizeof(double));
     mesh->theta = (double *) malloc(mesh->n*sizeof(double));
-    mesh->val1 = (double *) malloc(mesh->n*sizeof(double));
-    mesh->val2 = (double *) malloc(mesh->n*sizeof(double));
+    mesh->val1 = (double *) calloc(mesh->n, sizeof(double));
+    mesh->val2 = (double *) calloc(mesh->n, sizeof(double));
 }
 
 void free_mac_mesh(MACMesh *mesh) {
@@ -216,21 +218,21 @@ void free_mesh(Mesh *mesh) {
 
 void save_array(double *arr, int size, FILE *fp) {
     for (int i = 0; i < size - 1; i++) {
-        fprintf(fp, "%.20f, ", arr[i]);
+        fprintf(fp, "%.10f, ", arr[i]);
     }
-    fprintf(fp, "%.20f\n", arr[size-1]);
+    fprintf(fp, "%.10f\n", arr[size-1]);
 }
 
 void save_mesh_header(Mesh *mesh, FILE *fp) {
-    fprintf(fp, "{'n': %d, 'n1': %d, 'n2': %d, 'd1': %.20f, 'd2': %.20f}\n", mesh->n, mesh->n1, mesh->n2, mesh->d1, mesh->d2);
+    fprintf(fp, "{'n': %d, 'n1': %d, 'n2': %d, 'd1': %.10f, 'd2': %.10f}\n", mesh->n, mesh->n1, mesh->n2, mesh->d1, mesh->d2);
     save_array(mesh->x, mesh->n, fp);
     save_array(mesh->y, mesh->n, fp);
 }
 
 void save_mesh_state(Mesh *mesh, double state, FILE *fp) {
-    fprintf(fp, "%.20f, ", state);
+    fprintf(fp, "%.10f, ", state);
     save_array(mesh->val1, mesh->n, fp);
-    fprintf(fp, "%.20f, ", state);
+    fprintf(fp, "%.10f, ", state);
     save_array(mesh->val2, mesh->n, fp);
 }
 
@@ -242,7 +244,7 @@ void save_mesh_state(Mesh *mesh, double state, FILE *fp) {
 void save_mesh(Mesh *mesh) {
     FILE *fp = fopen("../data/mesh.txt", "w+");
     for (int i = 0; i < mesh->n; i++) {
-        fprintf(fp, "%.20f, %.20f, %.20f, %.20f\n", mesh->x[i], mesh->y[i], mesh->val1[i], mesh->val2[i]);
+        fprintf(fp, "%.10f, %.10f, %.10f, %.10f\n", mesh->x[i], mesh->y[i], mesh->val1[i], mesh->val2[i]);
     }
     fclose(fp);
 }
