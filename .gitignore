@@ -50,3 +50,7 @@ Project/data/mesh_u.mp4
 Project/data/mesh_v.mp4
 
 Project/data/mesh_w.gif
+
+Project/utils/__pycache__/differentiate_methods.cpython-36.pyc
+
+Project/utils/__pycache__/polynomial_interpolation.cpython-36.pyc

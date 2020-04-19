@@ -17,9 +17,16 @@ def tangent(theta, radius):
     return U, V
 
 def plot_mesh(filename, plot_type='pcolor', value=1, vector=normal):
-    parameters = literal_eval(open(filename, 'r').readline().strip())
-    xy   = np.loadtxt(filename, delimiter=',', skiprows=1, max_rows=2)
-    data = np.loadtxt(filename, delimiter=',', skiprows=3)
+
+    with open(filename, 'r') as file:
+        for i, _ in enumerate(file):
+            pass
+        n_status = (i - 3) >> 1
+
+    file = open(filename, 'r')
+    parameters = literal_eval(file.readline().strip())
+    xy = np.loadtxt(file, delimiter=',', max_rows=2)
+
     n_x = parameters['n1']
     n_y = parameters['n2']
     x = np.reshape(xy[0, :], (n_x, n_y), order='C')
@@ -27,30 +34,42 @@ def plot_mesh(filename, plot_type='pcolor', value=1, vector=normal):
 
     theta = np.arctan2(y, x)
 
-    status = data[:, 0]
 
-    values = data[:, 1:]
-
-    fig, _ = plt.subplots()
+    fig, ax = plt.subplots()
 
     plt.xlabel('x')
     plt.ylabel('y')
-    plt.xlim([-.15, .15])
-    plt.ylim([-.15, .15])
 
+    vmin = -1
+    vmax =  1
 
-    n_status = len(status[::2])
+    def init():
+        #plt.xlim([-.15, .15])
+        #plt.ylim([-.15, .15])
+        return
 
     def update(i):
-        stat = status[2*i]
-        val_1 = np.reshape(values[2*i, :], (n_x, n_y), order='C')
-        val_2 = np.reshape(values[2*i+1, :], (n_x, n_y), order='C')
+        data = np.loadtxt(file, delimiter=',', max_rows=2)
+        val_1 = data[0, 1:]
+        val_2 = data[1, 1:]
+
+        status = data[0, 0]
 
         val = val_1 if value == 1 else val_2
 
-        plt.title(stat)
+        print(f'Generating frame {i}')
+
+        global vmin, vmax
+
+        if i == 0:
+            vmin = 2 * min(val)
+            vmax = 2 * max(val)
+
+        val = np.reshape(val, (n_x, n_y), order='C')
+
+        plt.title(f't = {status:.5f}s')
         if plot_type == 'pcolor':
-            plot = plt.pcolor(x, y, val, cmap='plasma')
+            plot = plt.pcolor(x, y, val, cmap='plasma', vmin=vmin, vmax=vmax)
         elif plot_type == 'vector':
             U, V = vector(theta, val)
             M = np.hypot(U, V)
@@ -59,10 +78,13 @@ def plot_mesh(filename, plot_type='pcolor', value=1, vector=normal):
             print("Unkwown plot type!")
             os._exit(1)
 
+        if i == 0:
+            fig.colorbar(plot, ax=ax)
+
         # plt.savefig(f'test{i}.svg')
         return plot,
 
-    anim = FuncAnimation(fig, update, frames=range(n_status), blit=False, repeat=True, interval=1000)
+    anim = FuncAnimation(fig, update, frames=range(n_status), blit=False, init_func=init, repeat=True, interval=1000)
     output = os.path.splitext(filename)[0] + '.mp4'
     anim.save(output, writer='ffmpeg', dpi=300)
 

@@ -1,5 +1,6 @@
 import numpy as np
 import math
+from fractions import Fraction
 
 
 def diff(alpha, derivative=1):
@@ -26,4 +27,5 @@ def diff(alpha, derivative=1):
         factor = math.factorial(n) / coef
         order = n - 2
 
+    beta = [Fraction(x).limit_denominator(1000) for x in beta]
     return beta, factor, order
