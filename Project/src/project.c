@@ -264,6 +264,10 @@ int main(int argc, char *argv[]){
         for (int i = 0; i < N_MESH; i++) {
             save_mesh_state(meshes[i], state, files[i]);
         }
+
+        if (ic->n > 2) {
+            break;
+        }
     }
 
     for (int i = 0; i < N_MESH; i++) {
