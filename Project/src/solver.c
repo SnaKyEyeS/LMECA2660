@@ -168,7 +168,7 @@ void compute_omega(MACMesh *mesh) {
                 // v_ghost = (5*v[ind_v_rightx4] - 28*v[ind_v_rightx3] + 70*v[ind_v_rightx2] - 140*v[ind_v_rightx1] + 128*v_wall)/35;
                 // dv_d1 = (-23*v_ghost         + 21*v[ind_v_rightx1]    + 3 *v[ind_v_rightx2] - 1*v[ind_v_rightx3]) / (24*d1);
                 ind_v_rightx4 = index(i, j, mesh->v->n2, 3, 0);
-                dv_d1 = (-71*v[ind_v_rightx1] + 141*v[ind_v_rightx2] - 93*ind[ind_v_rightx3] + 23*v[ind_v_rightx4]) / (24*d1);
+                dv_d1 = (-71*v[ind_v_rightx1] + 141*v[ind_v_rightx2] - 93*v[ind_v_rightx3] + 23*v[ind_v_rightx4]) / (24*d1);
             } else if (i == 1) {
                 dv_d1 = (-23*v[ind_v_leftx1] + 21*v[ind_v_rightx1]    + 3 *v[ind_v_rightx2] - 1*v[ind_v_rightx3]) / (24*d1);
 
@@ -180,7 +180,7 @@ void compute_omega(MACMesh *mesh) {
                 // v_wall = -U_INF * sin(theta) + U_PERT * cos(theta); // TODO: valeur de v_wall en r = R_ext ????
                 // v_ghost = (5*v[ind_v_leftx4] - 28*v[ind_v_leftx3] + 70*v[ind_v_leftx2] - 140*v[ind_v_leftx1] + 128*v_wall)/35;
                 // dv_d1 = (1*  v[ind_v_leftx3] - 3*v[ind_v_leftx2] - 21*v[ind_v_leftx1] + 23*v_ghost           ) / (24*d1);
-                
+
             } else {
                 dv_d1 = (1*  v[ind_v_leftx2] - 27*v[ind_v_leftx1] + 27*v[ind_v_rightx1] - 1*v[ind_v_rightx2]) / (24*d1);
             }
