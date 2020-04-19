@@ -150,7 +150,7 @@ void computeLaplacianMatrix(MACMesh *mesh, Mat A, int rowStart, int rowEnd) {
         if (j < mesh->p->n2-1) {
             form_j_plus = mesh->v->h1[r+1] / mesh->v->h2[r+1];
         } else {
-            form_j_plus = mesh->v->h1[r+1-mesh->p->n2] / mesh->v->h2[r+1-mesh->p->n2];
+            form_j_plus = mesh->v->h1[r+1-mesh->v->n2] / mesh->v->h2[r+1-mesh->v->n2];
         }
 
         phi_i_plus  = form_i_plus  / (h1h2*d1*d1);
