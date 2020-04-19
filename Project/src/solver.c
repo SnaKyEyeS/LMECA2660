@@ -32,11 +32,11 @@ void compute_rhs(MACMesh *mesh, double *result, double dt) {
             dh1_d2 = mesh->p->dh1_d2[ind];
             dh2_d1 = mesh->p->dh2_d1[ind];
 
-            ind_u_left = index(i, j, mesh->u->n2, 0, 0);
-            ind_u_right = index(i, j, mesh->u->n2, 1, 0);
+            ind_u_left      = index(i, j, mesh->u->n2, 0, 0);
+            ind_u_right     = index(i, j, mesh->u->n2, 1, 0);
 
-            ind_v_bottom = index(i, j, mesh->v->n2, 0, 0);
-            ind_v_up = index(i, j, mesh->v->n2, 0, 1);
+            ind_v_bottom    = index(i, j, mesh->v->n2, 0, 0);
+            ind_v_up        = index(i, j, mesh->v->n2, 0, 1);
 
             // Between u(i+1/2, j) and u(i-1/2, j) there is d1 in xi1 distance,
             // so du(i, j) = 1/2 * (u(i+1/2, j) - u(i-1/2, j)) / (d1 / 2).
@@ -97,8 +97,8 @@ void compute_grad_scalar(MACMesh *mesh, double *res_x, double *res_y, GradientTy
             h1 = mesh->u->h1[ind];
             h2 = mesh->u->h2[ind];
 
-            ind_p_left = index(i, j, mesh->p->n2, 0, 0);
-            ind_p_right = index(i, j, mesh->p->n2, 1, 0);
+            ind_p_left = index(i, j, mesh->p->n2, -1, 0);
+            ind_p_right = index(i, j, mesh->p->n2, 0, 0);
 
             res_x[ind] = (field[ind_p_right] - field[ind_p_left]) / (d1*h1);
         }
@@ -111,8 +111,8 @@ void compute_grad_scalar(MACMesh *mesh, double *res_x, double *res_y, GradientTy
             h1 = mesh->v->h1[ind];
             h2 = mesh->v->h2[ind];
 
-            ind_p_bottom = index(i, j, mesh->p->n2, 0, 0);
-            ind_p_up = index(i, j, mesh->p->n2, 0, 1);
+            ind_p_bottom = index(i, j, mesh->p->n2, 0, -1);
+            ind_p_up = index(i, j, mesh->p->n2, 0, 0);
 
             res_y[ind] = (field[ind_p_up] - field[ind_p_bottom]) / (d2*h2);
         }

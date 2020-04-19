@@ -234,8 +234,8 @@ int main(int argc, char *argv[]){
     PoissonData *poisson = (PoissonData *) malloc(sizeof(PoissonData));
     initialize_poisson_solver(poisson, mesh);
 
-    double state = 0.0;     // time
-    double dt    = mesh->dt;   // detla-time
+    double state = 0.0;         // time
+    double dt    = mesh->dt;    // detla-time
     double nu    = NU;
 
     double endState = 1;

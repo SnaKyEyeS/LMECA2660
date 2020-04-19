@@ -11,6 +11,8 @@
 #define U_PERT      0.0
 #define CFL_MAX     0.1
 #define FOURIER_MAX 0.1
+#define RHO_AIR     1.292
+#define RE          550
 #define NU          (1.11e-4)
 
 typedef enum {AIRFOIL, CYLINDER} MappingType;

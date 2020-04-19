@@ -44,8 +44,8 @@ def plot_mesh(filename, plot_type='pcolor', value=1, vector=normal):
     vmax =  1
 
     def init():
-        #plt.xlim([-.15, .15])
-        #plt.ylim([-.15, .15])
+        plt.xlim([-1, 1])
+        plt.ylim([-1, 1])
         return
 
     def update(i):
@@ -64,6 +64,9 @@ def plot_mesh(filename, plot_type='pcolor', value=1, vector=normal):
         if i == 0:
             vmin = 2 * min(val)
             vmax = 2 * max(val)
+            if vmin == vmax:
+                vmin = -1
+                vmax =  1
 
         val = np.reshape(val, (n_x, n_y), order='C')
 
