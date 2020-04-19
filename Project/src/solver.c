@@ -148,17 +148,17 @@ void compute_omega(MACMesh *mesh) {
             dh2_d1 = mesh->w->dh2_d1[ind];
             dh1_d2 = mesh->w->dh1_d2[ind];
 
-            ind_u_upx2 = index(i, j, mesh->u->n2, 0, 1);
-            ind_u_upx1 = index(i, j, mesh->u->n2, 0, 0);
-            ind_u_bottomx1 = index(i, j, mesh->u->n2, 0, -1);
-            ind_u_bottomx2 = index(i, j, mesh->u->n2, 0, -2);
+            ind_u_upx2      = index(i, j, mesh->u->n2, 0, 1);
+            ind_u_upx1      = index(i, j, mesh->u->n2, 0, 0);
+            ind_u_bottomx1  = index(i, j, mesh->u->n2, 0, -1);
+            ind_u_bottomx2  = index(i, j, mesh->u->n2, 0, -2);
 
-            ind_v_rightx3 = index(i, j, mesh->v->n2, 2, 0);
-            ind_v_rightx2 = index(i, j, mesh->v->n2, 1, 0);
-            ind_v_rightx1 = index(i, j, mesh->v->n2, 0, 0);
-            ind_v_leftx1 = index(i, j, mesh->v->n2, -1, 0);
-            ind_v_leftx2 = index(i, j, mesh->v->n2, -2, 0);
-            ind_v_leftx3 = index(i, j, mesh->v->n2, -3, 0);
+            ind_v_rightx3   = index(i, j, mesh->v->n2, 2, 0);
+            ind_v_rightx2   = index(i, j, mesh->v->n2, 1, 0);
+            ind_v_rightx1   = index(i, j, mesh->v->n2, 0, 0);
+            ind_v_leftx1    = index(i, j, mesh->v->n2, -1, 0);
+            ind_v_leftx2    = index(i, j, mesh->v->n2, -2, 0);
+            ind_v_leftx3    = index(i, j, mesh->v->n2, -3, 0);
 
             // 4th order finite differences
             // We use decentered schemes for the wall points
@@ -174,11 +174,15 @@ void compute_omega(MACMesh *mesh) {
             } else if (i == mesh->w->n1-2) {
                 dv_d1 = (1*  v[ind_v_leftx3] - 3*v[ind_v_leftx2] - 21*v[ind_v_leftx1] + 23*v[ind_v_rightx1]) / (24*d1);
             } else if (i == mesh->w->n1-1) {
+                /*
                 ind_v_leftx4 = index(i, j, mesh->v->n2, -4, 0);
                 theta = mesh->w->theta[ind];
                 v_wall = -U_INF * sin(theta) + U_PERT * cos(theta); // TODO: valeur de v_wall en r = R_ext ????
                 v_ghost = (5*v[ind_v_leftx4] - 28*v[ind_v_leftx3] + 70*v[ind_v_leftx2] - 140*v[ind_v_leftx1] + 128*v_wall)/35;
                 dv_d1 = (1*  v[ind_v_leftx3] - 3*v[ind_v_leftx2] - 21*v[ind_v_leftx1] + 23*v_ghost           ) / (24*d1);
+                */
+                mesh->w->val1[ind] = 0.0; // B.C.
+                continue;
 
             } else {
                 dv_d1 = (1*  v[ind_v_leftx2] - 27*v[ind_v_leftx1] + 27*v[ind_v_rightx1] - 1*v[ind_v_rightx2]) / (24*d1);
@@ -225,14 +229,14 @@ void compute_diffusive(MACMesh *mesh, double *res_x, double *res_y, double nu) {
 
     // First, compute the x-composant --> the values at R_e and R_i are not needed
     // (boundary conditions).
-    for (int i = 0; i < mesh->u->n1; i++) {
+    for (int i = 1; i < mesh->u->n1-1; i++) {
         for (int j = 0; j < mesh->u->n2; j++) {
             ind = i*mesh->u->n2 + j;
             h1 = mesh->u->h1[ind];
             h2 = mesh->u->h2[ind];
 
-            ind_w_bottom = index(i, j, mesh->w->n2, 0, 0);
-            ind_w_up = index(i, j, mesh->w->n2, 0, 1);
+            ind_w_bottom    = index(i, j, mesh->w->n2, 0, 0);
+            ind_w_up        = index(i, j, mesh->w->n2, 0, 1);
 
             res_x[ind] = -nu * (w[ind_w_up] - w[ind_w_bottom]) / (d2*h2);
         }
@@ -245,8 +249,8 @@ void compute_diffusive(MACMesh *mesh, double *res_x, double *res_y, double nu) {
             h1 = mesh->v->h1[ind];
             h2 = mesh->v->h2[ind];
 
-            ind_w_left = index(i, j, mesh->w->n2, 0, 0);
-            ind_w_right = index(i, j, mesh->w->n2, 1, 0);
+            ind_w_left      = index(i, j, mesh->w->n2, 0, 0);
+            ind_w_right     = index(i, j, mesh->w->n2, 1, 0);
 
             res_y[ind] = nu * (w[ind_w_right] - w[ind_w_left]) / (d1*h1);
         }
