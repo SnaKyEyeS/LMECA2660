@@ -160,7 +160,7 @@ void computeLaplacianMatrix(MACMesh *mesh, Mat A, int rowStart, int rowEnd) {
 
         if (i == 0) {
             phi =  (form_i_plus)                / (h1h2*d1*d1)
-                  -(form_j_plus - form_j_minus) / (h1h2*d2*d2);
+                  +(form_j_plus - form_j_minus) / (h1h2*d2*d2);
         } else if (i == mesh->p->n1-1) {
             phi =  (            - form_i_minus) / (h1h2*d1*d1)
                   +(form_j_plus - form_j_minus) / (h1h2*d2*d2);
