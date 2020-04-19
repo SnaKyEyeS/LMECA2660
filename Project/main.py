@@ -61,7 +61,7 @@ def plot_mesh(filename, plot_type='pcolor', value=1, vector=normal):
 
         # plt.savefig(f'test{i}.svg')
         return plot,
-    
+
     anim = FuncAnimation(fig, update, frames=range(n_status), blit=False, repeat=True, interval=1000)
     output = os.path.splitext(filename)[0] + '.mp4'
     anim.save(output, writer='ffmpeg', dpi=300)
@@ -92,4 +92,3 @@ if __name__ == '__main__':
         os.system('./run_project.sh')
     if args['plot']:
         plot_mesh(filename, plot_type=plot_type, value=value, vector=vector)
-

@@ -183,6 +183,8 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic) {
     // (2) Poisson solver
 
     poisson_solver(poisson, mesh);
+    save_mesh(mesh->p);
+    exit(1);
 
     // (3) new speeds
 

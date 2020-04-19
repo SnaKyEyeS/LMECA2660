@@ -2,7 +2,7 @@
 data = load("mesh.txt");
 
 n_x = 360; %306
-n_y = 553-1;
+n_y = 306-1;
 
 x = reshape(data(:,1), [n_x, n_y]);
 y = reshape(data(:,2), [n_x, n_y]);
@@ -11,9 +11,19 @@ val2 = reshape(data(:,4), [n_x, n_y]);
 
 figure; hold on;
 % polarplot3d(p);
-surf(x,y,val2, 'EdgeColor', 'none')
+h = surf(x,y,val1);
+set(h, 'EdgeColor', 'none');
 % mesh(x,y,p);
 view(-37.5,30)
+
+%%
+r = sqrt(x.^2 + y.^2);
+t = atan2(y,x);
+
+u =  (1 - .5^2./r.^2).*cos(t);
+v = -(1 + .5^2./r.^2).*sin(t);
+p = -(u.^2 + v.^2)/2;
+
 
 %% Test
 data = load("mesh.txt");
