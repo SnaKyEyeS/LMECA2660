@@ -27,7 +27,7 @@ CylinderMapping *init_cylinder_mapping() {
     mapping->xi2_lim[1] = 2*M_PI;
 
 
-    mapping->L = mapping->D;
+    mapping->Lc = mapping->D;
     return mapping;
 }
 
