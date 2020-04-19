@@ -164,22 +164,23 @@ void compute_omega(MACMesh *mesh) {
             // We use decentered schemes for the wall points
             // and a ghost point whose value is dictated by the BC for v.
             if (i == 0) {
+                // v_wall = 0;
+                // v_ghost = (5*v[ind_v_rightx4] - 28*v[ind_v_rightx3] + 70*v[ind_v_rightx2] - 140*v[ind_v_rightx1] + 128*v_wall)/35;
+                // dv_d1 = (-23*v_ghost         + 21*v[ind_v_rightx1]    + 3 *v[ind_v_rightx2] - 1*v[ind_v_rightx3]) / (24*d1);
                 ind_v_rightx4 = index(i, j, mesh->v->n2, 3, 0);
-                v_wall = 0;
-                v_ghost = (5*v[ind_v_rightx4] - 28*v[ind_v_rightx3] + 70*v[ind_v_rightx2] - 140*v[ind_v_rightx1] + 128*v_wall)/35;
-                dv_d1 = (-23*v_ghost         + 21*v[ind_v_rightx1]    + 3 *v[ind_v_rightx2] - 1*v[ind_v_rightx3]) / (24*d1);
+                dv_d1 = (-71*v[ind_v_rightx1] + 141*v[ind_v_rightx2] - 93*ind[ind_v_rightx3] + 23*v[ind_v_rightx4]) / (24*d1);
             } else if (i == 1) {
                 dv_d1 = (-23*v[ind_v_leftx1] + 21*v[ind_v_rightx1]    + 3 *v[ind_v_rightx2] - 1*v[ind_v_rightx3]) / (24*d1);
 
             } else if (i == mesh->w->n1-2) {
                 dv_d1 = (1*  v[ind_v_leftx3] - 3*v[ind_v_leftx2] - 21*v[ind_v_leftx1] + 23*v[ind_v_rightx1]) / (24*d1);
             } else if (i == mesh->w->n1-1) {
-                ind_v_leftx4 = index(i, j, mesh->v->n2, -4, 0);
-                theta = mesh->w->theta[ind];
-                v_wall = -U_INF * sin(theta) + U_PERT * cos(theta); // TODO: valeur de v_wall en r = R_ext ????
-                v_ghost = (5*v[ind_v_leftx4] - 28*v[ind_v_leftx3] + 70*v[ind_v_leftx2] - 140*v[ind_v_leftx1] + 128*v_wall)/35;
-                dv_d1 = (1*  v[ind_v_leftx3] - 3*v[ind_v_leftx2] - 21*v[ind_v_leftx1] + 23*v_ghost           ) / (24*d1);
-
+                // ind_v_leftx4 = index(i, j, mesh->v->n2, -4, 0);
+                // theta = mesh->w->theta[ind];
+                // v_wall = -U_INF * sin(theta) + U_PERT * cos(theta); // TODO: valeur de v_wall en r = R_ext ????
+                // v_ghost = (5*v[ind_v_leftx4] - 28*v[ind_v_leftx3] + 70*v[ind_v_leftx2] - 140*v[ind_v_leftx1] + 128*v_wall)/35;
+                // dv_d1 = (1*  v[ind_v_leftx3] - 3*v[ind_v_leftx2] - 21*v[ind_v_leftx1] + 23*v_ghost           ) / (24*d1);
+                
             } else {
                 dv_d1 = (1*  v[ind_v_leftx2] - 27*v[ind_v_leftx1] + 27*v[ind_v_rightx1] - 1*v[ind_v_rightx2]) / (24*d1);
             }
@@ -200,7 +201,11 @@ void compute_omega(MACMesh *mesh) {
                 v_avg = (v[ind_v_rightx1] + v[ind_v_leftx1])   / 2;
             }
 
-            mesh->w->val1[ind] = ((h2*dv_d1 + dh2_d1*v_avg) - (h1*du_d2 + dh1_d2*u_avg)) / (h1*h2);
+            if (i == mesh->w->n1-1) {
+                mesh->w->val1[ind] = 0.0;   // Set w = 0 at the outerwall
+            } else {
+                mesh->w->val1[ind] = ((h2*dv_d1 + dh2_d1*v_avg) - (h1*du_d2 + dh1_d2*u_avg)) / (h1*h2);
+            }
         }
     }
 }

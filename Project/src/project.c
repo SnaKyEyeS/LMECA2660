@@ -227,7 +227,7 @@ int main(int argc, char *argv[]){
     PetscInitialize(&argc, &argv, 0, 0);
 
     // Initialize Mesh
-    MACMesh *mesh = init_mac_mesh(AIRFOIL);
+    MACMesh *mesh = init_mac_mesh(CYLINDER);
     IterateCache *ic = initIterateCache(mesh);
 
     // Initialize Poisson solver
@@ -267,7 +267,7 @@ int main(int argc, char *argv[]){
             save_mesh_state(meshes[i], state, files[i]);
         }
 
-        if (ic->n > 2) {
+        if (ic->n > 9) {
             break;
         }
     }
