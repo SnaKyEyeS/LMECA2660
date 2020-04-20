@@ -46,8 +46,10 @@ def plot_mesh(filename, **kwargs):
     vmax =  1
 
     def init():
-        plt.xlim([-1, 1])
-        plt.ylim([-1, 1])
+        if kwargs['limits']:
+            lim = kwargs['limits']
+            plt.xlim([-lim, lim])
+            plt.ylim([-lim, lim])
         return
 
     def update(i):
@@ -126,13 +128,15 @@ parser.add_argument('-save_frames', action='store_true', help='save each frame')
 parser.add_argument('--movie_format', default='.mp4', help='movie save format [.gif/.mp4]')
 parser.add_argument('--frame_format', default='.png', help='frame save format [.png/.svg/...]')
 parser.add_argument('--output_dir', default='plots', help='output directory')
+parser.add_argument('--input_dir', default='data', help='input directory')
+parser.add_argument('--limits', type=int, help='x and y limits, symmetric, positive float or int')
 
 if __name__ == '__main__':
     args = parser.parse_args()
     args = vars(args)
     print(args)
 
-    filename = 'data/' + args['plot'] + '.txt' if args['plot'] else None
+    filename = args['input_dir'] + '/' + args['plot'] + '.txt' if args['plot'] else None
     args['vector'] = normal if args['vector'] == 'normal' else tangent
 
     if args['r']:
