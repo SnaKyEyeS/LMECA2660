@@ -227,7 +227,7 @@ int main(int argc, char *argv[]){
     PetscInitialize(&argc, &argv, 0, 0);
 
     // Initialize Mesh
-    MACMesh *mesh = init_mac_mesh(CYLINDER);
+    MACMesh *mesh = init_mac_mesh(AIRFOIL);
     IterateCache *ic = initIterateCache(mesh);
 
     // Initialize Poisson solver
@@ -262,12 +262,14 @@ int main(int argc, char *argv[]){
 
         state += dt;
 
-        printf("done ! Saving state.\n");
-        for (int i = 0; i < N_MESH; i++) {
-            save_mesh_state(meshes[i], state, files[i]);
+        if (ic->n%100 == 0) {
+            printf("\nSaving state.\n\n");
+            for (int i = 0; i < N_MESH; i++) {
+                save_mesh_state(meshes[i], state, files[i]);
+            }
         }
 
-        if (ic->n > 9) {
+        if (ic->n > 2001) {
             break;
         }
     }
@@ -275,10 +277,6 @@ int main(int argc, char *argv[]){
     for (int i = 0; i < N_MESH; i++) {
         fclose(files[i]);
     }
-
-    // Compute Poisson Solution
-    poisson_solver(poisson, mesh);
-    save_mesh(mesh->p);
 
     // Free memory
     free_mac_mesh(mesh);
