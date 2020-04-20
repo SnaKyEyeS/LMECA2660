@@ -16,12 +16,14 @@ def tangent(theta, radius):
     V = np.cos(theta) * radius
     return U, V
 
-def plot_mesh(filename, plot_type='pcolor', value=1, vector=normal, live=False, no_save=False):
+def plot_mesh(filename, **kwargs):
 
     with open(filename, 'r') as file:
         for i, _ in enumerate(file):
             pass
         n_status = (i - 3) >> 1
+
+    basename = os.path.splitext(os.path.basename(filename))[0]
 
     file = open(filename, 'r')
     parameters = literal_eval(file.readline().strip())
@@ -55,7 +57,7 @@ def plot_mesh(filename, plot_type='pcolor', value=1, vector=normal, live=False, 
 
         status = data[0, 0]
 
-        val = val_1 if value == 1 else val_2
+        val = val_1 if kwargs['value'] == 1 else val_2
 
         print(f'Generating frame {i}')
 
@@ -72,10 +74,10 @@ def plot_mesh(filename, plot_type='pcolor', value=1, vector=normal, live=False, 
         val = np.reshape(val, (n_x, n_y), order='C')
 
         plt.title(f't = {status:.5f}s')
-        if plot_type == 'pcolor':
+        if kwargs['plot_type'] == 'pcolor':
             plot = plt.pcolormesh(x, y, val, cmap='plasma', vmin=vmin, vmax=vmax)
-        elif plot_type == 'vector':
-            U, V = vector(theta, val)
+        elif kwargs['plot_type'] == 'vector':
+            U, V = kwargs['vector'](theta, val)
             M = np.hypot(U, V)
             plot = plt.quiver(x, y, U, V, M)
         else:
@@ -85,29 +87,45 @@ def plot_mesh(filename, plot_type='pcolor', value=1, vector=normal, live=False, 
         if i == 0:
             fig.colorbar(plot, ax=ax)
 
-        # plt.savefig(f'test{i}.svg')
-        return plot,
+        if kwargs['save_frames']:
+            format = kwargs['frame_format']
+            plt.savefig(os.path.join(kwargs['output_dir'], f'{basename}_{i}{format}'))
+        return plot
 
-    anim = FuncAnimation(fig, update, frames=range(n_status), blit=False, init_func=init, repeat=False, interval=1000)
+    anim = FuncAnimation(fig, update, frames=range(n_status), blit=False, init_func=init, repeat=False, interval=kwargs['interval'], cache_frame_data=False)
     
-    if live:
+    if kwargs['live']:
         plt.show()
     
-    if not no_save:
-        output = os.path.splitext(filename)[0] + '.mp4'
-        anim.save(output, writer='ffmpeg', dpi=300)
-        print("Generated a .gif file at", output)
+    if not kwargs['no_save']:
+        if kwargs['movie_format'] == '.mp4':
+            output = os.path.join(kwargs['output_dir'], basename + kwargs['movie_format'])
+            anim.save(output, writer='ffmpeg', dpi=kwargs['dpi'])
+        elif kwargs['movie_format'] == '.gif':
+            output = os.path.splitext(filename)[0] + kwargs['movie_format']
+            anim.save(output, writer='imagemagick', dpi=kwargs['dpi'])
+        else:
+            print("Unkwown movie type!")
+            os._exit(1)
+        
+        print("Generated a {kwargs['movie_format']} file at", output)
 
 
 
 parser = argparse.ArgumentParser(description='Projet data processing.')
 parser.add_argument('-r', action='store_true', help='run the ./run_project.sh')
 parser.add_argument('--plot', help='plot [mesh_u/mesh_v/mesh_w/mesh_p]')
-parser.add_argument('--plot_type', default='pcolor', help='type of the plot [vector/colorx/colorx] where x is the value to be plotted')
-parser.add_argument('--value', default='1', help='value to select [1/2]')
+parser.add_argument('--plot_type', default='pcolor', help='type of the plot [vector/pcolor]')
+parser.add_argument('--value', default='1', type=int, help='value to select [1/2]')
 parser.add_argument('--vector', default='normal', help='vector field orientation [normal/tangent]')
 parser.add_argument('-live', action='store_true', help='plot on the fly')
-parser.add_argument('-no_save', action='store_true', help='don\'t save plot')
+parser.add_argument('-no_save', action='store_true', help='don\'t save the movie of the plot')
+parser.add_argument('--interval', default=1000, type=int, help='frame spacing in milliseconds, do not go below 1000 if live option is set!')
+parser.add_argument('--dpi', default=300, type=int, help='density per inch, relates to quality')
+parser.add_argument('-save_frames', action='store_true', help='save each frame')
+parser.add_argument('--movie_format', default='.mp4', help='movie save format [.gif/.mp4]')
+parser.add_argument('--frame_format', default='.png', help='frame save format [.png/.svg/...]')
+parser.add_argument('--output_dir', default='plots', help='output directory')
 
 if __name__ == '__main__':
     args = parser.parse_args()
@@ -115,13 +133,9 @@ if __name__ == '__main__':
     print(args)
 
     filename = 'data/' + args['plot'] + '.txt' if args['plot'] else None
-    plot_type = args['plot_type']
-    value = int(args['value'])
-    vector = normal if args['vector'] == 'normal' else tangent
-    live = args['live']
-    no_save = args['no_save']
+    args['vector'] = normal if args['vector'] == 'normal' else tangent
 
     if args['r']:
         os.system('./run_project.sh')
     if args['plot']:
-        plot_mesh(filename, plot_type=plot_type, value=value, vector=vector, live=live, no_save=no_save)
+        plot_mesh(filename, **args)
