@@ -16,7 +16,7 @@ def tangent(theta, radius):
     V = np.cos(theta) * radius
     return U, V
 
-def plot_mesh(filename, plot_type='pcolor', value=1, vector=normal):
+def plot_mesh(filename, plot_type='pcolor', value=1, vector=normal, live=False, no_save=False):
 
     with open(filename, 'r') as file:
         for i, _ in enumerate(file):
@@ -62,17 +62,18 @@ def plot_mesh(filename, plot_type='pcolor', value=1, vector=normal):
         global vmin, vmax
 
         if i == 0:
-            vmin = 2 * min(val)
-            vmax = 2 * max(val)
+            vmin = 20 * min(val)
+            vmax = 20 * max(val)
             if vmin == vmax:
                 vmin = -1
                 vmax =  1
+        vmin = vmax = None
 
         val = np.reshape(val, (n_x, n_y), order='C')
 
         plt.title(f't = {status:.5f}s')
         if plot_type == 'pcolor':
-            plot = plt.pcolor(x, y, val, cmap='plasma', vmin=vmin, vmax=vmax)
+            plot = plt.pcolormesh(x, y, val, cmap='plasma', vmin=vmin, vmax=vmax)
         elif plot_type == 'vector':
             U, V = vector(theta, val)
             M = np.hypot(U, V)
@@ -87,12 +88,15 @@ def plot_mesh(filename, plot_type='pcolor', value=1, vector=normal):
         # plt.savefig(f'test{i}.svg')
         return plot,
 
-    anim = FuncAnimation(fig, update, frames=range(n_status), blit=False, init_func=init, repeat=True, interval=1000)
-    output = os.path.splitext(filename)[0] + '.mp4'
-    anim.save(output, writer='ffmpeg', dpi=300)
-
-
-    print("Generated a .gif file at", output)
+    anim = FuncAnimation(fig, update, frames=range(n_status), blit=False, init_func=init, repeat=False, interval=1000)
+    
+    if live:
+        plt.show()
+    
+    if not no_save:
+        output = os.path.splitext(filename)[0] + '.mp4'
+        anim.save(output, writer='ffmpeg', dpi=300)
+        print("Generated a .gif file at", output)
 
 
 
@@ -102,6 +106,8 @@ parser.add_argument('--plot', help='plot [mesh_u/mesh_v/mesh_w/mesh_p]')
 parser.add_argument('--plot_type', default='pcolor', help='type of the plot [vector/colorx/colorx] where x is the value to be plotted')
 parser.add_argument('--value', default='1', help='value to select [1/2]')
 parser.add_argument('--vector', default='normal', help='vector field orientation [normal/tangent]')
+parser.add_argument('-live', action='store_true', help='plot on the fly')
+parser.add_argument('-no_save', action='store_true', help='don\'t save plot')
 
 if __name__ == '__main__':
     args = parser.parse_args()
@@ -112,8 +118,10 @@ if __name__ == '__main__':
     plot_type = args['plot_type']
     value = int(args['value'])
     vector = normal if args['vector'] == 'normal' else tangent
+    live = args['live']
+    no_save = args['no_save']
 
     if args['r']:
         os.system('./run_project.sh')
     if args['plot']:
-        plot_mesh(filename, plot_type=plot_type, value=value, vector=vector)
+        plot_mesh(filename, plot_type=plot_type, value=value, vector=vector, live=live, no_save=no_save)
