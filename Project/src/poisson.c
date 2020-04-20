@@ -152,6 +152,10 @@ void computeLaplacianMatrix(MACMesh *mesh, Mat A, int rowStart, int rowEnd) {
     for (int i = 0; i < mesh->p->n1; i++) {
         for (int j = 0; j < mesh->p->n2; j++) {
             ind = i * mesh->p->n2 + j;
+            if (ind == 0) {
+                MatSetValue(A, ind, ind, 1.0, INSERT_VALUES);
+                continue;
+            }
 
             ind_phi_left    = index(i, j, mesh->p->n2, -1, 0);
             ind_phi_right   = index(i, j, mesh->p->n2, 1, 0);
@@ -160,7 +164,7 @@ void computeLaplacianMatrix(MACMesh *mesh, Mat A, int rowStart, int rowEnd) {
 
             ind_u_left      = index(i, j, mesh->u->n2, 0, 0);
             ind_u_right     = index(i, j, mesh->u->n2, 1, 0);
-        
+
             ind_v_bottom    = index(i, j, mesh->v->n2, 0, 0);
             ind_v_up        = index(i, j, mesh->v->n2, 0, 1);
 
@@ -177,8 +181,8 @@ void computeLaplacianMatrix(MACMesh *mesh, Mat A, int rowStart, int rowEnd) {
             phi_left    = form_left     * i_den;
             phi_up      = form_up       * j_den;
             phi_bottom  = form_bottom   * j_den;
-        
-        
+
+
             if (i == 0) {
                 phi =   -(form_right                    ) * i_den
                         -(form_up       + form_bottom   ) * j_den;
@@ -243,11 +247,11 @@ PetscErrorCode initialize_poisson_solver(PoissonData* data, MACMesh *mesh) {
     CHKERRQ(ierr);
 
     /* Singular matrix */
-    MatNullSpace nullspace;
-    MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, 0, &nullspace);
-    MatSetNullSpace(data->A, nullspace);
-    MatSetTransposeNullSpace(data->A, nullspace);
-    MatNullSpaceDestroy(&nullspace);
+    // MatNullSpace nullspace;
+    // MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, 0, &nullspace);
+    // MatSetNullSpace(data->A, nullspace);
+    // MatSetTransposeNullSpace(data->A, nullspace);
+    // MatNullSpaceDestroy(&nullspace);
 
     /* Create the Krylov context */
     KSPCreate(PETSC_COMM_WORLD, &(data->sles));

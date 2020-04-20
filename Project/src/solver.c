@@ -27,6 +27,11 @@ void compute_rhs(MACMesh *mesh, double *result, double dt) {
     for (int i = 0; i < mesh->p->n1; i++) {
         for (int j = 0; j < mesh->p->n2; j++) {
             ind = i*mesh->p->n2 + j;
+
+            if (ind == 0) {
+                result[ind] = 0.0;
+            }
+
             h1 = mesh->p->h1[ind];
             h2 = mesh->p->h2[ind];
             dh1_d2 = mesh->p->dh1_d2[ind];
