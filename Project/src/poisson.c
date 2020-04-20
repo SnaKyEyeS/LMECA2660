@@ -54,7 +54,7 @@ void poisson_solver(PoissonData *data, MACMesh *mesh)
     /*Solve the linear system of equations */
     KSPSolve(sles, b, x);
     KSPGetIterationNumber(sles, &its);
-    PetscPrintf(PETSC_COMM_WORLD, "Solution to Poisson eqn in %d iterations \n", its);
+    PetscPrintf(PETSC_COMM_WORLD, " \tPoisson solved in %d iterations.\n", its);
 
     VecGetArray(x, &sol);
 
@@ -184,10 +184,10 @@ void computeLaplacianMatrix(MACMesh *mesh, Mat A, int rowStart, int rowEnd) {
 
 
             if (i == 0) {
-                phi =   -(form_right                    ) * i_den
+                phi =   -(form_right    + 0.0           ) * i_den
                         -(form_up       + form_bottom   ) * j_den;
             } else if (i == mesh->p->n1-1) {
-                phi =   -(              + form_left     ) * i_den
+                phi =   -(0.0           + form_left     ) * i_den
                         -(form_up       + form_bottom   ) * j_den;
             } else {
                 phi =   -(form_right    + form_left     ) * i_den
