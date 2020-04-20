@@ -30,6 +30,7 @@ void compute_rhs(MACMesh *mesh, double *result, double dt) {
 
             if (ind == 0) {
                 result[ind] = 0.0;
+                continue;
             }
 
             h1 = mesh->p->h1[ind];

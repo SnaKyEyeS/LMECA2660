@@ -129,7 +129,7 @@ parser.add_argument('--movie_format', default='.mp4', help='movie save format [.
 parser.add_argument('--frame_format', default='.png', help='frame save format [.png/.svg/...]')
 parser.add_argument('--output_dir', default='plots', help='output directory')
 parser.add_argument('--input_dir', default='data', help='input directory')
-parser.add_argument('--limits', type=int, help='x and y limits, symmetric, positive float or int')
+parser.add_argument('--limits', type=float, help='x and y limits, symmetric, positive float or int')
 
 if __name__ == '__main__':
     args = parser.parse_args()
