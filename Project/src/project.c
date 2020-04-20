@@ -240,6 +240,8 @@ int main(int argc, char *argv[]){
 
     double endState = 1;
 
+    int every_n = 10;
+
     printf("Opening files\n");
     Mesh *meshes[N_MESH] = {mesh->w, mesh->u, mesh->v, mesh->p};
     FILE *files[N_MESH]  = {
@@ -262,15 +264,15 @@ int main(int argc, char *argv[]){
 
         state += dt;
 
-        if (ic->n%100 == 0) {
-            printf("\nSaving state.\n\n");
+        if (ic->n % every_n == 0) {
+            printf("Saving state.\n");
             for (int i = 0; i < N_MESH; i++) {
                 save_mesh_state(meshes[i], state, files[i]);
             }
-        }
 
-        if (ic->n > 2001) {
-            break;
+            if (ic->n > 900) {
+                break;
+            }
         }
     }
 
