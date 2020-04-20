@@ -9,8 +9,8 @@
 #define N_MESH 4
 #define U_INF       1.0
 #define U_PERT      0.0
-#define CFL_MAX     1
-#define FOURIER_MAX 1
+#define CFL_MAX     0.1
+#define FOURIER_MAX 0.1
 #define RHO_AIR     1.292
 #define RE          550
 #define NU          (1.11e-4)
