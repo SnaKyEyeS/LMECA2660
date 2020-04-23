@@ -15,7 +15,6 @@ void compute_rhs(MACMesh *mesh, double *result, double dt) {
     double *v_star = mesh->v->val2;
 
     int ind;
-
     int ind_u_left, ind_u_right;
     int ind_v_bottom, ind_v_up;
 
@@ -28,10 +27,10 @@ void compute_rhs(MACMesh *mesh, double *result, double dt) {
         for (int j = 0; j < mesh->p->n2; j++) {
             ind = i*mesh->p->n2 + j;
 
-            if (ind == 0) {
-                result[ind] = 0.0;
-                continue;
-            }
+            // if (ind == 0) {
+            //     result[ind] = 0.0;
+            //     continue;
+            // }
 
             h1 = mesh->p->h1[ind];
             h2 = mesh->p->h2[ind];
