@@ -2,7 +2,7 @@
 data = load("mesh.txt");
 
 n_x = 360; %306
-n_y = 306-1;
+n_y = 553;
 
 x = reshape(data(:,1), [n_x, n_y]);
 y = reshape(data(:,2), [n_x, n_y]);
@@ -11,7 +11,7 @@ val2 = reshape(data(:,4), [n_x, n_y]);
 
 figure; hold on;
 % polarplot3d(p);
-h = surf(x,y,val1);
+h = surf(x,y,val2);
 set(h, 'EdgeColor', 'none');
 % mesh(x,y,p);
 view(-37.5,30)
@@ -26,9 +26,13 @@ p = -(u.^2 + v.^2)/2;
 
 
 %% Test
+n_x = 360;
+n_y = 553;
+
 data = load("mesh.txt");
 x = reshape(data(:,1), [n_x, n_y]);
 y = reshape(data(:,2), [n_x, n_y]);
+val2 = reshape(data(:,4), [n_x, n_y]);
 r0 = .5;
 r1 = 50 + r0;
 
@@ -74,6 +78,49 @@ eq5 = v_wall == e;
 S = solve([eq1 eq2 eq3 eq4 eq5], [a b c d e]);
 
 sol = simplify(S.a*(-h/2)^4 + S.b*(-h/2)^3 + S.c*(-h/2)^2 + S.d*(-h/2)^1 + S.e)
+
+%% Plot live data
+figure;
+
+fid = fopen('mesh_p.txt', 'rt');
+data = textscan(fid, "{'n': %d, 'n1': %d, 'n2': %d, 'd1': %f, 'd2': %f}");
+n = cell2mat(data(1));
+n1 = cell2mat(data(2));
+n2 = cell2mat(data(3));
+
+x = reshape(cell2mat(textscan(fid, repmat('%f,', 1, n))), n2, n1);
+y = reshape(cell2mat(textscan(fid, repmat('%f,', 1, n))), n2, n1);
+
+
+while ~feof(fid)
+    data = cell2mat(textscan(fid, repmat('%f,', 1, n+1)));
+    t = data(1);
+    data = reshape(data(2:end), n2, n1);
+    
+    h = pcolor(x,y,data);
+    set(h, 'edgecolor', 'none');
+    title(t)
+    colorbar;
+    drawnow;
+%     pause;
+end
+
+%% Test zone
+
+data = load('mesh.txt');
+n1 = 553;
+n2 = 360;
+
+x = reshape(data(:,1), [n2, n1]);
+y = reshape(data(:,2), [n2, n1]);
+val = reshape(data(:,4), [n2, n1]);
+
+
+f = 2*(x+y);
+figure; hold on;
+surf(x,y,val, 'EdgeColor', 'none')
+view(-37.5,30)
+
 
 
 

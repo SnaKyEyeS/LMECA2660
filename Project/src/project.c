@@ -183,8 +183,6 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic) {
     // (2) Poisson solver
 
     poisson_solver(poisson, mesh);
-    // save_mesh(mesh->p);
-    // exit(1);
 
     // (3) new speeds
 
@@ -234,15 +232,45 @@ int main(int argc, char *argv[]){
     PoissonData *poisson = (PoissonData *) malloc(sizeof(PoissonData));
     initialize_poisson_solver(poisson, mesh);
 
+
+    // TEST ZONE
+    double r, theta, x, y;
+    double R = 0.5;
+    double H = 50;
+    double n = 2;
+
+    for (int ind = 0; ind < mesh->u->n; ind++) {
+        //init u
+        mesh->u->val2[ind] = mesh->u->x[ind] * mesh->u->x[ind];
+    }
+
+    for (int ind = 0; ind < mesh->v->n; ind++) {
+        //init v
+        mesh->v->val2[ind] = mesh->v->y[ind] * mesh->v->y[ind];
+    }
+
+    compute_rhs(mesh, mesh->p->val2, 1.0);
+
+    printf("%d\n", mesh->v->n1);
+    printf("%d\n", mesh->v->n2);
+    save_mesh(mesh->v);
+    exit(1);
+    // TEST ZONE
+
+
     double state = 0.0;         // time
     double dt    = mesh->dt;    // detla-time
     double nu    = NU;
 
     double endState = 1;
 
+<<<<<<< HEAD
     int max_n = 900;
 
     int every_n = 50;
+=======
+    int every_n = 1;
+>>>>>>> master
 
     printf("Opening files\n");
     Mesh *meshes[N_MESH] = {mesh->w, mesh->u, mesh->v, mesh->p};
@@ -272,7 +300,11 @@ int main(int argc, char *argv[]){
                 save_mesh_state(meshes[i], state, files[i]);
             }
 
+<<<<<<< HEAD
             if (ic->n > max_n) {
+=======
+            if (ic->n > 50) {
+>>>>>>> master
                 break;
             }
         }
