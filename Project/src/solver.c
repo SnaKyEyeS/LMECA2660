@@ -54,7 +54,7 @@ void compute_rhs(MACMesh *mesh, double *result, double dt) {
  *  On the border, we do not calculate those values: the velocities are known,
  *  therefore we do not need it.
  */
-void compute_grad_scalar(MACMesh *mesh, double *res_x, double *res_y, GradientType type) {
+void compute_grad(MACMesh *mesh, double *res_x, double *res_y, GradientType type) {
     double *field;
     switch (type) {
         case PRESSURE:
@@ -87,7 +87,7 @@ void compute_grad_scalar(MACMesh *mesh, double *res_x, double *res_y, GradientTy
             h1 = mesh->u->h1[ind];
             h2 = mesh->u->h2[ind];
 
-            ind_p_left = index(i, j, mesh->p->n2, -1, 0);
+            ind_p_left  = index(i, j, mesh->p->n2, -1, 0);
             ind_p_right = index(i, j, mesh->p->n2, 0, 0);
 
             res_x[ind] = (field[ind_p_right] - field[ind_p_left]) / (d1*h1);

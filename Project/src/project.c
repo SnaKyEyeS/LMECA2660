@@ -126,7 +126,7 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic) {
     // (1) Compute H, grad_P and nu_lapl
     compute_h(mesh, new_h_x, new_h_y);
     compute_diffusive(mesh, nu_lapl_u_x, nu_lapl_u_y, nu);
-    compute_grad_scalar(mesh, grad_P_x, grad_P_y, PRESSURE);
+    compute_grad(mesh, grad_P_x, grad_P_y, PRESSURE);
 
     // If first iteration, we use euler explicit
     if (ic->n == 0) {
@@ -186,7 +186,7 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic) {
 
     // (3) new speeds
 
-    compute_grad_scalar(mesh, grad_Phi_x, grad_Phi_y, PHI);
+    compute_grad(mesh, grad_Phi_x, grad_Phi_y, PHI);
 
     // u
     for (int i = 1; i < mesh->u->n1-1; i++) {
