@@ -16,49 +16,34 @@ void compute_rhs(MACMesh *mesh, double *result, double dt) {
 
     int ind;
     int ind_u_left, ind_u_right;
-    int ind_v_bottom, ind_v_up;
+    int ind_v_up, ind_v_down;
 
     double d1 = mesh->p->d1;
     double d2 = mesh->p->d2;
-    double u_ij, v_ij;
-    double du_d1, dv_d2;
-    double h1, h2, dh1_d2, dh2_d1;
+
+    double h1, h2;
+    double h2_left, h2_right;
+    double h1_up, h1_down;
+
     for (int i = 0; i < mesh->p->n1; i++) {
         for (int j = 0; j < mesh->p->n2; j++) {
             ind = i*mesh->p->n2 + j;
 
-            // if (ind == 0) {
-            //     result[ind] = 0.0;
-            //     continue;
-            // }
+            ind_u_left  = index(i, j, mesh->u->n2, 0, 0);
+            ind_u_right = index(i, j, mesh->u->n2, 1, 0);
+
+            ind_v_down  = index(i, j, mesh->v->n2, 0, 0);
+            ind_v_up    = index(i, j, mesh->v->n2, 0, 1);
 
             h1 = mesh->p->h1[ind];
             h2 = mesh->p->h2[ind];
-            dh1_d2 = mesh->p->dh1_d2[ind];
-            dh2_d1 = mesh->p->dh2_d1[ind];
+            h2_left  = mesh->u->h2[ind_u_left];
+            h2_right = mesh->u->h2[ind_u_right];
+            h1_up    = mesh->v->h1[ind_v_up];
+            h1_down  = mesh->v->h1[ind_v_down];
 
-            ind_u_left      = index(i, j, mesh->u->n2, 0, 0);
-            ind_u_right     = index(i, j, mesh->u->n2, 1, 0);
-
-            ind_v_bottom    = index(i, j, mesh->v->n2, 0, 0);
-            ind_v_up        = index(i, j, mesh->v->n2, 0, 1);
-
-            // Between u(i+1/2, j) and u(i-1/2, j) there is d1 in xi1 distance,
-            // so du(i, j) = 1/2 * (u(i+1/2, j) - u(i-1/2, j)) / (d1 / 2).
-            // Same applies in xi2 direction.
-
-            // Compute du*/dxi1
-            du_d1 = (u_star[ind_u_right] - u_star[ind_u_left]) / d1;
-
-            // Compute dv*/dxi2
-            dv_d2 = (v_star[ind_v_up] - v_star[ind_v_bottom]) / d2;
-
-            // Compute u_ij & v_ij, the means of speeds are +-1/2 the current index
-            u_ij = (u_star[ind_u_right] + u_star[ind_u_left])   / 2.0;
-            v_ij = (v_star[ind_v_up]    + v_star[ind_v_bottom]) / 2.0;
-
-            // Compute the complete term
-            result[ind] = ((h2*du_d1 + dh2_d1*u_ij) + (h1*dv_d2 + dh1_d2*v_ij)) / (h1*h2*dt);
+            result[ind] = ((h2_right*u_star[ind_u_right] - h2_left*u_star[ind_u_left]) / d1
+                         + (h1_up*v_star[ind_v_up]       - h1_down*v_star[ind_v_down]) / d2) / (h1*h2*dt);
         }
     }
 }
