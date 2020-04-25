@@ -180,8 +180,10 @@ void compute_omega(MACMesh *mesh) {
                                 -  3*v[ind_v_left_2] *h2_left_2  +  1*v[ind_v_left_3]*h2_left_3) / (24*d1);
 
             } else if (i == mesh->w->n1-1) {
-                diff_h2_v_d1 = (  71*v[ind_v_left_1]*h2_left_1 - 141*v[ind_v_left_2]*h2_left_2
-                                + 93*v[ind_v_left_3]*h2_left_3 - 23 *v[ind_v_left_4]*h2_left_4) / (24*d1);
+                // diff_h2_v_d1 = (  71*v[ind_v_left_1]*h2_left_1 - 141*v[ind_v_left_2]*h2_left_2
+                //                 + 93*v[ind_v_left_3]*h2_left_3 - 23 *v[ind_v_left_4]*h2_left_4) / (24*d1);
+                mesh->w->val1[ind] = 0.0;
+                continue;
 
             } else {
                 diff_h2_v_d1 = (  1*v[ind_v_left_2] *h2_left_2  - 27*v[ind_v_left_1] *h2_left_1
@@ -303,7 +305,6 @@ void compute_diffusive(MACMesh *mesh, double *res_x, double *res_y, double nu) {
     for (int i = 1; i < mesh->u->n1-1; i++) {
         for (int j = 0; j < mesh->u->n2; j++) {
             ind = i*mesh->u->n2 + j;
-            h1 = mesh->u->h1[ind];
             h2 = mesh->u->h2[ind];
 
             ind_w_bottom    = index(i, j, mesh->w->n2, 0, 0);
@@ -318,7 +319,6 @@ void compute_diffusive(MACMesh *mesh, double *res_x, double *res_y, double nu) {
         for (int j = 0; j < mesh->v->n2; j++) {
             ind = i*mesh->v->n2 + j;
             h1 = mesh->v->h1[ind];
-            h2 = mesh->v->h2[ind];
 
             ind_w_left      = index(i, j, mesh->w->n2, 0, 0);
             ind_w_right     = index(i, j, mesh->w->n2, 1, 0);

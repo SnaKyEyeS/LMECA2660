@@ -106,20 +106,50 @@ while ~feof(fid)
 end
 
 %% Test zone
+close all;
 
 data = load('mesh.txt');
-n1 = 553;
+n1 = 554;
 n2 = 360;
 
 x = reshape(data(:,1), [n2, n1]);
 y = reshape(data(:,2), [n2, n1]);
+r = sqrt(x.^2 + y.^2);
+theta = atan2(y,x);
 val = reshape(data(:,4), [n2, n1]);
 
+f =  7*r.*sin(theta) - 2*cos(theta);
 
-f = 2*(x+y);
 figure; hold on;
 surf(x,y,val, 'EdgeColor', 'none')
 view(-37.5,30)
+
+figure; hold on;
+surf(x,y,f, 'EdgeColor', 'none')
+view(-37.5,30)
+
+figure; hold on;
+surf(x,y,abs(f-val), 'EdgeColor', 'none')
+view(-37.5,30)
+
+
+%% Compute the vector Laplacian
+syms r theta
+
+vr = r*r*r*sin(theta);
+vtheta = r*r*sin(theta);
+
+lapl_r = diff(vr, r, 2) + diff(vr, theta, 2)/r^2 + diff(vr, r, 1)/r - 2*diff(vtheta, theta, 1)/r^2 - vr/r^2;
+disp(simplify(lapl_r))
+
+lapl_theta = 
+
+
+
+
+
+
+
 
 
 
