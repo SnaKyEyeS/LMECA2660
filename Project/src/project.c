@@ -320,13 +320,8 @@ int main(int argc, char *argv[]){
 
     double endState = 1;
 
-<<<<<<< HEAD
-    int max_n = 900;
-
-    int every_n = 50;
-=======
     int every_n = 1;
->>>>>>> master
+    int end_n = 10;
 
     printf("Opening files\n");
     Mesh *meshes[N_MESH] = {mesh->w, mesh->u, mesh->v, mesh->p};
@@ -356,11 +351,7 @@ int main(int argc, char *argv[]){
                 save_mesh_state(meshes[i], state, files[i]);
             }
 
-<<<<<<< HEAD
-            if (ic->n > max_n) {
-=======
-            if (ic->n > 50) {
->>>>>>> master
+            if (ic->n == end_n) {
                 break;
             }
         }
