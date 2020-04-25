@@ -371,7 +371,7 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
     // boundary conditions, thus are imposed.
     double du_d1, du_d2, v_avg;
     double r, r_1, r_2;
-    double theta, theta_1, theta_2;
+    double theta_1, theta_2;
     for (int i = 1; i < mesh->u->n1-1; i++) {
         for (int j = 0; j < mesh->u->n2; j++) {
             // We compute the indexes
@@ -448,13 +448,27 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
             dh2_d1 = mesh->v->dh2_d1[ind];
             dh1_d2 = mesh->v->dh1_d2[ind];
 
+            r   = hypot(mesh->v->x[ind],                mesh->v->y[ind]);
+            r_1 = hypot(mesh->u->x[ind_u_bottom_left],  mesh->u->y[ind_u_bottom_left]);
+            r_2 = hypot(mesh->u->x[ind_u_bottom_right], mesh->u->y[ind_u_bottom_right]);
+
+            theta   = mesh->v->theta[ind];
+            theta_1 = mesh->u->theta[ind_u_bottom_left];
+            theta_2 = mesh->u->theta[ind_u_up_left];
+
             if (i == 0) {                                   // If at r = Ri
                 ind_v_right_right = index(i, j, mesh->v->n2, 2, 0);
                 v_ghost_left = -(v[ind_v_right_right] - 5*v[ind_v_right] + 15*v[ind] - 16*0)/5;   // We want v_wall = 0 !
                 dv_d1 = (v[ind_v_right] - v_ghost_left)    / (2*d1);
                 dv_d2 = (v[ind_v_up]    - v[ind_v_bottom]) / (2*d2);
-                u_avg = (   0.0      + u[ind_u_bottom_right]
-                        +   0.0      + u[ind_u_up_right]    ) / 4;
+                // Order is important !
+                double U[4] = {
+                    0.0,
+                    0.0,
+                    u[ind_u_up_right],
+                    u[ind_u_bottom_right]
+                };
+                u_avg = interpolate2D(r_1, r_2, theta_1, theta_2, U, r, theta);
             }
             // need to check the interpolation (I took the opposite of that of the left wall)
             // and the wall velocity for v !
@@ -466,14 +480,26 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
                 v_ghost_right = -(v[ind_v_left_left] - 5*v[ind_v_left] + 15*v[ind] - 16*v_wall_right)/5;
                 dv_d1 = (v_ghost_right - v[ind_v_left])   / (2*d1);
                 dv_d2 = (v[ind_v_up]   - v[ind_v_bottom]) / (2*d2);
-                u_avg = (   u[ind_u_bottom_left]  + u[ind_u_bottom_right]
-                        +   u[ind_u_up_left]      + u[ind_u_up_right]    ) / 4;
+                // Order is important !
+                double U[4] = {
+                    0.0,
+                    0.0,
+                    u[ind_u_up_right],
+                    u[ind_u_bottom_right]
+                };
+                u_avg = interpolate2D(r_1, r_2, theta_1, theta_2, U, r, theta);
             }
             else {
                 dv_d1 = (v[ind_v_right] - v[ind_v_left]) / (2*d1);
                 dv_d2 = (v[ind_v_up]           - v[ind_v_bottom])           / (2*d2);
-                u_avg = (   u[ind_u_bottom_left]  + u[ind_u_bottom_right]
-                        +   u[ind_u_up_left]      + u[ind_u_up_right]    ) / 4;
+                // Order is important !
+                double U[4] = {
+                    0.0,
+                    0.0,
+                    u[ind_u_up_right],
+                    u[ind_u_bottom_right]
+                };
+                u_avg = interpolate2D(r_1, r_2, theta_1, theta_2, U, r, theta);
             }
 
             res_y[ind] = u_avg*dv_d1/h1 + v[ind]*dv_d2/h2 + u_avg*(v[ind]*dh2_d1 - u_avg*dh1_d2)/(h1*h2);
