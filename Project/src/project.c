@@ -305,11 +305,29 @@ int main(int argc, char *argv[]){
     // compute_diffusive(mesh, mesh->u->val2, mesh->v->val2, 1);
 
     // Test for compute_h
+    for (int ind = 0; ind < mesh->u->n; ind++) {
+        x = mesh->u->x[ind];
+        y = mesh->u->y[ind];
+        r = sqrt(x*x + y*y);
+        theta = mesh->u->theta[ind];
 
-    // printf("%d\n", mesh->v->n1);
-    // printf("%d\n", mesh->v->n2);
-    // save_mesh(mesh->v);
-    // exit(1);
+        mesh->u->val1[ind] = r*sin(theta)/2;
+    }
+    for (int ind = 0; ind < mesh->v->n; ind++) {
+        x = mesh->v->x[ind];
+        y = mesh->v->y[ind];
+        r = sqrt(x*x + y*y);
+        theta = mesh->v->theta[ind];
+
+        mesh->v->val1[ind] = r*cos(theta);
+    }
+    compute_h(mesh, mesh->u->val2, mesh->v->val1);
+
+
+    printf("%d\n", mesh->u->n1);
+    printf("%d\n", mesh->u->n2);
+    save_mesh(mesh->u);
+    exit(1);
     // TEST ZONE
 
 
@@ -320,7 +338,7 @@ int main(int argc, char *argv[]){
     double endState = 1;
 
     int every_n = 1;
-    int max_n = 10;
+    int end_n = 20;
 
     printf("Opening files\n");
     Mesh *meshes[N_MESH] = {mesh->w, mesh->u, mesh->v, mesh->p};
