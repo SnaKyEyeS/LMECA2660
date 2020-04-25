@@ -236,9 +236,6 @@ int main(int argc, char *argv[]){
 
     // TEST ZONE
     double r, theta, x, y;
-    double R = 0.5;
-    double H = 50;
-    double n = 2;
 
     // Test for compute_rhs /!\ check it is well val2
     // for (int ind = 0; ind < mesh->u->n; ind++) {
@@ -295,6 +292,7 @@ int main(int argc, char *argv[]){
     
     compute_diffusive(mesh, mesh->u->val2, mesh->v->val2, 1);
 
+
     printf("%d\n", mesh->u->n1);
     printf("%d\n", mesh->u->n2);
     save_mesh(mesh->u);
@@ -309,7 +307,7 @@ int main(int argc, char *argv[]){
     double endState = 1;
 
     int every_n = 1;
-    int max_n = 10;
+    int end_n = 20;
 
     printf("Opening files\n");
     Mesh *meshes[N_MESH] = {mesh->w, mesh->u, mesh->v, mesh->p};
