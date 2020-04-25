@@ -4,6 +4,7 @@
 #include "mesh.h"
 #include "stdio.h"
 #include "solver.h"
+#include "debug.h"
 
 typedef struct {
     int n;          // Current iteration
@@ -289,22 +290,9 @@ int main(int argc, char *argv[]){
     // compute_omega(mesh);
 
     // Test for compute_diffusive (laplacian)
-    for (int ind = 0; ind < mesh->u->n; ind++) {
-        x = mesh->u->x[ind];
-        y = mesh->u->y[ind];
-        r = sqrt(x*x + y*y);
-        theta = mesh->u->theta[ind];
 
-        mesh->u->val1[ind] = r*r*r*sin(theta);
-    }
-    for (int ind = 0; ind < mesh->v->n; ind++) {
-        x = mesh->v->x[ind];
-        y = mesh->v->y[ind];
-        r = sqrt(x*x + y*y);
-        theta = mesh->v->theta[ind];
-
-        mesh->v->val1[ind] = r*r*sin(theta);
-    }
+    set_speed(mesh, solenoidal_speed);
+    
     compute_diffusive(mesh, mesh->u->val2, mesh->v->val2, 1);
 
     printf("%d\n", mesh->u->n1);

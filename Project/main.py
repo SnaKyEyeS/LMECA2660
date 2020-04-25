@@ -6,6 +6,37 @@ import argparse
 import os
 from ast import literal_eval
 
+def read_file(filename):
+
+    with open(filename, 'r') as file:
+        for i, _ in enumerate(file):
+            pass
+        n_status = (i - 3) >> 1
+
+    file = open(filename, 'r')
+    parameters = literal_eval(file.readline().strip())
+    xy = np.loadtxt(file, delimiter=',', max_rows=2)
+
+    n_x = parameters['n1']
+    n_y = parameters['n2']
+    x = np.reshape(xy[0, :], (n_x, n_y), order='C')
+    y = np.reshape(xy[1, :], (n_x, n_y), order='C')
+
+    def data_generator(n):
+        count = 0
+        while count < n:
+            data = np.loadtxt(file, delimiter=',', max_rows=2)
+            val_1 = data[0, 1:]
+            val_2 = data[1, 1:]
+
+            status = data[0, 0]
+
+            yield status, val_1, val_2
+            count += 1
+        file.close()
+
+    return n_x, n_y, x, y, n_status, data_generator(n_status)
+
 def normal(theta, radius):
     U = np.cos(theta) * radius
     V = np.sin(theta) * radius
@@ -16,23 +47,28 @@ def tangent(theta, radius):
     V = np.cos(theta) * radius
     return U, V
 
-def plot_mesh(filename, **kwargs):
+def debug_mesh(filename, **kwargs):
 
-    with open(filename, 'r') as file:
-        for i, _ in enumerate(file):
-            pass
-        n_status = (i - 3) >> 1
+    n_x, n_y, x, y, _, data_generator = read_file(filename)
+
+    for status, val_1, val_2 in data_generator:
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+
+        val = val_1 if kwargs['value'] == 1 else val_2
+        title = 'normal' if kwargs['value'] == 1 else 'tangential'
+
+        val = np.reshape(val, (n_x, n_y), order='C')
+
+        ax.plot_surface(x, y, val)
+        plt.title(f'{title}, at t = {status:.5f}')
+        plt.show()
+
+def plot_mesh(filename, **kwargs):
 
     basename = os.path.splitext(os.path.basename(filename))[0]
 
-    file = open(filename, 'r')
-    parameters = literal_eval(file.readline().strip())
-    xy = np.loadtxt(file, delimiter=',', max_rows=2)
-
-    n_x = parameters['n1']
-    n_y = parameters['n2']
-    x = np.reshape(xy[0, :], (n_x, n_y), order='C')
-    y = np.reshape(xy[1, :], (n_x, n_y), order='C')
+    n_x, n_y, x, y, n_status, data_generator = read_file(filename)
 
     theta = np.arctan2(y, x)
 
@@ -53,11 +89,8 @@ def plot_mesh(filename, **kwargs):
         return
 
     def update(i):
-        data = np.loadtxt(file, delimiter=',', max_rows=2)
-        val_1 = data[0, 1:]
-        val_2 = data[1, 1:]
 
-        status = data[0, 0]
+        status, val_1, val_2 = next(data_generator)
 
         val = val_1 if kwargs['value'] == 1 else val_2
 
@@ -116,7 +149,7 @@ def plot_mesh(filename, **kwargs):
 
 parser = argparse.ArgumentParser(description='Projet data processing.')
 parser.add_argument('-r', action='store_true', help='run the ./run_project.sh')
-parser.add_argument('--plot', help='plot [mesh_u/mesh_v/mesh_w/mesh_p]')
+parser.add_argument('--plot', help='plot [mesh_u/mesh_v/mesh_w/mesh_p/custom]')
 parser.add_argument('--plot_type', default='pcolor', help='type of the plot [vector/pcolor]')
 parser.add_argument('--value', default='1', type=int, help='value to select [1/2]')
 parser.add_argument('--vector', default='normal', help='vector field orientation [normal/tangent]')
@@ -130,6 +163,7 @@ parser.add_argument('--frame_format', default='.png', help='frame save format [.
 parser.add_argument('--output_dir', default='plots', help='output directory')
 parser.add_argument('--input_dir', default='data', help='input directory')
 parser.add_argument('--limits', type=float, help='x and y limits, symmetric, positive float or int')
+parser.add_argument('-debug', action='store_true', help='enter in debug mode : 3D-plot iteratively each status')
 
 if __name__ == '__main__':
     args = parser.parse_args()
@@ -142,4 +176,7 @@ if __name__ == '__main__':
     if args['r']:
         os.system('./run_project.sh')
     if args['plot']:
-        plot_mesh(filename, **args)
+        if args['debug']:
+            debug_mesh(filename, **args)
+        else:
+            plot_mesh(filename, **args)
