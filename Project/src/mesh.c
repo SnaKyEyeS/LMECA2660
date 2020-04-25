@@ -7,7 +7,7 @@ MACMesh *init_mac_mesh(MappingType type) {
         case AIRFOIL: {
             AirfoilMapping *mapping = init_airfoil_mapping();
             mesh->type = type;
-            mesh->n1 = mapping->n_xi1 - 1;
+            mesh->n1 = mapping->n_xi1;
             mesh->n2 = mapping->n_xi2 - 1;
             mesh->n_cell = mesh->n1 * mesh->n2;
             mesh->d1 = mapping->dxi1;

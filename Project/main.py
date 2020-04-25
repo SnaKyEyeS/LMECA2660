@@ -5,13 +5,18 @@ from matplotlib.animation import FuncAnimation
 import argparse
 import os
 from ast import literal_eval
+import numexpr as ne
+
+def get_function():
+    print("Input the function here.\nIt should take maximum 2 parameters, r (radius) and t (theta), and return a scalar. Ex.: r*sin(t)\nWrite and press enter to confirm:")
+    return input().strip()
 
 def read_file(filename):
 
     with open(filename, 'r') as file:
         for i, _ in enumerate(file):
             pass
-        n_status = (i - 3) >> 1
+        n_status = (i - 2) >> 1
 
     file = open(filename, 'r')
     parameters = literal_eval(file.readline().strip())
@@ -49,20 +54,47 @@ def tangent(theta, radius):
 
 def debug_mesh(filename, **kwargs):
 
+    basename = os.path.splitext(os.path.basename(filename))[0]
+
     n_x, n_y, x, y, _, data_generator = read_file(filename)
 
+    analytical = None
+
+    if kwargs['compare']:
+        func = get_function()
+        r = np.hypot(x, y)
+        theta = np.arctan2(y, x)
+        analytical = ne.evaluate(func, local_dict={'r':r, 't': theta})
+
     for status, val_1, val_2 in data_generator:
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
 
         val = val_1 if kwargs['value'] == 1 else val_2
         title = 'normal' if kwargs['value'] == 1 else 'tangential'
 
         val = np.reshape(val, (n_x, n_y), order='C')
 
-        ax.plot_surface(x, y, val)
-        plt.title(f'{title}, at t = {status:.5f}')
+        if kwargs['compare']:
+            fig = plt.figure(figsize=plt.figaspect(1/3))
+            ax = fig.add_subplot(1, 3, 1, projection='3d')
+            ax.plot_surface(x, y, val, cmap='plasma')
+            ax.set_title('Results')
+            ax = fig.add_subplot(1, 3, 2, projection='3d')
+            ax.plot_surface(x, y, analytical, cmap='plasma')
+            ax.set_title('Analytical')
+            ax = fig.add_subplot(1, 3, 3, projection='3d')
+            ax.plot_surface(x, y, np.abs(val-analytical), cmap='plasma')
+            ax.set_title('Error')
+        else:
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+
+            ax.plot_surface(x, y, val, cmap='plasma')
+
+        plt.suptitle(f'{basename}: {title}, at t = {status:.5f}s')
         plt.show()
+
+        if not kwargs['debug_all']:
+            return
 
 def plot_mesh(filename, **kwargs):
 
@@ -78,8 +110,8 @@ def plot_mesh(filename, **kwargs):
     plt.xlabel('x')
     plt.ylabel('y')
 
-    vmin = -1
-    vmax =  1
+    vmin = -5
+    vmax =  5
 
     def init():
         if kwargs['limits']:
@@ -99,11 +131,16 @@ def plot_mesh(filename, **kwargs):
         global vmin, vmax
 
         if i == 0:
-            vmin = 20 * min(val)
-            vmax = 20 * max(val)
+            vmin = -5
+            vmax = 5
+            #vmin = 20 * min(val)
+            #vmax = 20 * max(val)
             if vmin == vmax:
                 vmin = -1
                 vmax =  1
+        vmin = -5
+        vmax = 5
+
         vmin = vmax = None
 
         val = np.reshape(val, (n_x, n_y), order='C')
@@ -163,7 +200,9 @@ parser.add_argument('--frame_format', default='.png', help='frame save format [.
 parser.add_argument('--output_dir', default='plots', help='output directory')
 parser.add_argument('--input_dir', default='data', help='input directory')
 parser.add_argument('--limits', type=float, help='x and y limits, symmetric, positive float or int')
-parser.add_argument('-debug', action='store_true', help='enter in debug mode : 3D-plot iteratively each status')
+parser.add_argument('-debug', action='store_true', help='enter in debug mode : 3D-plot first status')
+parser.add_argument('-debug_all', action='store_true', help='if in debug mode : will 3D-plot all the status')
+parser.add_argument('-compare', action='store_true', help='if in debug mode : will ask you to enter the analytical solution to compare with the results')
 
 if __name__ == '__main__':
     args = parser.parse_args()

@@ -77,5 +77,5 @@ void cylinder_init_pressure(CylinderMapping *mapping, double U_inf, double xi1, 
     // ...
     double u_n, u_t;
     cylinder_init_velocity(mapping, U_inf, xi1, xi2, &u_n, &u_t);
-    *p = - (u_n*u_n + u_t*u_t) / 2.0;
+    *p = - (u_n*u_n) / 2.0;
 }

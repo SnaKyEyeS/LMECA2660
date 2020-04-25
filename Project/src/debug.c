@@ -4,12 +4,14 @@
  * Fills the speed field in cylindrical coordinates with a solenoidal function
  * i.e. div u = 0
  * In this particular case of u = [1/2 * r * sin(theta), r * cos(theta)] :
- * w = rot u = [0, 0, 3/2 * cos(theta)]
- * laplacian u = [3/2 * sin(theta) / r, 0, 0]
- * grad u = [1/2 * sin(theta), -1/2 * cos(theta);
- *           cos(theta)      , -1/2 * sin(theta)]
- * H = u dot grad u = [r/4 * sin^2(theta) - r/2 * cos^2(theta), sin(theta) * cos(theta) * (r/2 - r/2)]
- *                  = [r/4 * sin^2(theta) - r/2 * cos^2(theta), 0]
+ *                    w = rot u = [0, 0, 3/2 * cos(theta)]
+ *                  laplacian u = [3/2 * sin(theta) / r, 0, 0]
+ *                       grad u = [1/2 * sin(theta), -1/2 * cos(theta);
+ *                                 cos(theta)      , -1/2 * sin(theta)]
+ *             H = u dot grad u = [r/4 * sin^2(theta) - r/2 * cos^2(theta), sin(theta) * cos(theta) * (r/2 - r/2)]
+ *                              = [r/4 * sin^2(theta) - r/2 * cos^2(theta), 0]
+ *                            P = - |u|^2 / 2= - 1/8 * r^2 * sin^2(theta)
+ *                       grad P = [- 1/4 * r * sin^2(theta), - 1/4 * r * sin(theta) * cos(theta)] // Higher error on y (?)
  */
 void solenoidal_speed(double r, double theta, double *u, double *v) {
     if (u) {*u = 0.5 * r * sin(theta);}
@@ -34,7 +36,7 @@ void free_Tracker(Tracker *t) {
     free(t);
 }
 
-Tracker *track_Mesh(Mesh *mesh) {
+Tracker *track_mesh(Mesh *mesh) {
     return init_Tracker(mesh->n1, mesh->n2, mesh->val1, mesh->val2);
 }
 
@@ -51,7 +53,7 @@ void save_tracking_state(Tracker *t, double state, FILE *fp) {
     save_array(t->val2, t->n, fp);
 }
 
-void set_speed(MACMesh *mesh, void (*f)(double, double, double*, double*)) {
+void set_speed_pressure(MACMesh *mesh, void (*f)(double, double, double*, double*)) {
     double x, y, r, theta;
     for (int ind = 0; ind < mesh->u->n; ind++) {
         x = mesh->u->x[ind];
@@ -62,11 +64,23 @@ void set_speed(MACMesh *mesh, void (*f)(double, double, double*, double*)) {
         (*f)(r, theta, &mesh->u->val1[ind], NULL);
     }
     for (int ind = 0; ind < mesh->v->n; ind++) {
-        x = mesh->u->x[ind];
-        y = mesh->u->y[ind];
+        x = mesh->v->x[ind];
+        y = mesh->v->y[ind];
         r = hypot(x, y);
-        theta = mesh->u->theta[ind];
+        theta = mesh->v->theta[ind];
 
         (*f)(r, theta, NULL, &mesh->v->val1[ind]);
+    }
+    // Presure from speed
+    double u, v;
+    for (int ind = 0; ind < mesh->p->n; ind++) {
+        x = mesh->p->x[ind];
+        y = mesh->p->y[ind];
+        r = hypot(x, y);
+        theta = mesh->p->theta[ind];
+
+        (*f)(r, theta, &u, &v);
+
+        mesh->p->val1[ind] = -(u * u) * 0.5;
     }
 }

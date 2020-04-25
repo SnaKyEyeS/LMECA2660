@@ -220,6 +220,98 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic) {
     icUpdateH(ic);
 }
 
+void run_tests() {
+    // Initialize Mesh
+    MACMesh *mesh = init_mac_mesh(CYLINDER);
+    IterateCache *ic = initIterateCache(mesh);
+
+    // Initialize Poisson solver
+    PoissonData *poisson = (PoissonData *) malloc(sizeof(PoissonData));
+    initialize_poisson_solver(poisson, mesh);
+
+    // Speed tracker
+    Tracker *t_u = track_mesh(mesh->u);
+    FILE *fp_u = fopen("../data/test_u.txt", "w+");
+    save_header(t_u, mesh->u->x, mesh->u->y, fp_u);
+
+    Tracker *t_v = track_mesh(mesh->v);
+    FILE *fp_v = fopen("../data/test_v.txt", "w+");
+    save_header(t_v, mesh->v->x, mesh->v->y, fp_v);
+    // Pressure tracker
+    Tracker *t_p = track_mesh(mesh->p);
+    FILE *fp_p = fopen("../data/test_p.txt", "w+");
+    save_header(t_p, mesh->p->x, mesh->p->y, fp_p);
+
+    // Set speed & pressure
+    set_speed_pressure(mesh, solenoidal_speed);
+
+    // Save and close speeds
+    save_tracking_state(t_u, 0.0, fp_u);
+    fclose(fp_u);
+
+    save_tracking_state(t_v, 0.0, fp_v);
+    fclose(fp_v);
+
+    // Save and close pressure
+    save_tracking_state(t_p, 0.0, fp_p);
+    fclose(fp_p);
+
+    // H tracker, content will be save into val2 (!) of u and v
+    Tracker *t_h_x = track_mesh(mesh->u);
+    FILE *fp_h_x = fopen("../data/test_h_x.txt", "w+");
+    save_header(t_h_x, mesh->u->x, mesh->u->y, fp_h_x);
+
+    Tracker *t_h_y = track_mesh(mesh->v);
+    FILE *fp_h_y = fopen("../data/test_h_y.txt", "w+");
+    save_header(t_h_y, mesh->v->x, mesh->v->y, fp_h_y);
+
+    compute_h(mesh, mesh->u->val2, mesh->v->val2);
+
+    // Save and close h
+    save_tracking_state(t_h_x, 0.0, fp_h_x);
+    fclose(fp_h_x);
+
+    save_tracking_state(t_h_y, 0.0, fp_h_y);
+    fclose(fp_h_y);
+
+    // Laplacian tracker, content will be save into val2 (!) of u and v
+    Tracker *t_lapl_x = track_mesh(mesh->u);
+    FILE *fp_lapl_x = fopen("../data/test_lapl_x.txt", "w+");
+    save_header(t_lapl_x, mesh->u->x, mesh->u->y, fp_lapl_x);
+
+    Tracker *t_lapl_y = track_mesh(mesh->v);
+    FILE *fp_lapl_y = fopen("../data/test_lapl_y.txt", "w+");
+    save_header(t_lapl_y, mesh->v->x, mesh->v->y, fp_lapl_y);
+
+    compute_diffusive(mesh, mesh->u->val2, mesh->v->val2, 1.0);
+
+    // Save and close lapl
+    save_tracking_state(t_lapl_x, 0.0, fp_lapl_x);
+    fclose(fp_lapl_x);
+
+    save_tracking_state(t_lapl_y, 0.0, fp_lapl_y);
+    fclose(fp_lapl_y);
+
+    // Grap P tracker, content will be save into val2 (!) of u and v
+    Tracker *t_grad_p_x = track_mesh(mesh->u);
+    FILE *fp_grad_p_x = fopen("../data/test_grad_p_x.txt", "w+");
+    save_header(t_grad_p_x, mesh->u->x, mesh->u->y, fp_grad_p_x);
+
+    Tracker *t_grad_p_y = track_mesh(mesh->v);
+    FILE *fp_grad_p_y = fopen("../data/test_grad_p_y.txt", "w+");
+    save_header(t_grad_p_y, mesh->v->x, mesh->v->y, fp_grad_p_y);
+
+    compute_grad(mesh, mesh->u->val2, mesh->v->val2, PRESSURE);
+
+    // Save and close grap p
+    save_tracking_state(t_grad_p_x, 0.0, fp_grad_p_x);
+    fclose(fp_grad_p_x);
+
+    save_tracking_state(t_grad_p_y, 0.0, fp_grad_p_y);
+    fclose(fp_grad_p_y);
+
+}
+
 int main(int argc, char *argv[]){
 
 
@@ -233,71 +325,7 @@ int main(int argc, char *argv[]){
     PoissonData *poisson = (PoissonData *) malloc(sizeof(PoissonData));
     initialize_poisson_solver(poisson, mesh);
 
-
-    // TEST ZONE
-    double r, theta, x, y;
-
-    // Test for compute_rhs /!\ check it is well val2
-    // for (int ind = 0; ind < mesh->u->n; ind++) {
-    //     x = mesh->u->x[ind];
-    //     y = mesh->u->y[ind];
-    //     r = sqrt(x*x + y*y);
-    //     theta = mesh->u->theta[ind];
-    //
-    //     mesh->u->val2[ind] = 0;
-    // }
-    // for (int ind = 0; ind < mesh->v->n; ind++) {
-    //     x = mesh->v->x[ind];
-    //     y = mesh->v->y[ind];
-    //     r = sqrt(x*x + y*y);
-    //     theta = mesh->v->theta[ind];
-    //
-    //     mesh->v->val2[ind] = 0;
-    // }
-    // compute_rhs(mesh, mesh->p->val2, 1.0);
-
-    // Test for compute_grad
-    // for (int ind = 0; ind < mesh->p->n; ind++) {
-    //     x = mesh->p->x[ind];
-    //     y = mesh->p->y[ind];
-    //     r = sqrt(x*x + y*y);
-    //     theta = mesh->p->theta[ind];
-    //
-    //     mesh->p->val1[ind] = sin(theta);
-    // }
-    // compute_grad(mesh, mesh->u->val2, mesh->v->val2, PRESSURE);
-
-    // Test for compute_omega
-    // for (int ind = 0; ind < mesh->u->n; ind++) {
-    //     x = mesh->u->x[ind];
-    //     y = mesh->u->y[ind];
-    //     r = sqrt(x*x + y*y);
-    //     theta = mesh->u->theta[ind];
-    //
-    //     mesh->u->val1[ind] = cos(theta);
-    // }
-    // for (int ind = 0; ind < mesh->v->n; ind++) {
-    //     x = mesh->v->x[ind];
-    //     y = mesh->v->y[ind];
-    //     r = sqrt(x*x + y*y);
-    //     theta = mesh->v->theta[ind];
-    //
-    //     mesh->v->val1[ind] = -sin(theta);
-    // }
-    // compute_omega(mesh);
-
-    // Test for compute_diffusive (laplacian)
-
-    set_speed(mesh, solenoidal_speed);
-    
-    compute_diffusive(mesh, mesh->u->val2, mesh->v->val2, 1);
-
-
-    printf("%d\n", mesh->u->n1);
-    printf("%d\n", mesh->u->n2);
-    save_mesh(mesh->u);
-    exit(1);
-    // TEST ZONE
+    //run_tests();
 
 
     double state = 0.0;         // time
@@ -306,8 +334,8 @@ int main(int argc, char *argv[]){
 
     double endState = 1;
 
-    int every_n = 1;
-    int end_n = 20;
+    int every_n = 100;
+    int max_n = 2000;
 
     printf("Opening files\n");
     Mesh *meshes[N_MESH] = {mesh->w, mesh->u, mesh->v, mesh->p};
