@@ -235,9 +235,6 @@ int main(int argc, char *argv[]){
 
     // TEST ZONE
     double r, theta, x, y;
-    double R = 0.5;
-    double H = 50;
-    double n = 2;
 
     // Test for compute_rhs /!\ check it is well val2
     // for (int ind = 0; ind < mesh->u->n; ind++) {
@@ -289,28 +286,30 @@ int main(int argc, char *argv[]){
     // compute_omega(mesh);
 
     // Test for compute_diffusive (laplacian)
-    for (int ind = 0; ind < mesh->u->n; ind++) {
-        x = mesh->u->x[ind];
-        y = mesh->u->y[ind];
-        r = sqrt(x*x + y*y);
-        theta = mesh->u->theta[ind];
+    // for (int ind = 0; ind < mesh->u->n; ind++) {
+    //     x = mesh->u->x[ind];
+    //     y = mesh->u->y[ind];
+    //     r = sqrt(x*x + y*y);
+    //     theta = mesh->u->theta[ind];
+    //
+    //     mesh->u->val1[ind] = r*sin(theta)/2;
+    // }
+    // for (int ind = 0; ind < mesh->v->n; ind++) {
+    //     x = mesh->v->x[ind];
+    //     y = mesh->v->y[ind];
+    //     r = sqrt(x*x + y*y);
+    //     theta = mesh->v->theta[ind];
+    //
+    //     mesh->v->val1[ind] = r*cos(theta);
+    // }
+    // compute_diffusive(mesh, mesh->u->val2, mesh->v->val2, 1);
 
-        mesh->u->val1[ind] = r*r*r*sin(theta);
-    }
-    for (int ind = 0; ind < mesh->v->n; ind++) {
-        x = mesh->v->x[ind];
-        y = mesh->v->y[ind];
-        r = sqrt(x*x + y*y);
-        theta = mesh->v->theta[ind];
+    // Test for compute_h
 
-        mesh->v->val1[ind] = r*r*sin(theta);
-    }
-    compute_diffusive(mesh, mesh->u->val2, mesh->v->val2, 1);
-
-    printf("%d\n", mesh->u->n1);
-    printf("%d\n", mesh->u->n2);
-    save_mesh(mesh->u);
-    exit(1);
+    // printf("%d\n", mesh->v->n1);
+    // printf("%d\n", mesh->v->n2);
+    // save_mesh(mesh->v);
+    // exit(1);
     // TEST ZONE
 
 

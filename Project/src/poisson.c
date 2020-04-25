@@ -13,6 +13,12 @@ void computeRHS(MACMesh *mesh, double *rhs, PetscInt rowStart, PetscInt rowEnd) 
     double fact;
 
     for(int ind = rowStart; ind < rowEnd ; ind++) {
+
+        if (ind == 0) {
+            rhs[ind] =  0.0;
+            continue;
+        }
+
         x = mesh->p->x[ind];
         y = mesh->p->y[ind];
         r = sqrt(x*x + y*y);
@@ -83,133 +89,138 @@ void computeLaplacianMatrix(MACMesh *mesh, Mat A, int rowStart, int rowEnd) {
     //     MatSetValue(A, r, r, 1, INSERT_VALUES);
     // }
 
-    // // Première méthode de discrétisation
-    // for (int r = rowStart; r < rowEnd; r++) {
-    //     i = r / mesh->p->n2;
-    //     j = r % mesh->p->n2;
-    //
-    //     h1 = mesh->p->h1[r];
-    //     h2 = mesh->p->h2[r];
-    //     dh1_d1 = mesh->p->dh1_d1[r];
-    //     dh1_d2 = mesh->p->dh1_d2[r];
-    //     dh2_d1 = mesh->p->dh2_d1[r];
-    //     dh2_d2 = mesh->p->dh2_d2[r];
-    //     a = (dh2_d1*h1 - h2*dh1_d1)/(h1*h1*h1*h2);
-    //     b = (dh1_d2*h2 - h1*dh2_d2)/(h2*h2*h2*h1);
-    //
-    //     phi = -2/(d1*d1*h1*h1) - 2/(d2*d2*h2*h2);
-    //     phi_right = 1/(d1*d1*h1*h1) + a/(2*d1);
-    //     phi_left = 1/(d1*d1*h1*h1) - a/(2*d1);
-    //     phi_up = 1/(d2*d2*h2*h2) + b/(2*d2);
-    //     phi_bottom = 1/(d2*d2*h2*h2) - b/(2*d2);
-    //
-    //     if (i == 0) {
-    //         phi += phi_left;
-    //     } else if (i == mesh->p->n1-1) {
-    //         phi += phi_right;
-    //     }
-    //
-    //     // Main diagonal
-    //     MatSetValue(A, r, r, phi, INSERT_VALUES);
-    //
-    //     // Right & left borders
-    //     if (i > 0) {
-    //         MatSetValue(A, r, r-mesh->p->n2, phi_left, INSERT_VALUES);
-    //     }
-    //     if (i < mesh->p->n1-1) {
-    //         MatSetValue(A, r, r+mesh->p->n2, phi_right, INSERT_VALUES);
-    //     }
-    //
-    //     // Upper & lower borders (those are periodic)
-    //     if (j > 0) {
-    //         MatSetValue(A, r, r-1, phi_bottom, INSERT_VALUES);
-    //     } else {
-    //         MatSetValue(A, r, r-1+mesh->p->n2, phi_bottom, INSERT_VALUES);
-    //     }
-    //     if (j < mesh->p->n2-1) {
-    //         MatSetValue(A, r, r+1, phi_up, INSERT_VALUES);
-    //     } else {
-    //         MatSetValue(A, r, r+1-mesh->p->n2, phi_up, INSERT_VALUES);
-    //     }
-    // }
+    // Première méthode de discrétisation
+    for (int r = rowStart; r < rowEnd; r++) {
+        i = r / mesh->p->n2;
+        j = r % mesh->p->n2;
 
-    // Deuxième méthode de discrétisation
-    double h1h2;
-    double form_right;
-    double form_left;
-    double form_up;
-    double form_bottom;
+        if (r == 0) {
+            MatSetValue(A, r, r, 1.0, INSERT_VALUES);
+            continue;
+        }
 
-    int ind;
+        h1 = mesh->p->h1[r];
+        h2 = mesh->p->h2[r];
+        dh1_d1 = mesh->p->dh1_d1[r];
+        dh1_d2 = mesh->p->dh1_d2[r];
+        dh2_d1 = mesh->p->dh2_d1[r];
+        dh2_d2 = mesh->p->dh2_d2[r];
+        a = (dh2_d1*h1 - h2*dh1_d1)/(h1*h1*h1*h2);
+        b = (dh1_d2*h2 - h1*dh2_d2)/(h2*h2*h2*h1);
 
-    int ind_phi_left, ind_phi_right, ind_phi_bottom, ind_phi_up;
+        phi = -2/(d1*d1*h1*h1) - 2/(d2*d2*h2*h2);
+        phi_right = 1/(d1*d1*h1*h1) + a/(2*d1);
+        phi_left = 1/(d1*d1*h1*h1) - a/(2*d1);
+        phi_up = 1/(d2*d2*h2*h2) + b/(2*d2);
+        phi_bottom = 1/(d2*d2*h2*h2) - b/(2*d2);
 
-    int ind_u_left, ind_u_right;
-    int ind_v_bottom, ind_v_up;
+        if (i == 0) {
+            phi += phi_left;
+        } else if (i == mesh->p->n1-1) {
+            phi += phi_right;
+        }
 
-    double i_den, j_den;
+        // Main diagonal
+        MatSetValue(A, r, r, phi, INSERT_VALUES);
 
-    for (int i = 0; i < mesh->p->n1; i++) {
-        for (int j = 0; j < mesh->p->n2; j++) {
-            ind = i * mesh->p->n2 + j;
-            if (ind == 0) {
-                MatSetValue(A, ind, ind, 1.0, INSERT_VALUES);
-                continue;
-            }
+        // Right & left borders
+        if (i > 0) {
+            MatSetValue(A, r, r-mesh->p->n2, phi_left, INSERT_VALUES);
+        }
+        if (i < mesh->p->n1-1) {
+            MatSetValue(A, r, r+mesh->p->n2, phi_right, INSERT_VALUES);
+        }
 
-            ind_phi_left    = index(i, j, mesh->p->n2, -1, 0);
-            ind_phi_right   = index(i, j, mesh->p->n2, 1, 0);
-            ind_phi_bottom  = index(i, j, mesh->p->n2, 0, -1);
-            ind_phi_up      = index(i, j, mesh->p->n2, 0, 1);
-
-            ind_u_left      = index(i, j, mesh->u->n2, 0, 0);
-            ind_u_right     = index(i, j, mesh->u->n2, 1, 0);
-
-            ind_v_bottom    = index(i, j, mesh->v->n2, 0, 0);
-            ind_v_up        = index(i, j, mesh->v->n2, 0, 1);
-
-            h1h2 = mesh->p->h1[ind] * mesh->p->h2[ind];
-            i_den = 1 / (h1h2*d1*d1);
-            j_den = 1 / (h1h2*d2*d2);
-
-            form_right  = mesh->u->h2[ind_u_right]  / mesh->u->h1[ind_u_right];
-            form_left   = mesh->u->h2[ind_u_left]   / mesh->u->h1[ind_u_left];
-            form_bottom = mesh->v->h1[ind_v_bottom] / mesh->v->h2[ind_v_bottom];
-            form_up     = mesh->v->h1[ind_v_up]     / mesh->v->h2[ind_v_up];
-
-            phi_right   = form_right    * i_den;
-            phi_left    = form_left     * i_den;
-            phi_up      = form_up       * j_den;
-            phi_bottom  = form_bottom   * j_den;
-
-
-            if (i == 0) {
-                phi =   -(form_right    + 0.0           ) * i_den
-                        -(form_up       + form_bottom   ) * j_den;
-            } else if (i == mesh->p->n1-1) {
-                phi =   -(0.0           + form_left     ) * i_den
-                        -(form_up       + form_bottom   ) * j_den;
-            } else {
-                phi =   -(form_right    + form_left     ) * i_den
-                        -(form_up       + form_bottom   ) * j_den;
-            }
-
-            // Main diagonal
-            MatSetValue(A, ind, ind, phi, INSERT_VALUES);
-
-            // Right & left borders
-            if (i > 0) {
-                MatSetValue(A, ind, ind_phi_left, phi_left, INSERT_VALUES);
-            }
-            if (i < mesh->p->n1-1) {
-                MatSetValue(A, ind, ind_phi_right, phi_right, INSERT_VALUES);
-            }
-
-            // Upper & lower borders (those are periodic)
-            MatSetValue(A, ind, ind_phi_bottom, phi_bottom, INSERT_VALUES);
-            MatSetValue(A, ind, ind_phi_up, phi_up, INSERT_VALUES);
+        // Upper & lower borders (those are periodic)
+        if (j > 0) {
+            MatSetValue(A, r, r-1, phi_bottom, INSERT_VALUES);
+        } else {
+            MatSetValue(A, r, r-1+mesh->p->n2, phi_bottom, INSERT_VALUES);
+        }
+        if (j < mesh->p->n2-1) {
+            MatSetValue(A, r, r+1, phi_up, INSERT_VALUES);
+        } else {
+            MatSetValue(A, r, r+1-mesh->p->n2, phi_up, INSERT_VALUES);
         }
     }
+
+    // // Deuxième méthode de discrétisation
+    // double h1h2;
+    // double form_right;
+    // double form_left;
+    // double form_up;
+    // double form_bottom;
+    //
+    // int ind;
+    //
+    // int ind_phi_left, ind_phi_right, ind_phi_bottom, ind_phi_up;
+    //
+    // int ind_u_left, ind_u_right;
+    // int ind_v_bottom, ind_v_up;
+    //
+    // double i_den, j_den;
+    //
+    // for (int i = 0; i < mesh->p->n1; i++) {
+    //     for (int j = 0; j < mesh->p->n2; j++) {
+    //         ind = i * mesh->p->n2 + j;
+    //         if (ind == 0) {
+    //             MatSetValue(A, ind, ind, 1.0, INSERT_VALUES);
+    //             continue;
+    //         }
+    //
+    //         ind_phi_left    = index(i, j, mesh->p->n2, -1, 0);
+    //         ind_phi_right   = index(i, j, mesh->p->n2, 1, 0);
+    //         ind_phi_bottom  = index(i, j, mesh->p->n2, 0, -1);
+    //         ind_phi_up      = index(i, j, mesh->p->n2, 0, 1);
+    //
+    //         ind_u_left      = index(i, j, mesh->u->n2, 0, 0);
+    //         ind_u_right     = index(i, j, mesh->u->n2, 1, 0);
+    //
+    //         ind_v_bottom    = index(i, j, mesh->v->n2, 0, 0);
+    //         ind_v_up        = index(i, j, mesh->v->n2, 0, 1);
+    //
+    //         h1h2 = mesh->p->h1[ind] * mesh->p->h2[ind];
+    //         i_den = 1 / (h1h2*d1*d1);
+    //         j_den = 1 / (h1h2*d2*d2);
+    //
+    //         form_right  = mesh->u->h2[ind_u_right]  / mesh->u->h1[ind_u_right];
+    //         form_left   = mesh->u->h2[ind_u_left]   / mesh->u->h1[ind_u_left];
+    //         form_bottom = mesh->v->h1[ind_v_bottom] / mesh->v->h2[ind_v_bottom];
+    //         form_up     = mesh->v->h1[ind_v_up]     / mesh->v->h2[ind_v_up];
+    //
+    //         phi_right   = form_right    * i_den;
+    //         phi_left    = form_left     * i_den;
+    //         phi_up      = form_up       * j_den;
+    //         phi_bottom  = form_bottom   * j_den;
+    //
+    //
+    //         if (i == 0) {
+    //             phi =   -(form_right    + 0.0           ) * i_den
+    //                     -(form_up       + form_bottom   ) * j_den;
+    //         } else if (i == mesh->p->n1-1) {
+    //             phi =   -(0.0           + form_left     ) * i_den
+    //                     -(form_up       + form_bottom   ) * j_den;
+    //         } else {
+    //             phi =   -(form_right    + form_left     ) * i_den
+    //                     -(form_up       + form_bottom   ) * j_den;
+    //         }
+    //
+    //         // Main diagonal
+    //         MatSetValue(A, ind, ind, phi, INSERT_VALUES);
+    //
+    //         // Right & left borders
+    //         if (i > 0) {
+    //             MatSetValue(A, ind, ind_phi_left, phi_left, INSERT_VALUES);
+    //         }
+    //         if (i < mesh->p->n1-1) {
+    //             MatSetValue(A, ind, ind_phi_right, phi_right, INSERT_VALUES);
+    //         }
+    //
+    //         // Upper & lower borders (those are periodic)
+    //         MatSetValue(A, ind, ind_phi_bottom, phi_bottom, INSERT_VALUES);
+    //         MatSetValue(A, ind, ind_phi_up, phi_up, INSERT_VALUES);
+    //     }
+    // }
 }
 
 /*To call during the initialization of your solver, before the begin of the time loop
