@@ -72,14 +72,14 @@ void set_speed_pressure(MACMesh *mesh, void (*f)(double, double, double*, double
         (*f)(r, theta, NULL, &mesh->v->val1[ind]);
     }
     // Presure from speed
-    double u, v;
+    double u;
     for (int ind = 0; ind < mesh->p->n; ind++) {
         x = mesh->p->x[ind];
         y = mesh->p->y[ind];
         r = hypot(x, y);
         theta = mesh->p->theta[ind];
 
-        (*f)(r, theta, &u, &v);
+        (*f)(r, theta, &u, NULL);
 
         mesh->p->val1[ind] = -(u * u) * 0.5;
     }
