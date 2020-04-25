@@ -126,7 +126,7 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic) {
     // (1) Compute H, grad_P and nu_lapl
     compute_h(mesh, new_h_x, new_h_y);
     compute_diffusive(mesh, nu_lapl_u_x, nu_lapl_u_y, nu);
-    compute_grad_scalar(mesh, grad_P_x, grad_P_y, PRESSURE);
+    compute_grad(mesh, grad_P_x, grad_P_y, PRESSURE);
 
     // If first iteration, we use euler explicit
     if (ic->n == 0) {
@@ -186,7 +186,7 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic) {
 
     // (3) new speeds
 
-    compute_grad_scalar(mesh, grad_Phi_x, grad_Phi_y, PHI);
+    compute_grad(mesh, grad_Phi_x, grad_Phi_y, PHI);
 
     // u
     for (int i = 1; i < mesh->u->n1-1; i++) {
@@ -239,21 +239,77 @@ int main(int argc, char *argv[]){
     double H = 50;
     double n = 2;
 
+    // Test for compute_rhs /!\ check it is well val2
+    // for (int ind = 0; ind < mesh->u->n; ind++) {
+    //     x = mesh->u->x[ind];
+    //     y = mesh->u->y[ind];
+    //     r = sqrt(x*x + y*y);
+    //     theta = mesh->u->theta[ind];
+    //
+    //     mesh->u->val2[ind] = 0;
+    // }
+    // for (int ind = 0; ind < mesh->v->n; ind++) {
+    //     x = mesh->v->x[ind];
+    //     y = mesh->v->y[ind];
+    //     r = sqrt(x*x + y*y);
+    //     theta = mesh->v->theta[ind];
+    //
+    //     mesh->v->val2[ind] = 0;
+    // }
+    // compute_rhs(mesh, mesh->p->val2, 1.0);
+
+    // Test for compute_grad
+    // for (int ind = 0; ind < mesh->p->n; ind++) {
+    //     x = mesh->p->x[ind];
+    //     y = mesh->p->y[ind];
+    //     r = sqrt(x*x + y*y);
+    //     theta = mesh->p->theta[ind];
+    //
+    //     mesh->p->val1[ind] = sin(theta);
+    // }
+    // compute_grad(mesh, mesh->u->val2, mesh->v->val2, PRESSURE);
+
+    // Test for compute_omega
+    // for (int ind = 0; ind < mesh->u->n; ind++) {
+    //     x = mesh->u->x[ind];
+    //     y = mesh->u->y[ind];
+    //     r = sqrt(x*x + y*y);
+    //     theta = mesh->u->theta[ind];
+    //
+    //     mesh->u->val1[ind] = cos(theta);
+    // }
+    // for (int ind = 0; ind < mesh->v->n; ind++) {
+    //     x = mesh->v->x[ind];
+    //     y = mesh->v->y[ind];
+    //     r = sqrt(x*x + y*y);
+    //     theta = mesh->v->theta[ind];
+    //
+    //     mesh->v->val1[ind] = -sin(theta);
+    // }
+    // compute_omega(mesh);
+
+    // Test for compute_diffusive (laplacian)
     for (int ind = 0; ind < mesh->u->n; ind++) {
-        //init u
-        mesh->u->val2[ind] = mesh->u->x[ind] * mesh->u->x[ind];
-    }
+        x = mesh->u->x[ind];
+        y = mesh->u->y[ind];
+        r = sqrt(x*x + y*y);
+        theta = mesh->u->theta[ind];
 
+        mesh->u->val1[ind] = r*r*r*sin(theta);
+    }
     for (int ind = 0; ind < mesh->v->n; ind++) {
-        //init v
-        mesh->v->val2[ind] = mesh->v->y[ind] * mesh->v->y[ind];
+        x = mesh->v->x[ind];
+        y = mesh->v->y[ind];
+        r = sqrt(x*x + y*y);
+        theta = mesh->v->theta[ind];
+
+        mesh->v->val1[ind] = r*r*sin(theta);
     }
+    compute_diffusive(mesh, mesh->u->val2, mesh->v->val2, 1);
 
-    compute_rhs(mesh, mesh->p->val2, 1.0);
-
-    printf("%d\n", mesh->v->n1);
-    printf("%d\n", mesh->v->n2);
-    save_mesh(mesh->v);
+    printf("%d\n", mesh->u->n1);
+    printf("%d\n", mesh->u->n2);
+    save_mesh(mesh->u);
     exit(1);
     // TEST ZONE
 

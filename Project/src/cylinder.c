@@ -60,9 +60,7 @@ void cylinder_metrics(CylinderMapping *mapping, double xi1, double xi2, double *
 
     // Mesh orientation
     if (theta_mesh) {
-        double dxdxi1 = a * b * exp(xi1*a) * cos(xi2);
-        double dydxi1 = a * b * exp(xi1*a) * sin(xi2);
-        *theta_mesh = atan2(dydxi1, dxdxi1);        // Verifier sa definition ?
+        *theta_mesh = xi2;        // Verifier sa definition ?
     }
 }
 
