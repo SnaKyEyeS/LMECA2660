@@ -12,6 +12,7 @@
  *                              = [r/4 * sin^2(theta) - r/2 * cos^2(theta), 0]
  *                            P = - |u|^2 / 2= - 1/8 * r^2 * sin^2(theta)
  *                       grad P = [- 1/4 * r * sin^2(theta), - 1/4 * r * sin(theta) * cos(theta)] // Higher error on y (?)
+ * (first iteration)         u* = u + dt * (-H - grad P + nu * laplacian u)
  */
 void solenoidal_speed(double r, double theta, double *u, double *v) {
     if (u) {*u = 0.5 * r * sin(theta);}
