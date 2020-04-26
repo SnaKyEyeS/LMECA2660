@@ -82,7 +82,7 @@ sol = simplify(S.a*(-h/2)^4 + S.b*(-h/2)^3 + S.c*(-h/2)^2 + S.d*(-h/2)^1 + S.e)
 %% Plot live data
 figure;
 
-fid = fopen('mesh_w.txt', 'rt');
+fid = fopen('mesh_u.txt', 'rt');
 data = textscan(fid, "{'n': %d, 'n1': %d, 'n2': %d, 'd1': %f, 'd2': %f}");
 n = cell2mat(data(1));
 n1 = cell2mat(data(2));
@@ -118,7 +118,7 @@ r = sqrt(x.^2 + y.^2);
 theta = atan2(y,x);
 val = reshape(data(:,4), [n2, n1]);
 
-f =  zeros(size(r));
+f = r.*sin(theta).^2/4 - r.*cos(theta).^2/2;
 
 figure; hold on;
 surf(x,y,val, 'EdgeColor', 'none')
@@ -134,20 +134,6 @@ figure; hold on;
 surf(x,y,abs(f-val), 'EdgeColor', 'none')
 view(-37.5,30)
 title("Error")
-
-
-%% Compute the vector Laplacian
-syms r theta
-
-vr = r*r*r*sin(theta);
-vtheta = r*r*sin(theta);
-
-lapl_r = diff(vr, r, 2) + diff(vr, theta, 2)/r^2 + diff(vr, r, 1)/r - 2*diff(vtheta, theta, 1)/r^2 - vr/r^2;
-disp(simplify(lapl_r))
-
-lapl_theta = diff(vtheta, r, 2) + diff(vtheta, theta, 2)/r^2 + diff(vtheta, r, 1)/r + 2*diff(vr, theta, 1)/r^2 - vtheta/r^2;
-
-
 
 
 

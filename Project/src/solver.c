@@ -345,7 +345,7 @@ void compute_diffusive(MACMesh *mesh, double *res_x, double *res_y, double nu) {
 double interpolate2D(double x_1, double x_2, double y_1, double y_2, double U[4], double x, double y) {
     double den = 1 / ((x_1 - x_2) * (y_1 - y_2));
     double phi_0, phi_1, phi_2, phi_3;
-    
+
     double dx_1 = x - x_1, dx_2 = x - x_2;
     double dy_1 = y - y_1, dy_2 = y - y_2;
 

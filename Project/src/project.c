@@ -222,7 +222,7 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic) {
 
 void run_tests() {
     // Initialize Mesh
-    MACMesh *mesh = init_mac_mesh(CYLINDER);
+    MACMesh *mesh = init_mac_mesh(AIRFOIL);
     IterateCache *ic = initIterateCache(mesh);
 
     // Initialize Poisson solver
@@ -414,7 +414,7 @@ int main(int argc, char *argv[]){
 
     printf("Beginning iterations\n");
     while (state < endState) {
-        printf("\tIterate t=%.5fs... [%4d/%d]\n", state, ic->n, max_n);
+        printf("\tIterate t=%.5fs... [%4d/%d]\n", state, ic->n+1, max_n);
         iterate(mesh, poisson, ic);
 
         state += dt;
