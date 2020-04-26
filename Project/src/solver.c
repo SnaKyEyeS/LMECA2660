@@ -87,7 +87,7 @@ void compute_grad(MACMesh *mesh, double *res_x, double *res_y, GradientType type
     // First, compute in the x-direction
     // We do not need the values at the boundaries Re and Ri, since those are
     // boundary conditions.
-    for (int i = 1; i < mesh->u->n1-1; i++) {
+    for (int i = 0; i < mesh->u->n1; i++) {
         for (int j = 0; j < mesh->u->n2; j++) {
             ind = i*mesh->u->n2 + j;
             h1 = mesh->u->h1[ind];
@@ -308,7 +308,7 @@ void compute_diffusive(MACMesh *mesh, double *res_x, double *res_y, double nu) {
 
     // First, compute the x-composant --> the values at R_e and R_i are not needed
     // (boundary conditions).
-    for (int i = 1; i < mesh->u->n1-1; i++) {
+    for (int i = 0; i < mesh->u->n1; i++) {
         for (int j = 0; j < mesh->u->n2; j++) {
             ind = i*mesh->u->n2 + j;
             h2 = mesh->u->h2[ind];
@@ -378,10 +378,15 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
     double du_d1, du_d2, v_avg;
     double r, r_1, r_2;
     double theta_1, theta_2;
-    for (int i = 1; i < mesh->u->n1-1; i++) {
+    for (int i = 0; i < mesh->u->n1; i++) {
         for (int j = 0; j < mesh->u->n2; j++) {
             // We compute the indexes
             ind = i*mesh->u->n2 + j;
+
+            if (i == 0) {
+                res_x[ind] = 0.0;
+                continue;
+            }
 
             ind_u_left          = index(i, j, mesh->u->n2, -1, 0);
             ind_u_right         = index(i, j, mesh->u->n2, 1, 0);
@@ -398,27 +403,35 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
             dh2_d1 = mesh->u->dh2_d1[ind];
             dh1_d2 = mesh->u->dh1_d2[ind];
 
-            du_d1 = (u[ind_u_right] - u[ind_u_left])   / (2*d1);
             du_d2 = (u[ind_u_up]    - u[ind_u_bottom]) / (2*d2);
-            /*
-            v_avg = (v[ind_v_bottom_left]  + v[ind_v_bottom_right]
-                    +v[ind_v_up_left]      + v[ind_v_up_right]    ) / 4;*/
+
             r   = hypot(mesh->u->x[ind],                mesh->u->y[ind]);
-            r_1 = hypot(mesh->v->x[ind_v_bottom_left],  mesh->v->y[ind_v_bottom_left]);
-            r_2 = hypot(mesh->v->x[ind_v_bottom_right], mesh->v->y[ind_v_bottom_right]);
-
             theta   = mesh->u->theta[ind];
-            theta_1 = mesh->v->theta[ind_v_bottom_left];
-            theta_2 = mesh->v->theta[ind_v_up_left];
 
-            // Order is important !
-            double V[4] = {
-                v[ind_v_bottom_left],
-                v[ind_v_up_left],
-                v[ind_v_up_right],
-                v[ind_v_bottom_right]
-            };
-            v_avg = interpolate2D(r_1, r_2, theta_1, theta_2, V, r, theta);
+            if (i == mesh->u->n1-1) {
+                v_avg = -U_INF * sin(theta) + U_PERT * cos(theta);
+                u_wall = U_INF * cos(theta) + U_PERT * sin(theta);
+                // We want : u_wall = u_left + d1 * du_d1;
+                du_d1 = (u_wall - u[ind_u_left]) / d1;
+
+            }
+            else {
+                du_d1 = (u[ind_u_right] - u[ind_u_left])   / (2*d1);
+                r_1 = hypot(mesh->v->x[ind_v_bottom_left],  mesh->v->y[ind_v_bottom_left]);
+                r_2 = hypot(mesh->v->x[ind_v_bottom_right], mesh->v->y[ind_v_bottom_right]);
+
+                theta_1 = mesh->v->theta[ind_v_bottom_left];
+                theta_2 = mesh->v->theta[ind_v_up_left];
+
+                // Order is important !
+                double V[4] = {
+                    v[ind_v_bottom_left],
+                    v[ind_v_up_left],
+                    v[ind_v_up_right],
+                    v[ind_v_bottom_right]
+                };
+                v_avg = interpolate2D(r_1, r_2, theta_1, theta_2, V, r, theta);
+            }
 
             res_x[ind] = u[ind]*du_d1/h1 + v_avg*du_d2/h2 + v_avg*(u[ind]*dh1_d2 - v_avg*dh2_d1)/(h1*h2);
         }
