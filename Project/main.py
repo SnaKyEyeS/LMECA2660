@@ -6,10 +6,11 @@ import argparse
 import os
 from ast import literal_eval
 import numexpr as ne
+from utils.manufactured_solutions import analytical_solutions, parse_solution
 
 def get_function():
-    print("Input the function here.\nIt should take maximum 2 parameters, r (radius) and t (theta), and return a scalar. Ex.: r*sin(t)\nWrite and press enter to confirm:")
-    return input().strip()
+    print("Input the function here.\nIt should take maximum 4 parameters, r (radius), t (theta), dt and nu, and return a scalar. Ex.: r*sin(t)\nYou can also use {} around an expression to use a manufactured solution. Ex.: {u_star} + {h_x}\nWrite and press enter to confirm:")
+    return parse_solution(input().strip())
 
 def read_file(filename):
 
@@ -64,12 +65,11 @@ def debug_mesh(filename, **kwargs):
         func = get_function()
         r = np.hypot(x, y)
         theta = np.arctan2(y, x)
-        analytical = ne.evaluate(func, local_dict={'r':r, 't': theta})
+        analytical = ne.evaluate(func, local_dict={'r':r, 't': theta, 'theta': theta, 'dt': 2e-5, 'nu': 1.11e-4})
 
     for status, val_1, val_2 in data_generator:
 
         val = val_1 if kwargs['value'] == 1 else val_2
-        title = 'normal' if kwargs['value'] == 1 else 'tangential'
 
         val = np.reshape(val, (n_x, n_y), order='C')
 
@@ -90,7 +90,7 @@ def debug_mesh(filename, **kwargs):
 
             ax.plot_surface(x, y, val, cmap='plasma')
 
-        plt.suptitle(f'{basename}: {title}, at t = {status:.5f}s')
+        plt.suptitle(f'{basename}: t = {status:.5f}s')
         plt.show()
 
         if not kwargs['debug_all']:
@@ -186,6 +186,7 @@ def plot_mesh(filename, **kwargs):
 
 parser = argparse.ArgumentParser(description='Projet data processing.')
 parser.add_argument('-r', action='store_true', help='run the ./run_project.sh')
+parser.add_argument('-rebuild', action='store_true', help='tells the ./run_project.sh script to first rebuild and cmake: only needed when new files are added')
 parser.add_argument('--plot', help='plot [mesh_u/mesh_v/mesh_w/mesh_p/custom]')
 parser.add_argument('--plot_type', default='pcolor', help='type of the plot [vector/pcolor]')
 parser.add_argument('--value', default='1', type=int, help='value to select [1/2]')
@@ -213,7 +214,10 @@ if __name__ == '__main__':
     args['vector'] = normal if args['vector'] == 'normal' else tangent
 
     if args['r']:
-        os.system('./run_project.sh')
+        if args['rebuild']:
+            os.system('./run_project.sh rebuild')
+        else:
+            os.system('./run_project.sh')
     if args['plot']:
         if args['debug']:
             debug_mesh(filename, **args)
