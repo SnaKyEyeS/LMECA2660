@@ -218,11 +218,30 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic) {
     }
 
     icUpdateH(ic);
+
+    // Compute Re_w,max
+    double x, y, r, h;
+    double Re_w, Re_w_max = -1;
+    for (int ind = 0; ind < mesh->w->n; ind++) {
+        x = mesh->w->x[ind];
+        y = mesh->w->y[ind];
+        r = sqrt(x*x + y*y);
+
+        if (r <= 12) {
+            h = fmin(mesh->w->h1[ind]*mesh->w->d1, mesh->w->h2[ind]*mesh->w->d2);
+            Re_w = fabs(mesh->w->val1[ind]) * h*h / NU;
+            if (Re_w > Re_w_max) {
+                Re_w_max = Re_w;
+            }
+        }
+    }
+    printf("\tMesh Reynolds = %f\n", Re_w_max);
+
 }
 
 void run_tests() {
     // Initialize Mesh
-    MACMesh *mesh = init_mac_mesh(AIRFOIL);
+    MACMesh *mesh = init_mac_mesh(CYLINDER);
     IterateCache *ic = initIterateCache(mesh);
 
     // Initialize Poisson solver
