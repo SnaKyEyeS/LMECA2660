@@ -1,6 +1,28 @@
 #include "debug.h"
 
 /*
+ * Pre-computed analytical values for cylinder statement
+ * i.e. div u = 0
+ * In this particular case of u = [(1 - R^2/r^2) * cos(theta),  - (1 + R^2/r^2) * sin(theta)] :
+ *                    w = rot u = [0, 0, 3/2 * cos(theta)]
+ *                  laplacian u = [- (cos(theta) * (r^2 + 3 * R^2)) / r^4, (sin(theta) * (r^2 - 3 * R^2)) / r^4]
+ *                       grad u = [1/2 * sin(theta), -1/2 * cos(theta);
+ *                                 cos(theta)      , -1/2 * sin(theta)]
+ *             H = u dot grad u = [r/4 * sin^2(theta) - r/2 * cos^2(theta), sin(theta) * cos(theta) * (r/2 - r/2)]
+ *                              = [r/4 * sin^2(theta) - r/2 * cos^2(theta), 0]
+ *                            P = - |u|^2 / 2= - 1/8 * r^2 * sin^2(theta)
+ *                       grad P = [- 1/4 * r * sin^2(theta), - 1/4 * r * sin(theta) * cos(theta)] // Higher error on y (?)
+ * (first iteration)         u* = u + dt * (-H - grad P + nu * laplacian u)
+ *                          rhs = div . u* / dt
+ *   (div . u) / dt:            = 0 / dt 
+ * - (div . H):                   + 1/4 * (cos(2 * theta) + 3)
+ * - (div . grad P):              + 1/4
+ *   (div . laplacian u):         + 0
+ *                              = 1/4 * cos(2 * theta) + 1
+ * 
+ */
+
+/*
  * Fills the speed field in cylindrical coordinates with a solenoidal function
  * i.e. div u = 0
  * In this particular case of u = [1/2 * r * sin(theta), r * cos(theta)] :

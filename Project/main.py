@@ -9,7 +9,7 @@ import numexpr as ne
 from utils.manufactured_solutions import analytical_solutions, parse_solution
 
 def get_function():
-    print("Input the function here.\nIt should take maximum 4 parameters, r (radius), t (theta), dt and nu, and return a scalar. Ex.: r*sin(t)\nYou can also use {} around an expression to use a manufactured solution. Ex.: {u_star} + {h_x}\nWrite and press enter to confirm:")
+    print("Input the function here.\nIt should take maximum 5 parameters, r (radius), t (theta), R, dt and nu, and return a scalar. Ex.: r*sin(t)\nYou can also use {} around an expression to use a manufactured solution. Ex.: {u_star} + {h_x}\nWrite and press enter to confirm:")
     return parse_solution(input().strip())
 
 def read_file(filename):
@@ -70,7 +70,7 @@ def debug_mesh(filename, **kwargs):
         func = get_function()
         r = np.hypot(x, y)
         theta = np.arctan2(y, x)
-        analytical = ne.evaluate(func, local_dict={'r':r, 't': theta, 'theta': theta, 'dt': dt, 'nu': nu})
+        analytical = ne.evaluate(func, local_dict={'r':r, 't': theta, 'theta': theta, 'dt': dt, 'nu': nu, 'R': 0.5})
 
     for status, val_1, val_2 in data_generator:
 

@@ -265,8 +265,8 @@ void run_tests() {
     FILE *fp_p = fopen("../data/test_p.txt", "w+");
     save_header(t_p, mesh->p->x, mesh->p->y, fp_p);
 
-    // Set speed & pressure
-    set_speed_pressure(mesh, solenoidal_speed);
+    // UNCOMMENT TO : Set speed & pressure to other function
+    // set_speed_pressure(mesh, solenoidal_speed);
 
     // Save and close speeds
     save_tracking_state(t_u, 0.0, fp_u);
@@ -423,7 +423,7 @@ int main(int argc, char *argv[]){
     PoissonData *poisson = (PoissonData *) malloc(sizeof(PoissonData));
     initialize_poisson_solver(poisson, mesh);
 
-    int debug = 0;
+    int debug = 1;
 
     if (debug) {
         printf("Entered debugging mode\n");
