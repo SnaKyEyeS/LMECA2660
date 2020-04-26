@@ -12,7 +12,8 @@ analytical_solutions = {
     'grad_p_x': '-1/4 * r * sin(theta)**2',
     'grad_p_y': '-1/4 * r * sin(theta) * cos(theta)',
     'u_star': '{u} + dt * (-{h_x} - {grad_p_x} + nu * {lapl_x})',
-    'v_star': '{v} + dt * (-{h_y} - {grad_p_y} + nu * {lapl_y})'
+    'v_star': '{v} + dt * (-{h_y} - {grad_p_y} + nu * {lapl_y})',
+    'rhs' : '1/4 * cos(2 * theta) + 1'
 }
 
 pattern = r'{((?:[^\\{}]+|\\.)*)}'

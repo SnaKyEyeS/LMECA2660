@@ -185,10 +185,10 @@ void compute_omega(MACMesh *mesh) {
                                 -  3*v[ind_v_left_2] *h2_left_2  +  1*v[ind_v_left_3]*h2_left_3) / (24*d1);
 
             } else if (i == mesh->w->n1-1) {
-                // diff_h2_v_d1 = (  71*v[ind_v_left_1]*h2_left_1 - 141*v[ind_v_left_2]*h2_left_2
-                //                 + 93*v[ind_v_left_3]*h2_left_3 - 23 *v[ind_v_left_4]*h2_left_4) / (24*d1);
-                mesh->w->val1[ind] = 0.0;
-                continue;
+                diff_h2_v_d1 =  (  71*v[ind_v_left_1]*h2_left_1 - 141*v[ind_v_left_2]*h2_left_2
+                                 + 93*v[ind_v_left_3]*h2_left_3 - 23 *v[ind_v_left_4]*h2_left_4) / (24*d1);
+                //mesh->w->val1[ind] = 0.0;
+                //continue;
 
             } else {
                 diff_h2_v_d1 = (  1*v[ind_v_left_2] *h2_left_2  - 27*v[ind_v_left_1] *h2_left_1

@@ -229,7 +229,7 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic) {
         r = sqrt(x*x + y*y);
 
         if (r <= 12) {
-            h = fmin(mesh->w->h1[ind]*mesh->w->d1, mesh->w->h2[ind]*mesh->w->d2);
+            h = fmax(mesh->w->h1[ind]*mesh->w->d1, mesh->w->h2[ind]*mesh->w->d2);
             Re_w = fabs(mesh->w->val1[ind]) * h*h / NU;
             if (Re_w > Re_w_max) {
                 Re_w_max = Re_w;
@@ -393,7 +393,21 @@ void run_tests() {
     fclose(fp_v_star);
     free_Tracker(t_v_star);
 
-    printf("\t3.1) u*, v* trackers are saved and close!\n");
+    printf("\t3.1) u*, v* trackers are saved and closed!\n");
+
+    // Now that u* and v* are computed, we can compute the rhs
+    printf("\t3.2) Tracking rhs\n");
+    Tracker *t_rhs = track_mesh(mesh->p, mesh->dt);
+    FILE *fp_rhs = fopen("../data/test_rhs.txt", "w+");
+    save_header(t_rhs, mesh->p->x, mesh->p->y, fp_rhs);
+
+    compute_rhs(mesh, mesh->p->val2, mesh->dt);
+
+    save_tracking_state(t_rhs, 0.0, fp_rhs);
+    fclose(fp_rhs);
+    free_Tracker(t_rhs);
+
+    printf("\t3.2) rhs tracker is saved and closed!\n");
 }
 
 int main(int argc, char *argv[]){
@@ -409,7 +423,7 @@ int main(int argc, char *argv[]){
     PoissonData *poisson = (PoissonData *) malloc(sizeof(PoissonData));
     initialize_poisson_solver(poisson, mesh);
 
-    int debug = 0;
+    int debug = 1;
 
     if (debug) {
         printf("Entered debugging mode\n");
@@ -424,8 +438,8 @@ int main(int argc, char *argv[]){
 
     double endState = 1;
 
-    int every_n = 200;
-    int max_n = 2000;
+    int every_n = 50*20;
+    int max_n = 50*200;
 
     printf("Opening files\n");
     Mesh *meshes[N_MESH] = {mesh->w, mesh->u, mesh->v, mesh->p};
