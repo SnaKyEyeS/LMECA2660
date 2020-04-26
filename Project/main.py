@@ -41,7 +41,10 @@ def read_file(filename):
             count += 1
         file.close()
 
-    return n_x, n_y, x, y, n_status, data_generator(n_status)
+    if ('nu' in parameters) and ('dt' in parameters):
+        return n_x, n_y, x, y, n_status, data_generator(n_status), parameters['nu'], parameters['dt']
+    else:
+        return n_x, n_y, x, y, n_status, data_generator(n_status)
 
 def normal(theta, radius):
     U = np.cos(theta) * radius
@@ -57,7 +60,9 @@ def debug_mesh(filename, **kwargs):
 
     basename = os.path.splitext(os.path.basename(filename))[0]
 
-    n_x, n_y, x, y, _, data_generator = read_file(filename)
+    n_x, n_y, x, y, _, data_generator, nu, dt = read_file(filename)
+
+    print(f'Loaded nu = {nu} and dt = {dt}')
 
     analytical = None
 
@@ -65,7 +70,7 @@ def debug_mesh(filename, **kwargs):
         func = get_function()
         r = np.hypot(x, y)
         theta = np.arctan2(y, x)
-        analytical = ne.evaluate(func, local_dict={'r':r, 't': theta, 'theta': theta, 'dt': 2e-5, 'nu': 1.11e-4})
+        analytical = ne.evaluate(func, local_dict={'r':r, 't': theta, 'theta': theta, 'dt': dt, 'nu': nu})
 
     for status, val_1, val_2 in data_generator:
 

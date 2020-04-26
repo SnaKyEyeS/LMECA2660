@@ -106,8 +106,8 @@ void compute_grad(MACMesh *mesh, double *res_x, double *res_y, GradientType type
             h1 = mesh->v->h1[ind];
             h2 = mesh->v->h2[ind];
 
-            ind_p_bottom = index(i, j, mesh->p->n2, 0, -1);
-            ind_p_up = index(i, j, mesh->p->n2, 0, 0);
+            ind_p_bottom    = index(i, j, mesh->p->n2, 0, -1);
+            ind_p_up        = index(i, j, mesh->p->n2, 0, 0);
 
             res_y[ind] = (field[ind_p_up] - field[ind_p_bottom]) / (d2*h2);
         }
@@ -487,8 +487,8 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
                 dv_d2 = (v[ind_v_up]   - v[ind_v_bottom]) / (2*d2);
                 // Order is important !
                 double U[4] = {
-                    0.0,
-                    0.0,
+                    u[ind_u_bottom_left],
+                    u[ind_u_up_left],
                     u[ind_u_up_right],
                     u[ind_u_bottom_right]
                 };
@@ -499,8 +499,8 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
                 dv_d2 = (v[ind_v_up]           - v[ind_v_bottom])           / (2*d2);
                 // Order is important !
                 double U[4] = {
-                    0.0,
-                    0.0,
+                    u[ind_u_bottom_left],
+                    u[ind_u_up_left],
                     u[ind_u_up_right],
                     u[ind_u_bottom_right]
                 };

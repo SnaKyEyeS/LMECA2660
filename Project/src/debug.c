@@ -22,13 +22,14 @@ void solenoidal_speed(double r, double theta, double *u, double *v) {
 /*
  * Tracker will track values in both normal and tangential directions
  */ 
-Tracker *init_Tracker(double n1, double n2, double *val1, double *val2) {
+Tracker *init_Tracker(double n1, double n2, double *val1, double *val2, double dt) {
     Tracker *t = (Tracker *) malloc(sizeof(Tracker));
     t->n1 = n1;
     t->n2 = n2;
     t->val1 = val1;
     t->val2 = val2;
     t->n = n1 * n2;
+    t->dt = dt;
 
     return t;
 }
@@ -37,12 +38,12 @@ void free_Tracker(Tracker *t) {
     free(t);
 }
 
-Tracker *track_mesh(Mesh *mesh) {
-    return init_Tracker(mesh->n1, mesh->n2, mesh->val1, mesh->val2);
+Tracker *track_mesh(Mesh *mesh, double dt) {
+    return init_Tracker(mesh->n1, mesh->n2, mesh->val1, mesh->val2, dt);
 }
 
 void save_header(Tracker *t, double *x, double *y, FILE *fp) {
-    fprintf(fp, "{'n1': %d, 'n2': %d}\n", t->n1, t->n2);
+    fprintf(fp, "{'n1': %d, 'n2': %d, 'dt':%.10f, 'nu':%.10f}\n", t->n1, t->n2, t->dt, NU);
     save_array(x, t->n, fp);
     save_array(y, t->n, fp);
 }

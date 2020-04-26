@@ -4,7 +4,7 @@ analytical_solutions = {
     'u': '1/2 * r * sin(theta)',
     'v': 'r * cos(theta)',
     'w': '3/2 * cos(theta)',
-    'lapl_x': '3/2 * sin(theta)',
+    'lapl_x': '3/2 * sin(theta) / r',
     'lapl_y': '0*r',
     'h_x': 'r/4 * sin(theta)**2 - r/2 * cos(theta)**2',
     'h_y': '0*r',

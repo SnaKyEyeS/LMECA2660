@@ -131,6 +131,7 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic) {
 
     // If first iteration, we use euler explicit
     if (ic->n == 0) {
+        printf("First itation with euleur explicit\n");
         // u*
         for (int i = 1; i < mesh->u->n1-1; i++) {
             for (int j = 0; j < mesh->u->n2; j++) {
@@ -222,25 +223,26 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic) {
 
 void run_tests() {
     // Initialize Mesh
-    MACMesh *mesh = init_mac_mesh(AIRFOIL);
+    MACMesh *mesh = init_mac_mesh(CYLINDER);
     IterateCache *ic = initIterateCache(mesh);
 
     // Initialize Poisson solver
     PoissonData *poisson = (PoissonData *) malloc(sizeof(PoissonData));
     initialize_poisson_solver(poisson, mesh);
 
+    /////////////     1     /////////////
     printf("1) Tracking initialisation of u, v and p\n");
 
     // Speed tracker
-    Tracker *t_u = track_mesh(mesh->u);
+    Tracker *t_u = track_mesh(mesh->u, mesh->dt);
     FILE *fp_u = fopen("../data/test_u.txt", "w+");
     save_header(t_u, mesh->u->x, mesh->u->y, fp_u);
 
-    Tracker *t_v = track_mesh(mesh->v);
+    Tracker *t_v = track_mesh(mesh->v, mesh->dt);
     FILE *fp_v = fopen("../data/test_v.txt", "w+");
     save_header(t_v, mesh->v->x, mesh->v->y, fp_v);
     // Pressure tracker
-    Tracker *t_p = track_mesh(mesh->p);
+    Tracker *t_p = track_mesh(mesh->p, mesh->dt);
     FILE *fp_p = fopen("../data/test_p.txt", "w+");
     save_header(t_p, mesh->p->x, mesh->p->y, fp_p);
 
@@ -263,15 +265,15 @@ void run_tests() {
 
     printf("1) u, v and p trackers are saved and closed!\n");
 
-
+    /////////////     2     /////////////
     printf("2) Tracking numerical methods individually\n");
     printf("\t2.1) Tracking H\n");
     // H tracker, content will be save into val2 (!) of u and v
-    Tracker *t_h_x = track_mesh(mesh->u);
+    Tracker *t_h_x = track_mesh(mesh->u, mesh->dt);
     FILE *fp_h_x = fopen("../data/test_h_x.txt", "w+");
     save_header(t_h_x, mesh->u->x, mesh->u->y, fp_h_x);
 
-    Tracker *t_h_y = track_mesh(mesh->v);
+    Tracker *t_h_y = track_mesh(mesh->v, mesh->dt);
     FILE *fp_h_y = fopen("../data/test_h_y.txt", "w+");
     save_header(t_h_y, mesh->v->x, mesh->v->y, fp_h_y);
 
@@ -286,17 +288,21 @@ void run_tests() {
     fclose(fp_h_y);
     free_Tracker(t_h_y);
 
-    printf("\t2.1) H trackers are saved and close!\n");
+    printf("\t2.1) H trackers are saved and closed!\n");
 
-    printf("\t2.2) Tracking Laplacian\n");
+    printf("\t2.2) Tracking Laplacian and omega\n");
     // Laplacian tracker, content will be save into val2 (!) of u and v
-    Tracker *t_lapl_x = track_mesh(mesh->u);
+    Tracker *t_lapl_x = track_mesh(mesh->u, mesh->dt);
     FILE *fp_lapl_x = fopen("../data/test_lapl_x.txt", "w+");
     save_header(t_lapl_x, mesh->u->x, mesh->u->y, fp_lapl_x);
 
-    Tracker *t_lapl_y = track_mesh(mesh->v);
+    Tracker *t_lapl_y = track_mesh(mesh->v, mesh->dt);
     FILE *fp_lapl_y = fopen("../data/test_lapl_y.txt", "w+");
     save_header(t_lapl_y, mesh->v->x, mesh->v->y, fp_lapl_y);
+
+    Tracker *t_w = track_mesh(mesh->w, mesh->dt);
+    FILE *fp_w = fopen("../data/test_w.txt", "w+");
+    save_header(t_w, mesh->w->x, mesh->w->y, fp_w);
 
     compute_diffusive(mesh, mesh->u->val2, mesh->v->val2, 1.0);
 
@@ -309,15 +315,19 @@ void run_tests() {
     fclose(fp_lapl_y);
     free_Tracker(t_lapl_y);
 
-    printf("\t2.2) Laplacian trackers are saved and close!\n");
+    save_tracking_state(t_w, 0.0, fp_w);
+    fclose(fp_w);
+    free_Tracker(t_w);
+
+    printf("\t2.2) Laplacian and omega trackers are saved and closed!\n");
 
     printf("\t2.3) Tracking grad P\n");
     // Grap P tracker, content will be save into val2 (!) of u and v
-    Tracker *t_grad_p_x = track_mesh(mesh->u);
+    Tracker *t_grad_p_x = track_mesh(mesh->u, mesh->dt);
     FILE *fp_grad_p_x = fopen("../data/test_grad_p_x.txt", "w+");
     save_header(t_grad_p_x, mesh->u->x, mesh->u->y, fp_grad_p_x);
 
-    Tracker *t_grad_p_y = track_mesh(mesh->v);
+    Tracker *t_grad_p_y = track_mesh(mesh->v, mesh->dt);
     FILE *fp_grad_p_y = fopen("../data/test_grad_p_y.txt", "w+");
     save_header(t_grad_p_y, mesh->v->x, mesh->v->y, fp_grad_p_y);
 
@@ -332,8 +342,9 @@ void run_tests() {
     fclose(fp_grad_p_y);
     free_Tracker(t_grad_p_y);
 
-    printf("\t2.3) Grad P trackers are saved and close!\n");
+    printf("\t2.3) Grad P trackers are saved and closed!\n");
 
+    /////////////     3     /////////////
     // Debuging iterations
 
     printf("3) Tracking first iteration\n");
@@ -343,11 +354,11 @@ void run_tests() {
     // 1) u*, v* tracker
 
     printf("\t3.1) Tracking u*, v*\n");
-    Tracker *t_u_star = track_mesh(mesh->u);
+    Tracker *t_u_star = track_mesh(mesh->u, mesh->dt);
     FILE *fp_u_star = fopen("../data/test_u_star.txt", "w+");
     save_header(t_u_star, mesh->u->x, mesh->u->y, fp_u_star);
 
-    Tracker *t_v_star = track_mesh(mesh->v);
+    Tracker *t_v_star = track_mesh(mesh->v, mesh->dt);
     FILE *fp_v_star = fopen("../data/test_v_star.txt", "w+");
     save_header(t_v_star, mesh->v->x, mesh->v->y, fp_v_star);
 
@@ -379,7 +390,7 @@ int main(int argc, char *argv[]){
     PoissonData *poisson = (PoissonData *) malloc(sizeof(PoissonData));
     initialize_poisson_solver(poisson, mesh);
 
-    int debug = 1;
+    int debug = 0;
 
     if (debug) {
         printf("Entered debugging mode\n");
@@ -394,7 +405,7 @@ int main(int argc, char *argv[]){
 
     double endState = 1;
 
-    int every_n = 100;
+    int every_n = 200;
     int max_n = 2000;
 
     printf("Opening files\n");
