@@ -29,10 +29,11 @@ void compute_rhs(MACMesh *mesh, double *result, double dt) {
         for (int j = 0; j < mesh->p->n2; j++) {
             ind = i*mesh->p->n2 + j;
 
+            /*
             if (ind == 0) {
                 result[ind] = 0.0;
                 continue;
-            }
+            }*/
 
             ind_u_left  = index(i, j, mesh->u->n2, 0, 0);
             ind_u_right = index(i, j, mesh->u->n2, 1, 0);
