@@ -171,16 +171,15 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic) {
     }
 
     // Fill u* boundaries
-    /*
-    int ind_inner, ind_outer;
-
-    for (int j = 0; j < mesh->u->n2; j++) {
-        ind_inner = j;
-        ind_outer = (mesh->u->n1-1)*(mesh->u->n2) + j;
-
-        u_star[ind_inner] = u[ind_inner];
-        u_star[ind_outer] = u[ind_outer];
-    }*/
+    // int ind_inner, ind_outer;
+    //
+    // for (int j = 0; j < mesh->u->n2; j++) {
+    //     ind_inner = j;
+    //     ind_outer = (mesh->u->n1-1)*(mesh->u->n2) + j;
+    //
+    //     u_star[ind_inner] = u[ind_inner];
+    //     u_star[ind_outer] = u[ind_outer];
+    // }
 
     // (2) Poisson solver
 

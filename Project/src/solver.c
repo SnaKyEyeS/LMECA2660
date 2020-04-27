@@ -29,11 +29,10 @@ void compute_rhs(MACMesh *mesh, double *result, double dt) {
         for (int j = 0; j < mesh->p->n2; j++) {
             ind = i*mesh->p->n2 + j;
 
-            /*
             if (ind == 0) {
                 result[ind] = 0.0;
                 continue;
-            }*/
+            }
 
             ind_u_left  = index(i, j, mesh->u->n2, 0, 0);
             ind_u_right = index(i, j, mesh->u->n2, 1, 0);
@@ -186,6 +185,12 @@ void compute_omega(MACMesh *mesh) {
                                 -  3*v[ind_v_left_2] *h2_left_2  +  1*v[ind_v_left_3]*h2_left_3) / (24*d1);
 
             } else if (i == mesh->w->n1-1) {
+                // Set the ghost point value such that w = 0 on the outer bourder
+                diff_h1_u_d2 = (  1*u[ind_u_down_2]*h1_down_2 - 27*u[ind_u_down_1]*h1_down_1
+                                - 1*u[ind_u_up_2]  *h1_up_2   + 27*u[ind_u_up_1]  *h1_up_1  ) / (24*d2);
+                v[ind_v_right_1] = (24*d1*diff_h1_u_d2 + 21*h2_left_1*v[ind_v_left_1]
+                                    + 3*h2_left_2*v[ind_v_left_2] - h2_left_3*v[ind_v_left_3]) / h2_right_1;
+
                 mesh->w->val1[ind] = 0.0;
                 continue;
 
@@ -397,11 +402,8 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
             // need to check the interpolation (I took the opposite of that of the left wall)
             // and the wall velocity for v !
             else if (i == mesh->v->n1-1) {                      // If at r = Re
-                ind_w_wall = index(i, j, mesh->w->n2, 1, 0);    // We need the orientation of the mesh at the wall
                 ind_v_left_left = index(i, j, mesh->v->n2, -2, 0);
-                theta = mesh->w->theta[ind_w_wall];
-                v_wall_right = 0; // TODO: le calculer tq oméga = 0 à l'extérieur
-                v_ghost_right = -(v[ind_v_left_left] - 5*v[ind_v_left] + 15*v[ind] - 16*v_wall_right)/5;
+                v_ghost_right = -(v[ind_v_left_left] - 5*v[ind_v_left] + 15*v[ind] - 16*v[ind_v_right])/5;
                 dv_d1 = (v_ghost_right - v[ind_v_left])   / (2*d1);
                 dv_d2 = (v[ind_v_up]   - v[ind_v_bottom]) / (2*d2);
                 // Order is important !
