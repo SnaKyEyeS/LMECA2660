@@ -133,7 +133,7 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic) {
     if (ic->n == 0) {
         printf("First iteration with Euleur explicit\n");
         // u*
-        for (int i = 0; i < mesh->u->n1; i++) {
+        for (int i = 1; i < mesh->u->n1-1; i++) {
             for (int j = 0; j < mesh->u->n2; j++) {
                 ind = i*mesh->u->n2 + j;
 
@@ -152,7 +152,7 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic) {
     }
     else {
         // u*
-        for (int i = 0; i < mesh->u->n1; i++) {
+        for (int i = 1; i < mesh->u->n1-1; i++) {
             for (int j = 0; j < mesh->u->n2; j++) {
                 ind = i*mesh->u->n2 + j;
 
@@ -423,7 +423,7 @@ int main(int argc, char *argv[]){
     PoissonData *poisson = (PoissonData *) malloc(sizeof(PoissonData));
     initialize_poisson_solver(poisson, mesh);
 
-    int debug = 1;
+    int debug = 0;
 
     if (debug) {
         printf("Entered debugging mode\n");

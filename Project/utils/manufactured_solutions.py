@@ -26,11 +26,11 @@ analytical_solutions = {
     'h_x': '2 * R**2 * cos(2 * theta) / (r**3) - 2 * R**4 / r**5',
     'h_y': '2 * R**2 * sin(2 * theta) / (r**3)',
     'p': '-1/2 * (1 - R**2 / r**2)**2 * cos(theta)**2',
-    'grad_p_x': '2 * R**2 * cos(theta) **2 * (R**2 - r**2) / r**5',
-    'grad_p_y': '-sin(2 * theta) * (r**4 - 2 * R**2 * r**2 + 2 * R**4) / r**5',
+    'grad_p_x': '2*R**2 * cos(theta)**2 * (R**2 - r**2) / r**5',
+    'grad_p_y': 'sin(2*theta) * (R**2 - r**2)**2 / (2*r**5)',
     'u_star': '{u} + dt * (-{h_x} - {grad_p_x} + nu * {lapl_x})',
     'v_star': '{v} + dt * (-{h_y} - {grad_p_y} + nu * {lapl_y})',
-    'rhs' : '- 8 * R**4 / r**6 + 2 * R**2 * cos(theta)**2 / r + (R**2 - r**2) * (2 * cos(theta)**2 - 1) / r**6'
+    'rhs' : '-(r**4 * cos(2*theta) - 3*R**4 * cos(2*theta) + 4*R**4 + 2*R**2 * r**2) / r**6'
 }
 
 pattern = r'{((?:[^\\{}]+|\\.)*)}'
