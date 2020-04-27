@@ -138,6 +138,7 @@ MACMesh *init_mac_mesh(MappingType type) {
 
                     // The last column of v values is only to store a "ghost point.
                     // Thus, we resize the mesh to its real value ! (mesh->v was initialized with n1 that was one bigger than required)
+                    mesh->v->n  -= mesh->v->n2;
                     mesh->v->n1 -= 1;
                 }
             }
