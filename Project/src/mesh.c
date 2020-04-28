@@ -136,12 +136,12 @@ MACMesh *init_mac_mesh(MappingType type) {
                     cylinder_init_velocity(mapping, U_INF, xi1, xi2, NULL, &mesh->v->val1[ind]);
                     mesh->v->val2[ind] = 0;
 
-                    // The last column of v values is only to store a "ghost point.
-                    // Thus, we resize the mesh to its real value ! (mesh->v was initialized with n1 that was one bigger than required)
-                    mesh->v->n  -= mesh->v->n2;
-                    mesh->v->n1 -= 1;
                 }
             }
+            // The last column of v values is only to store a "ghost point.
+            // Thus, we resize the mesh to its real value ! (mesh->v was initialized with n1 that was one bigger than required)
+            mesh->v->n  -= mesh->v->n2;
+            mesh->v->n1 -= 1;
 
             mesh->p = init_mesh(mesh->n1, mesh->n2+1, mesh->d1, mesh->d2);
             for (int i = 0; i < mesh->p->n1; i++) {

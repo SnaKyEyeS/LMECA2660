@@ -446,10 +446,10 @@ int main(int argc, char *argv[]){
 
     double endState = 1;
 
-    int every_n = 50*20;
-    every_n = 1;
-    int max_n = 50*200;
-    max_n = 20;
+    int every_n = 1*20;
+    //every_n = 1;
+    int max_n = 1*200;
+    //max_n = 20;
 
     printf("Opening files\n");
     Mesh *meshes[N_MESH] = {mesh->w, mesh->u, mesh->v, mesh->p};

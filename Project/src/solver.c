@@ -193,7 +193,11 @@ void compute_omega(MACMesh *mesh) {
                                 +  5*v[ind_v_left_3] *h2_left_3  -  1*v[ind_v_left_4]*h2_left_4) / (24*d1);
 
             } else if (i == mesh->w->n1-1) {
-                // w = 0 on the outer bourder
+                // Set the ghost point value such that w = 0 on the outer bourder
+                diff_h1_u_d2 = (  1*u[ind_u_down_2]*h1_down_2 - 27*u[ind_u_down_1]*h1_down_1
+                                - 1*u[ind_u_up_2]  *h1_up_2   + 27*u[ind_u_up_1]  *h1_up_1  ) / (24*d2);
+                v[ind_v_right_1] = (24*d1*diff_h1_u_d2 + 21*h2_left_1*v[ind_v_left_1]
+                                    + 3*h2_left_2*v[ind_v_left_2] - h2_left_3*v[ind_v_left_3]) / h2_right_1;
                 mesh->w->val1[ind] = 0.0;
                 continue;
 
@@ -402,11 +406,12 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
                 };
                 u_avg = interpolate2D(r_1, r_2, theta_1, theta_2, U, r, theta);
             }
+            
             // need to check the interpolation (I took the opposite of that of the left wall)
             // and the wall velocity for v !
             else if (i == mesh->v->n1-1) {                      // If at r = Re
                 ind_v_left_left = index(i, j, mesh->v->n2, -2, 0);
-                v_ghost_right = -(v[ind_v_left_left] - 5*v[ind_v_left] + 15*v[ind] - 16*v[ind_v_right])/5;
+                v_ghost_right = v[ind_v_right];
                 dv_d1 = (v_ghost_right - v[ind_v_left])   / (2*d1);
                 dv_d2 = (v[ind_v_up]   - v[ind_v_bottom]) / (2*d2);
                 // Order is important !
