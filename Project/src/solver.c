@@ -29,10 +29,11 @@ void compute_rhs(MACMesh *mesh, double *result, double dt) {
         for (int j = 0; j < mesh->p->n2; j++) {
             ind = i*mesh->p->n2 + j;
 
+            /*
             if (ind == 0) {
                 result[ind] = 0.0;
                 continue;
-            }
+            }*/
 
             ind_u_left  = index(i, j, mesh->u->n2, 0, 0);
             ind_u_right = index(i, j, mesh->u->n2, 1, 0);
@@ -124,7 +125,7 @@ void compute_omega(MACMesh *mesh) {
     double *v = mesh->v->val1;
 
     int ind;
-    int ind_v_right_1, ind_v_right_2, ind_v_right_3, ind_v_right_4;
+    int ind_v_right_1, ind_v_right_2, ind_v_right_3, ind_v_right_4, ind_v_right_5;
     int ind_v_left_1, ind_v_left_2, ind_v_left_3, ind_v_left_4;
     int ind_u_up_1, ind_u_up_2;
     int ind_u_down_1, ind_u_down_2;
@@ -132,7 +133,7 @@ void compute_omega(MACMesh *mesh) {
     double d1 = mesh->w->d1;
     double d2 = mesh->w->d2;
     double h1, h2;
-    double h2_right_1, h2_right_2, h2_right_3, h2_right_4;
+    double h2_right_1, h2_right_2, h2_right_3, h2_right_4, h2_right_5;
     double h2_left_1 , h2_left_2 , h2_left_3 , h2_left_4 ;
     double h1_up_1, h1_up_2, h1_down_1, h1_down_2;
     double diff_h2_v_d1, diff_h1_u_d2;
@@ -141,6 +142,7 @@ void compute_omega(MACMesh *mesh) {
         for (int j = 0; j < mesh->w->n2; j++) {
             ind = i*mesh->w->n2 + j;
 
+            ind_v_right_5   = index(i, j, mesh->v->n2, 4, 0);
             ind_v_right_4   = index(i, j, mesh->v->n2, 3, 0);
             ind_v_right_3   = index(i, j, mesh->v->n2, 2, 0);
             ind_v_right_2   = index(i, j, mesh->v->n2, 1, 0);
@@ -158,14 +160,10 @@ void compute_omega(MACMesh *mesh) {
             h1 = mesh->w->h1[ind];
             h2 = mesh->w->h2[ind];
 
-            h2_right_4  = mesh->v->h2[ind_v_right_4];
-            h2_right_3  = mesh->v->h2[ind_v_right_3];
             h2_right_2  = mesh->v->h2[ind_v_right_2];
             h2_right_1  = mesh->v->h2[ind_v_right_1];
             h2_left_1   = mesh->v->h2[ind_v_left_1];
             h2_left_2   = mesh->v->h2[ind_v_left_2];
-            h2_left_3   = mesh->v->h2[ind_v_left_3];
-            h2_left_4   = mesh->v->h2[ind_v_left_4];
 
             h1_up_2     = mesh->u->h1[ind_u_up_2];
             h1_up_1     = mesh->u->h1[ind_u_up_1];
@@ -173,24 +171,29 @@ void compute_omega(MACMesh *mesh) {
             h1_down_2   = mesh->u->h1[ind_u_down_2];
 
             if (i == 0) {
-                diff_h2_v_d1 = (- 71*v[ind_v_right_1]*h2_right_1 + 141*v[ind_v_right_2]*h2_right_2
-                                - 93*v[ind_v_right_3]*h2_right_3 + 23 *v[ind_v_right_4]*h2_right_4) / (24*d1);
+                h2_right_5  = mesh->v->h2[ind_v_right_5];
+                h2_right_4  = mesh->v->h2[ind_v_right_4];
+                h2_right_3  = mesh->v->h2[ind_v_right_3];
+                diff_h2_v_d1 = (- 93*v[ind_v_right_1] *h2_right_1  +229*v[ind_v_right_2]*h2_right_2
+                                -225*v[ind_v_right_3] *h2_right_3  +111*v[ind_v_right_4]*h2_right_4
+                                                                   - 22*v[ind_v_right_5]*h2_right_5) / (24*d1);
 
             } else if (i == 1) {
-                diff_h2_v_d1 = (- 23*v[ind_v_left_1] *h2_left_1  + 21*v[ind_v_right_1]*h2_right_1
-                                +  3*v[ind_v_right_2]*h2_right_2 -  1*v[ind_v_right_3]*h2_right_3) / (24*d1);
+                h2_right_4  = mesh->v->h2[ind_v_right_4];
+                h2_right_3  = mesh->v->h2[ind_v_right_3];
+                diff_h2_v_d1 = (- 22*v[ind_v_left_1]*h2_left_1
+                                + 17*v[ind_v_right_1] *h2_right_1  +  9*v[ind_v_right_2]*h2_right_2
+                                -  5*v[ind_v_right_3] *h2_right_3  +  1*v[ind_v_right_4]*h2_right_4) / (24*d1);
 
             } else if (i == mesh->w->n1-2) {
-                diff_h2_v_d1 = (  23*v[ind_v_right_1]*h2_right_1 - 21*v[ind_v_left_1]*h2_left_1
-                                -  3*v[ind_v_left_2] *h2_left_2  +  1*v[ind_v_left_3]*h2_left_3) / (24*d1);
+                h2_left_3   = mesh->v->h2[ind_v_left_3];
+                h2_left_4   = mesh->v->h2[ind_v_left_4];
+                diff_h2_v_d1 = (  22*v[ind_v_right_1]*h2_right_1
+                                - 17*v[ind_v_left_1] *h2_left_1  -  9*v[ind_v_left_2]*h2_left_2
+                                +  5*v[ind_v_left_3] *h2_left_3  -  1*v[ind_v_left_4]*h2_left_4) / (24*d1);
 
             } else if (i == mesh->w->n1-1) {
-                // Set the ghost point value such that w = 0 on the outer bourder
-                diff_h1_u_d2 = (  1*u[ind_u_down_2]*h1_down_2 - 27*u[ind_u_down_1]*h1_down_1
-                                - 1*u[ind_u_up_2]  *h1_up_2   + 27*u[ind_u_up_1]  *h1_up_1  ) / (24*d2);
-                v[ind_v_right_1] = (24*d1*diff_h1_u_d2 + 21*h2_left_1*v[ind_v_left_1]
-                                    + 3*h2_left_2*v[ind_v_left_2] - h2_left_3*v[ind_v_left_3]) / h2_right_1;
-
+                // w = 0 on the outer bourder
                 mesh->w->val1[ind] = 0.0;
                 continue;
 
@@ -269,10 +272,10 @@ double interpolate2D(double x_1, double x_2, double y_1, double y_2, double U[4]
     double dx_1 = x - x_1, dx_2 = x - x_2;
     double dy_1 = y - y_1, dy_2 = y - y_2;
 
-    phi_0 =   dx_1 * dy_1 * den;
-    phi_1 = - dx_1 * dy_2 * den;
-    phi_2 =   dx_2 * dy_2 * den;
-    phi_3 = - dx_2 * dy_1 * den;
+    phi_0 =   dx_2 * dy_2 * den;
+    phi_1 = - dx_2 * dy_1 * den;
+    phi_2 =   dx_1 * dy_1 * den;
+    phi_3 = - dx_1 * dy_2 * den;
 
     return U[0] * phi_0 + U[1] * phi_1 + U[2] * phi_2 + U[3] * phi_3;
 }

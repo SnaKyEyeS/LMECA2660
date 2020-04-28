@@ -131,7 +131,7 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic) {
 
     // If first iteration, we use euler explicit
     if (ic->n == 0) {
-        printf("First iteration with Euleur explicit\n");
+        printf("First iteration with Euleur explicit.\n");
         // u*
         for (int i = 1; i < mesh->u->n1-1; i++) {
             for (int j = 0; j < mesh->u->n2; j++) {
@@ -222,20 +222,29 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic) {
     // Compute Re_w,max
     double x, y, r, h;
     double Re_w, Re_w_max = -1;
+    int ind_max = 0;
     for (int ind = 0; ind < mesh->w->n; ind++) {
         x = mesh->w->x[ind];
         y = mesh->w->y[ind];
-        r = sqrt(x*x + y*y);
+        r = hypot(x, y);
 
-        if (r <= 12) {
+        // r <= 12 * D (D = 1)
+        if (r <= 12.0) {
             h = fmax(mesh->w->h1[ind]*mesh->w->d1, mesh->w->h2[ind]*mesh->w->d2);
             Re_w = fabs(mesh->w->val1[ind]) * h*h / NU;
             if (Re_w > Re_w_max) {
+
+                // printf("w[%d] = %f\n", ind, mesh->w->val1[ind]);
+                ind_max = ind;
                 Re_w_max = Re_w;
             }
         }
     }
-    printf("\tMesh Reynolds = %f\n", Re_w_max);
+
+    x = mesh->w->x[ind_max];
+    y = mesh->w->y[ind_max];
+    r = hypot(x, y);
+    printf("\tMesh Reynolds = %f, r =%f\n", Re_w_max, r);
 
 }
 
@@ -438,7 +447,9 @@ int main(int argc, char *argv[]){
     double endState = 1;
 
     int every_n = 50*20;
+    every_n = 1;
     int max_n = 50*200;
+    max_n = 20;
 
     printf("Opening files\n");
     Mesh *meshes[N_MESH] = {mesh->w, mesh->u, mesh->v, mesh->p};
