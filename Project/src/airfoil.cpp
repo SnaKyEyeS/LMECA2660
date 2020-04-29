@@ -33,7 +33,8 @@ AirfoilMapping *init_airfoil_mapping() {
 	mapping->xi2_lim[1] = mapping->xi2_lim[0] + mapping->H;
 	mapping->dxi2 = mapping->H/mapping->n_xi2;
 
-	mapping->Lc = mapping->bj;
+	//mapping->Lc = mapping->bj;
+	mapping->Lc = mapping->reg*4.0*mapping->bj;
 	return mapping;
 }
 
