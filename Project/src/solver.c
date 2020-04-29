@@ -328,6 +328,15 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
             r       = hypot(mesh->u->x[ind], mesh->u->y[ind]);
             theta   = mesh->u->theta[ind];
 
+
+            if (i == 0) {
+                // u = 0 and v = CL
+                // H_x = v * (du_d2 / h2 - v * dh2_d1 / (h1 * h2))
+                v_avg = - 2 * U_INF * sin(theta);
+                res_x[ind] = v_avg * (du_d2/h2 - v_avg*dh2_d1/(h1*h2));
+                continue;
+            }
+
             du_d1 = (u[ind_u_right] - u[ind_u_left])   / (2*d1);
             r_1 = hypot(mesh->v->x[ind_v_bottom_left],  mesh->v->y[ind_v_bottom_left]);
             r_2 = hypot(mesh->v->x[ind_v_bottom_right], mesh->v->y[ind_v_bottom_right]);
@@ -355,7 +364,7 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
     double theta_u_up_right, theta_u_bottom_right;
     double u_wall_up_right, u_wall_bottom_right;
     double v_ghost_left, v_ghost_right;
-    double v_wall_right;
+    double v_wall_left, v_wall_right;
 
     // Then compute in the y-direction
     double dv_d1, dv_d2, u_avg;
@@ -388,7 +397,11 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
 
             if (i == 0) {                                   // If at r = Ri
                 ind_v_right_right = index(i, j, mesh->v->n2, 2, 0);
-                v_ghost_left = -(v[ind_v_right_right] - 5*v[ind_v_right] + 15*v[ind] - 16*0)/5;   // We want v_wall = 0 !
+
+                // TODO: We should use "init velocity" to handle airfoil too
+
+                v_wall_left = - 2 * U_INF * sin(theta);
+                v_ghost_left = -(v[ind_v_right_right] - 5*v[ind_v_right] + 15*v[ind] - 16*v_wall_left)/5;   // We want v_wall = CL
                 dv_d1 = (v[ind_v_right] - v_ghost_left)    / (2*d1);
                 dv_d2 = (v[ind_v_up]    - v[ind_v_bottom]) / (2*d2);
                 // Order is important !
