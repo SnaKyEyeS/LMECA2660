@@ -29,11 +29,10 @@ void compute_rhs(MACMesh *mesh, double *result, double dt) {
         for (int j = 0; j < mesh->p->n2; j++) {
             ind = i*mesh->p->n2 + j;
 
-            /*
             if (ind == 0) {
                 result[ind] = 0.0;
                 continue;
-            }*/
+            }
 
             ind_u_left  = index(i, j, mesh->u->n2, 0, 0);
             ind_u_right = index(i, j, mesh->u->n2, 1, 0);
@@ -309,11 +308,6 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
             // We compute the indexes
             ind = i*mesh->u->n2 + j;
 
-            if (i == 0) {
-                res_x[ind] = 0.0;
-                continue;
-            }
-
             ind_u_left          = index(i, j, mesh->u->n2, -1, 0);
             ind_u_right         = index(i, j, mesh->u->n2, 1, 0);
             ind_u_up            = index(i, j, mesh->u->n2, 0, 1);
@@ -406,7 +400,7 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
                 };
                 u_avg = interpolate2D(r_1, r_2, theta_1, theta_2, U, r, theta);
             }
-            
+
             // need to check the interpolation (I took the opposite of that of the left wall)
             // and the wall velocity for v !
             else if (i == mesh->v->n1-1) {                      // If at r = Re
