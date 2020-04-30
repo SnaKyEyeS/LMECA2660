@@ -173,16 +173,23 @@ void compute_omega(MACMesh *mesh) {
                 h2_right_5  = mesh->v->h2[ind_v_right_5];
                 h2_right_4  = mesh->v->h2[ind_v_right_4];
                 h2_right_3  = mesh->v->h2[ind_v_right_3];
-                diff_h2_v_d1 = (- 93*v[ind_v_right_1] *h2_right_1  +229*v[ind_v_right_2]*h2_right_2
-                                -225*v[ind_v_right_3] *h2_right_3  +111*v[ind_v_right_4]*h2_right_4
-                                                                   - 22*v[ind_v_right_5]*h2_right_5) / (24*d1);
+
+                double v_ghost_left = -(v[ind_v_right_3] - 5*v[ind_v_right_2] + 15*v[ind_v_right_1])/5;
+                diff_h2_v_d1 = (- 22*v_ghost_left    *h2
+                                + 17*v[ind_v_right_1]*h2_right_1  +  9*v[ind_v_right_2]*h2_right_2
+                                -  5*v[ind_v_right_3]*h2_right_3  +  1*v[ind_v_right_4]*h2_right_4) / (24*d1);
+
+
+                // diff_h2_v_d1 = (- 93*v[ind_v_right_1] *h2_right_1  +229*v[ind_v_right_2]*h2_right_2
+                //                 -225*v[ind_v_right_3] *h2_right_3  +111*v[ind_v_right_4]*h2_right_4
+                //                                                    - 22*v[ind_v_right_5]*h2_right_5) / (24*d1);
 
             } else if (i == 1) {
                 h2_right_4  = mesh->v->h2[ind_v_right_4];
                 h2_right_3  = mesh->v->h2[ind_v_right_3];
-                diff_h2_v_d1 = (- 22*v[ind_v_left_1]*h2_left_1
-                                + 17*v[ind_v_right_1] *h2_right_1  +  9*v[ind_v_right_2]*h2_right_2
-                                -  5*v[ind_v_right_3] *h2_right_3  +  1*v[ind_v_right_4]*h2_right_4) / (24*d1);
+                diff_h2_v_d1 = (- 22*v[ind_v_left_1] *h2_left_1
+                                + 17*v[ind_v_right_1]*h2_right_1  +  9*v[ind_v_right_2]*h2_right_2
+                                -  5*v[ind_v_right_3]*h2_right_3  +  1*v[ind_v_right_4]*h2_right_4) / (24*d1);
 
             } else if (i == mesh->w->n1-1) {
                 h2_left_3   = mesh->v->h2[ind_v_left_3];

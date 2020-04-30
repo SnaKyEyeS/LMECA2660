@@ -233,8 +233,6 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic) {
             h = fmax(mesh->w->h1[ind]*mesh->w->d1, mesh->w->h2[ind]*mesh->w->d2);
             Re_w = fabs(mesh->w->val1[ind]) * h*h / NU;
             if (Re_w > Re_w_max) {
-
-                // printf("w[%d] = %f\n", ind, mesh->w->val1[ind]);
                 ind_max = ind;
                 Re_w_max = Re_w;
             }
@@ -431,10 +429,19 @@ int main(int argc, char *argv[]){
     PoissonData *poisson = (PoissonData *) malloc(sizeof(PoissonData));
     initialize_poisson_solver(poisson, mesh);
 
-    poisson_solver(poisson, mesh);
+    // poisson_solver(poisson, mesh);
     // save_mesh(mesh->p);
     // printf("%d\n", mesh->p->n1);
+    // printf("%d\n", mesh->p->n2);
     // exit(1);
+
+    // for (int j = 0; j < mesh->u->n2; j++) {
+    //     int ind_inner = j;
+    //     int ind_outer = (mesh->u->n1-1)*(mesh->u->n2) + j;
+    //
+    //     mesh->u->val1[ind_outer] = cos(mesh->u->theta[ind_outer]);
+    //     mesh->u->val1[ind_inner] = 0;
+    // }
 
     int debug = 0;
 
