@@ -189,7 +189,7 @@ void compute_omega(MACMesh *mesh) {
                 diff_h1_u_d2 = (  1*u[ind_u_down_2]*h1_down_2 - 27*u[ind_u_down_1]*h1_down_1
                                 - 1*u[ind_u_up_2]  *h1_up_2   + 27*u[ind_u_up_1]  *h1_up_1  ) / (24*d2);
                 v[ind_v_right_1] = (24*d1*diff_h1_u_d2 + 21*h2_left_1*v[ind_v_left_1]
-                                    + 3*h2_left_2*v[ind_v_left_2] - h2_left_3*v[ind_v_left_3]) / h2_right_1;
+                                    + 3*h2_left_2*v[ind_v_left_2] - h2_left_3*v[ind_v_left_3]) / (23*h2_right_1);
                 mesh->w->val1[ind] = 0.0;
                 continue;
 
