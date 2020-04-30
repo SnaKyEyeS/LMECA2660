@@ -161,8 +161,10 @@ MACMesh *init_mac_mesh(MappingType type) {
                 }
             }
 
-            double dt_min_fourier = FOURIER_MAX * mapping->h_wall_normal / NU;
-            double dt_min_CFL     = CFL_MAX * mapping->h_wall_normal / U_INF;
+            double dt_min_fourier = FOURIER_MAX * mapping->h_wall_normal * mapping->h_wall_normal / NU;
+            double dt_min_CFL     = CFL_MAX * mapping->h_wall_normal / (2*U_INF);
+            printf("dt fourier = %.10f\n", dt_min_fourier);
+            printf("dt CFL     = %.10f\n", dt_min_CFL);
             mesh->dt = fmin(dt_min_fourier, dt_min_CFL);
 
             free(mapping);
