@@ -137,7 +137,7 @@ void compute_omega(MACMesh *mesh) {
     double h1_up_1, h1_up_2, h1_down_1, h1_down_2;
     double diff_h2_v_d1, diff_h1_u_d2;
 
-    for (int i = 0; i < mesh->w->n1; i++) {
+    for (int i = mesh->w->n1-1; i >= 0; i--) {
         for (int j = 0; j < mesh->w->n2; j++) {
             ind = i*mesh->w->n2 + j;
 
