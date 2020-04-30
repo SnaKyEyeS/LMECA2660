@@ -382,9 +382,7 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
             if (i == 0) {                                   // If at r = Ri
                 ind_v_right_right = index(i, j, mesh->v->n2, 2, 0);
 
-                // TODO: We should use "init velocity" to handle airfoil too
-
-                v_wall_left = - 2 * U_INF * sin(theta);
+                v_wall_left = 0;
                 v_ghost_left = -(v[ind_v_right_right] - 5*v[ind_v_right] + 15*v[ind] - 16*v_wall_left)/5;   // We want v_wall = CL
                 dv_d1 = (v[ind_v_right] - v_ghost_left)    / (2*d1);
                 dv_d2 = (v[ind_v_up]    - v[ind_v_bottom]) / (2*d2);
