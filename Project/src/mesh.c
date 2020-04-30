@@ -44,7 +44,7 @@ MACMesh *init_mac_mesh(MappingType type) {
                 }
             }
 
-            mesh->v = init_mesh(mesh->n1, mesh->n2+1, mesh->d1, mesh->d2);
+            mesh->v = init_mesh(mesh->n1+1, mesh->n2+1, mesh->d1, mesh->d2);
             for (int i = 0; i < mesh->v->n1; i++) {
                 for (int j = 0; j < mesh->v->n2; j++) {
                     ind = i*mesh->v->n2 + j;
@@ -57,6 +57,10 @@ MACMesh *init_mac_mesh(MappingType type) {
                     mesh->v->val2[ind] = 0;
                 }
             }
+            // The last column of v values is only to store a "ghost point.
+            // Thus, we resize the mesh to its real value ! (mesh->v was initialized with n1 that was one bigger than required)
+            mesh->v->n  -= mesh->v->n2;
+            mesh->v->n1 -= 1;
 
             mesh->p = init_mesh(mesh->n1, mesh->n2+1, mesh->d1, mesh->d2);
             for (int i = 0; i < mesh->p->n1; i++) {
