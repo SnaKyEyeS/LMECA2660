@@ -184,13 +184,6 @@ void compute_omega(MACMesh *mesh) {
                                 + 17*v[ind_v_right_1] *h2_right_1  +  9*v[ind_v_right_2]*h2_right_2
                                 -  5*v[ind_v_right_3] *h2_right_3  +  1*v[ind_v_right_4]*h2_right_4) / (24*d1);
 
-            } else if (i == mesh->w->n1-2) {
-                h2_left_3   = mesh->v->h2[ind_v_left_3];
-                h2_left_4   = mesh->v->h2[ind_v_left_4];
-                diff_h2_v_d1 = (  22*v[ind_v_right_1]*h2_right_1
-                                - 17*v[ind_v_left_1] *h2_left_1  -  9*v[ind_v_left_2]*h2_left_2
-                                +  5*v[ind_v_left_3] *h2_left_3  -  1*v[ind_v_left_4]*h2_left_4) / (24*d1);
-
             } else if (i == mesh->w->n1-1) {
                 // Set the ghost point value such that w = 0 on the outer bourder
                 diff_h1_u_d2 = (  1*u[ind_u_down_2]*h1_down_2 - 27*u[ind_u_down_1]*h1_down_1
@@ -327,15 +320,6 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
 
             r       = hypot(mesh->u->x[ind], mesh->u->y[ind]);
             theta   = mesh->u->theta[ind];
-
-
-            if (i == 0) {
-                // u = 0 and v = CL
-                // H_x = v * (du_d2 / h2 - v * dh2_d1 / (h1 * h2))
-                v_avg = - 2 * U_INF * sin(theta);
-                res_x[ind] = v_avg * (du_d2/h2 - v_avg*dh2_d1/(h1*h2));
-                continue;
-            }
 
             du_d1 = (u[ind_u_right] - u[ind_u_left])   / (2*d1);
             r_1 = hypot(mesh->v->x[ind_v_bottom_left],  mesh->v->y[ind_v_bottom_left]);

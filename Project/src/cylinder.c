@@ -5,10 +5,10 @@ CylinderMapping *init_cylinder_mapping() {
     CylinderMapping *mapping = (CylinderMapping *) malloc(sizeof(CylinderMapping));
 
     // Fixed parameters
-    mapping->D = 1.0;                           // Fixé arbitrairement ???
+    mapping->D = 1.0/50.0;                           // Fixé arbitrairement ???
     mapping->R = mapping->D / 2.0;
     mapping->H = 50*mapping->D;                 // H = 50D, OK
-    mapping->h_wall_normal = 2.0e-4;            // On doit déterminer ces param pour avoir
+    mapping->h_wall_normal = mapping->D / 300;            // On doit déterminer ces param pour avoir
     mapping->gamma = 1.015;                     // Re_w = abs(w)*h_max² / nu < 40 dans la région 12D.
     mapping->n_xi2 = 360;
 
@@ -59,9 +59,7 @@ void cylinder_metrics(CylinderMapping *mapping, double xi1, double xi2, double *
     if (d2h1_dxi1dxi2) { *d2h1_dxi1dxi2 = 0.0; }
 
     // Mesh orientation
-    if (theta_mesh) {
-        *theta_mesh = xi2;        // Verifier sa definition ?
-    }
+    if (theta_mesh) { *theta_mesh = xi2; }
 }
 
 void cylinder_init_velocity(CylinderMapping *mapping, double U_inf, double xi1, double xi2, double *u_n, double *u_t) {
@@ -77,5 +75,5 @@ void cylinder_init_pressure(CylinderMapping *mapping, double U_inf, double xi1, 
     // ...
     double u_n, u_t;
     cylinder_init_velocity(mapping, U_inf, xi1, xi2, &u_n, &u_t);
-    *p = - (u_n*u_n) / 2.0;
+    *p = - (u_n*u_n + u_t*u_t) / 2.0;
 }

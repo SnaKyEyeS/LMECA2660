@@ -229,7 +229,7 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic) {
         r = hypot(x, y);
 
         // r <= 12 * D (D = 1)
-        if (r <= 12.0) {
+        if (r <= 12.0/50.0) {
             h = fmax(mesh->w->h1[ind]*mesh->w->d1, mesh->w->h2[ind]*mesh->w->d2);
             Re_w = fabs(mesh->w->val1[ind]) * h*h / NU;
             if (Re_w > Re_w_max) {
@@ -244,7 +244,7 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic) {
     x = mesh->w->x[ind_max];
     y = mesh->w->y[ind_max];
     r = hypot(x, y);
-    printf("\tMesh Reynolds = %f, r =%f\n", Re_w_max, r);
+    printf("\tMesh Reynolds = %f at r = %f\n", Re_w_max, r);
 
 }
 
@@ -431,6 +431,11 @@ int main(int argc, char *argv[]){
     PoissonData *poisson = (PoissonData *) malloc(sizeof(PoissonData));
     initialize_poisson_solver(poisson, mesh);
 
+    poisson_solver(poisson, mesh);
+    // save_mesh(mesh->p);
+    // printf("%d\n", mesh->p->n1);
+    // exit(1);
+
     int debug = 0;
 
     if (debug) {
@@ -446,10 +451,8 @@ int main(int argc, char *argv[]){
 
     double endState = 1;
 
-    int every_n = 1*20;
-    //every_n = 1;
-    int max_n = 1*200;
-    //max_n = 20;
+    int every_n = 1;
+    int max_n = 20;
 
     printf("Opening files\n");
     Mesh *meshes[N_MESH] = {mesh->w, mesh->u, mesh->v, mesh->p};
