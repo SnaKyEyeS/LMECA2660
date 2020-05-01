@@ -555,6 +555,7 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic, double t) {
     int ind_inner, ind_outer;
     double freq = 0.19 * mesh->Uinf / mesh->Lc;
     double theta;
+    int factor = (t < 1.0/freq);
 
     for (int j = 0; j < mesh->u->n2; j++) {
         ind_inner = j;
@@ -562,7 +563,7 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic, double t) {
         theta     = mesh->u->theta[ind_outer];
 
         u[ind_inner] = 0.0;
-        u[ind_outer] = mesh->Uinf*cos(theta) + mesh->Uinf*sin(2*M_PI*freq*t)*sin(theta) / 4;
+        u[ind_outer] = mesh->Uinf*cos(theta) + factor * mesh->Uinf*sin(2*M_PI*freq*t)*sin(theta) / 4;
     }
 
 
@@ -682,6 +683,10 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic, double t) {
     x = mesh->w->x[ind_max];
     y = mesh->w->y[ind_max];
     r = hypot(x, y);
-    printf("\tMesh Reynolds = %f at r = %f\n", Re_w_max, r);
 
+    if (factor) {
+        printf("\tMesh Reynolds = %f at r = %f - with perturbation\n", Re_w_max, r);
+    } else {
+        printf("\tMesh Reynolds = %f at r = %f\n", Re_w_max, r);
+    }
 }

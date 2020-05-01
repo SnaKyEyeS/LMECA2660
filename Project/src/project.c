@@ -208,7 +208,7 @@ int main(int argc, char *argv[]){
 
     double endState = 1.0;
 
-    int every_n = 200;
+    int every_n = 100;
     int max_n = ceil(endState / dt);
 
     printf("Opening files\n");
