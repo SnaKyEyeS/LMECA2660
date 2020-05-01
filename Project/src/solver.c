@@ -1,6 +1,6 @@
 #include "solver.h"
 
-// Compute indexes to handle periodicity
+// Compute indexes to handle periodicity over xi_2 axis
 int index(int i, int j, int N, int i_shift, int j_shift) {
     return (i+i_shift) * N + ((N+j+j_shift) % N);
 }
@@ -29,10 +29,11 @@ void compute_rhs(MACMesh *mesh, double *result, double dt) {
         for (int j = 0; j < mesh->p->n2; j++) {
             ind = i*mesh->p->n2 + j;
 
+            /*
             if (ind == 0) {
                 result[ind] = 0.0;
                 continue;
-            }
+            }*/
 
             ind_u_left  = index(i, j, mesh->u->n2, 0, 0);
             ind_u_right = index(i, j, mesh->u->n2, 1, 0);
@@ -55,8 +56,8 @@ void compute_rhs(MACMesh *mesh, double *result, double dt) {
 
 
 /*
- *  Computes the pressure gradient.
- *  On the border, we do not calculate those values: the velocities are known,
+ *  Computes the pressure or phi gradient.
+ *  On the borders, we do not calculate those values: the velocities are known,
  *  therefore we do not need it.
  */
 void compute_grad(MACMesh *mesh, double *res_x, double *res_y, GradientType type) {
@@ -264,27 +265,26 @@ void compute_diffusive(MACMesh *mesh, double *res_x, double *res_y, double nu) {
 }
 
 /*
- * Interpolates U at (x,y) in a rectangle with lower and upper coordinates (x1,y1) and (x2,y2).
+ * Interpolates U at (x,y) in a trapeze at coordinates (xp, yp).
  * U[4] contains the values at the corners:
- *         U[1]------------U[2] (x2,y2)
+ *         U[1]------------U[2]
  *          |                |
  *          |                |
  *          |                |
- * (x1,y1) U[0]------------U[3]
+ *         U[0]------------U[3]
  */
-double interpolate2D(double x_1, double x_2, double y_1, double y_2, double U[4], double x, double y) {
-    double den = 1 / ((x_1 - x_2) * (y_1 - y_2));
-    double phi_0, phi_1, phi_2, phi_3;
+double interpolate2D(double xp[4], double yp[4], double U[4], double x, double y) {
+    
+    double w, sum_w = 0.0, sum = 0.0;
 
-    double dx_1 = x - x_1, dx_2 = x - x_2;
-    double dy_1 = y - y_1, dy_2 = y - y_2;
-
-    phi_0 =   dx_2 * dy_2 * den;
-    phi_1 = - dx_2 * dy_1 * den;
-    phi_2 =   dx_1 * dy_1 * den;
-    phi_3 = - dx_1 * dy_2 * den;
-
-    return U[0] * phi_0 + U[1] * phi_1 + U[2] * phi_2 + U[3] * phi_3;
+    for(int i = 0; i < 4; i++) {
+        w = 1 / hypot(x - xp[i], y - yp[i]);
+        sum += w * U[i];
+        sum_w += w;
+    }
+         
+    
+    return sum / sum_w;
 }
 
 /*
@@ -308,8 +308,8 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
     // Again, we do not need the values at Ri and Re since those are
     // boundary conditions, thus are imposed.
     double du_d1, du_d2, v_avg;
-    double r, r_1, r_2;
-    double theta_1, theta_2;
+    double r, r_0, r_1, r_2, r_3;
+    double theta_0, theta_1, theta_2, theta_3;
     for (int i = 1; i < mesh->u->n1-1; i++) {
         for (int j = 0; j < mesh->u->n2; j++) {
             // We compute the indexes
@@ -336,11 +336,30 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
             theta   = mesh->u->theta[ind];
 
             du_d1 = (u[ind_u_right] - u[ind_u_left])   / (2*d1);
-            r_1 = hypot(mesh->v->x[ind_v_bottom_left],  mesh->v->y[ind_v_bottom_left]);
-            r_2 = hypot(mesh->v->x[ind_v_bottom_right], mesh->v->y[ind_v_bottom_right]);
 
-            theta_1 = mesh->v->theta[ind_v_bottom_left];
-            theta_2 = mesh->v->theta[ind_v_up_left];
+            r_0 = hypot(mesh->v->x[ind_v_bottom_left],  mesh->v->y[ind_v_bottom_left]);
+            r_1 = hypot(mesh->v->x[ind_v_up_left],      mesh->v->y[ind_v_up_left]);
+            r_2 = hypot(mesh->v->x[ind_v_up_right],     mesh->v->y[ind_v_up_right]);
+            r_3 = hypot(mesh->v->x[ind_v_bottom_right], mesh->v->y[ind_v_bottom_right]);
+
+            double radius[4] = {
+                r_0,
+                r_1,
+                r_2,
+                r_3
+            };
+
+            theta_0 = mesh->v->theta[ind_v_bottom_left];
+            theta_1 = mesh->v->theta[ind_v_up_left];
+            theta_2 = mesh->v->theta[ind_v_up_right];
+            theta_3 = mesh->v->theta[ind_v_bottom_right];
+
+            double thetas[4] = {
+                theta_0,
+                theta_1,
+                theta_2,
+                theta_3
+            };
 
             // Order is important !
             double V[4] = {
@@ -349,7 +368,7 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
                 v[ind_v_up_right],
                 v[ind_v_bottom_right]
             };
-            v_avg = interpolate2D(r_1, r_2, theta_1, theta_2, V, r, theta);
+            v_avg = interpolate2D(radius, thetas, V, r, theta);
 
             res_x[ind] = u[ind]*du_d1/h1 + v_avg*du_d2/h2 + v_avg*(u[ind]*dh1_d2 - v_avg*dh2_d1)/(h1*h2);
         }
@@ -386,12 +405,32 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
             dh1_d2 = mesh->v->dh1_d2[ind];
 
             r   = hypot(mesh->v->x[ind],                mesh->v->y[ind]);
-            r_1 = hypot(mesh->u->x[ind_u_bottom_left],  mesh->u->y[ind_u_bottom_left]);
-            r_2 = hypot(mesh->u->x[ind_u_bottom_right], mesh->u->y[ind_u_bottom_right]);
 
             theta   = mesh->v->theta[ind];
-            theta_1 = mesh->u->theta[ind_u_bottom_left];
-            theta_2 = mesh->u->theta[ind_u_up_left];
+            
+            r_0 = hypot(mesh->u->x[ind_u_bottom_left],  mesh->u->y[ind_u_bottom_left]);
+            r_1 = hypot(mesh->u->x[ind_u_up_left],      mesh->u->y[ind_u_up_left]);
+            r_2 = hypot(mesh->u->x[ind_u_up_right],     mesh->u->y[ind_u_up_right]);
+            r_3 = hypot(mesh->u->x[ind_u_bottom_right], mesh->u->y[ind_u_bottom_right]);
+
+            double radius[4] = {
+                r_0,
+                r_1,
+                r_2,
+                r_3
+            };
+
+            theta_0 = mesh->u->theta[ind_u_bottom_left];
+            theta_1 = mesh->u->theta[ind_u_up_left];
+            theta_2 = mesh->u->theta[ind_u_up_right];
+            theta_3 = mesh->u->theta[ind_u_bottom_right];
+
+            double thetas[4] = {
+                theta_0,
+                theta_1,
+                theta_2,
+                theta_3
+            };
 
             if (i == 0) {                                   // If at r = Ri
                 ind_v_right_right = index(i, j, mesh->v->n2, 2, 0);
@@ -407,7 +446,7 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
                     u[ind_u_up_right],
                     u[ind_u_bottom_right]
                 };
-                u_avg = interpolate2D(r_1, r_2, theta_1, theta_2, U, r, theta);
+                u_avg = interpolate2D(radius, thetas, U, r, theta);
             }
 
             else if (i == mesh->v->n1-1) {                      // If at r = Re
@@ -422,7 +461,7 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
                     u[ind_u_up_right],
                     u[ind_u_bottom_right]
                 };
-                u_avg = interpolate2D(r_1, r_2, theta_1, theta_2, U, r, theta);
+                u_avg = interpolate2D(radius, thetas, U, r, theta);
             }
             else {
                 dv_d1 = (v[ind_v_right] - v[ind_v_left])   / (2*d1);
@@ -434,7 +473,7 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
                     u[ind_u_up_right],
                     u[ind_u_bottom_right]
                 };
-                u_avg = interpolate2D(r_1, r_2, theta_1, theta_2, U, r, theta);
+                u_avg = interpolate2D(radius, thetas, U, r, theta);
             }
 
             res_y[ind] = u_avg*dv_d1/h1 + v[ind]*dv_d2/h2 + u_avg*(v[ind]*dh2_d1 - u_avg*dh1_d2)/(h1*h2);

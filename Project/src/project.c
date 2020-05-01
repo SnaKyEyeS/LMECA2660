@@ -186,7 +186,7 @@ int main(int argc, char *argv[]){
     PetscInitialize(&argc, &argv, 0, 0);
 
     // Initialize Mesh
-    MACMesh *mesh = init_mac_mesh(CYLINDER);
+    MACMesh *mesh = init_mac_mesh(AIRFOIL);
     IterateCache *ic = initIterateCache(mesh);
 
     // Initialize Poisson solver
