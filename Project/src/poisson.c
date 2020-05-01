@@ -1,4 +1,5 @@
 #include "poisson.h"
+#include "solver.h"
 
 
 /*Called by poisson_solver at each time step

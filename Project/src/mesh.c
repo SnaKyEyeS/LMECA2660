@@ -13,6 +13,11 @@ MACMesh *init_mac_mesh(MappingType type) {
             mesh->d1 = mapping->dxi1;
             mesh->d2 = mapping->dxi2;
 
+            // Some physical constants
+            mesh->Lc = mapping->Lc;
+            mesh->Uinf = 1;
+            mesh->nu = mesh->Uinf * mesh->Lc / REYNOLDS;
+
             // Initialize the different meshes
             int ind;
             double xi1, xi2;
@@ -39,7 +44,7 @@ MACMesh *init_mac_mesh(MappingType type) {
                     airfoil_metrics(mapping, xi1, xi2, &mesh->u->x[ind], &mesh->u->y[ind], &mesh->u->h1[ind], &mesh->u->h2[ind],
                                     &mesh->u->dh1_d1[ind], &mesh->u->dh1_d2[ind], &mesh->u->dh2_d1[ind], &mesh->u->dh2_d2[ind],
                                     &mesh->u->ddh1_d1d2[ind], &mesh->u->ddh2_d1d2[ind], &mesh->u->theta[ind]);
-                    airfoil_init_velocity(mapping, U_INF, xi1, xi2, &mesh->u->val1[ind], NULL);
+                    airfoil_init_velocity(mapping, mesh->Uinf, xi1, xi2, &mesh->u->val1[ind], NULL);
                     mesh->u->val2[ind] = 0;
                 }
             }
@@ -53,7 +58,7 @@ MACMesh *init_mac_mesh(MappingType type) {
                     airfoil_metrics(mapping, xi1, xi2, &mesh->v->x[ind], &mesh->v->y[ind], &mesh->v->h1[ind], &mesh->v->h2[ind],
                                     &mesh->v->dh1_d1[ind], &mesh->v->dh1_d2[ind], &mesh->v->dh2_d1[ind], &mesh->v->dh2_d2[ind],
                                     &mesh->v->ddh1_d1d2[ind], &mesh->v->ddh2_d1d2[ind], &mesh->v->theta[ind]);
-                    airfoil_init_velocity(mapping, U_INF, xi1, xi2, NULL, &mesh->v->val1[ind]);
+                    airfoil_init_velocity(mapping, mesh->Uinf, xi1, xi2, NULL, &mesh->v->val1[ind]);
                     mesh->v->val2[ind] = 0;
                 }
             }
@@ -71,13 +76,15 @@ MACMesh *init_mac_mesh(MappingType type) {
                     airfoil_metrics(mapping, xi1, xi2, &mesh->p->x[ind], &mesh->p->y[ind], &mesh->p->h1[ind], &mesh->p->h2[ind],
                                     &mesh->p->dh1_d1[ind], &mesh->p->dh1_d2[ind], &mesh->p->dh2_d1[ind], &mesh->p->dh2_d2[ind],
                                     &mesh->p->ddh1_d1d2[ind], &mesh->p->ddh2_d1d2[ind], &mesh->p->theta[ind]);
-                    airfoil_init_pressure(mapping, U_INF, xi1, xi2, &mesh->p->val1[ind]);
+                    airfoil_init_pressure(mapping, mesh->Uinf, xi1, xi2, &mesh->p->val1[ind]);
                     mesh->p->val2[ind] = 0;
                 }
             }
 
-            double dt_min_fourier = FOURIER_MAX * mapping->h_wall_normal *mapping->h_wall_normal / NU;
-            double dt_min_CFL     = CFL_MAX * mapping->h_wall_normal / (2*U_INF);
+
+            // Stability criterion
+            double dt_min_fourier = FOURIER * mapping->h_wall_normal *mapping->h_wall_normal / mesh->nu;
+            double dt_min_CFL     = CFL * mapping->h_wall_normal / (2*mesh->Uinf);
             printf("dt fourier = %.10f\n", dt_min_fourier);
             printf("dt CFL     = %.10f\n", dt_min_CFL);
             mesh->dt = fmin(dt_min_fourier, dt_min_CFL);
@@ -96,6 +103,11 @@ MACMesh *init_mac_mesh(MappingType type) {
             mesh->n_cell = mesh->n1 * mesh->n2;
             mesh->d1 = mapping->dxi1;
             mesh->d2 = mapping->dxi2;
+
+            // Some physical constants
+            mesh->Lc = mapping->Lc;
+            mesh->Uinf = 1;
+            mesh->nu = mesh->Uinf * mesh->Lc / REYNOLDS;
 
             // Initialize the different meshes
             int ind;
@@ -123,7 +135,7 @@ MACMesh *init_mac_mesh(MappingType type) {
                     cylinder_metrics(mapping, xi1, xi2, &mesh->u->x[ind], &mesh->u->y[ind], &mesh->u->h1[ind], &mesh->u->h2[ind],
                                     &mesh->u->dh1_d1[ind], &mesh->u->dh1_d2[ind], &mesh->u->dh2_d1[ind], &mesh->u->dh2_d2[ind],
                                     &mesh->u->ddh1_d1d2[ind], &mesh->u->ddh2_d1d2[ind], &mesh->u->theta[ind]);
-                    cylinder_init_velocity(mapping, U_INF, xi1, xi2, &mesh->u->val1[ind], NULL);
+                    cylinder_init_velocity(mapping, mesh->Uinf, xi1, xi2, &mesh->u->val1[ind], NULL);
                     mesh->u->val2[ind] = 0;
                 }
             }
@@ -137,7 +149,7 @@ MACMesh *init_mac_mesh(MappingType type) {
                     cylinder_metrics(mapping, xi1, xi2, &mesh->v->x[ind], &mesh->v->y[ind], &mesh->v->h1[ind], &mesh->v->h2[ind],
                                     &mesh->v->dh1_d1[ind], &mesh->v->dh1_d2[ind], &mesh->v->dh2_d1[ind], &mesh->v->dh2_d2[ind],
                                     &mesh->v->ddh1_d1d2[ind], &mesh->v->ddh2_d1d2[ind], &mesh->v->theta[ind]);
-                    cylinder_init_velocity(mapping, U_INF, xi1, xi2, NULL, &mesh->v->val1[ind]);
+                    cylinder_init_velocity(mapping, mesh->Uinf, xi1, xi2, NULL, &mesh->v->val1[ind]);
                     mesh->v->val2[ind] = 0;
 
                 }
@@ -156,13 +168,15 @@ MACMesh *init_mac_mesh(MappingType type) {
                     cylinder_metrics(mapping, xi1, xi2, &mesh->p->x[ind], &mesh->p->y[ind], &mesh->p->h1[ind], &mesh->p->h2[ind],
                                     &mesh->p->dh1_d1[ind], &mesh->p->dh1_d2[ind], &mesh->p->dh2_d1[ind], &mesh->p->dh2_d2[ind],
                                     &mesh->p->ddh1_d1d2[ind], &mesh->p->ddh2_d1d2[ind], &mesh->p->theta[ind]);
-                    cylinder_init_pressure(mapping, U_INF, xi1, xi2, &mesh->p->val1[ind]);
+                    cylinder_init_pressure(mapping, mesh->Uinf, xi1, xi2, &mesh->p->val1[ind]);
                     mesh->p->val2[ind] = 0;
                 }
             }
 
-            double dt_min_fourier = FOURIER_MAX * mapping->h_wall_normal * mapping->h_wall_normal / NU;
-            double dt_min_CFL     = CFL_MAX * mapping->h_wall_normal / (2*U_INF);
+
+            // Stability criterion
+            double dt_min_fourier = FOURIER * mapping->h_wall_normal *mapping->h_wall_normal / mesh->nu;
+            double dt_min_CFL     = CFL * mapping->h_wall_normal / (2*mesh->Uinf);
             printf("dt fourier = %.10f\n", dt_min_fourier);
             printf("dt CFL     = %.10f\n", dt_min_CFL);
             mesh->dt = fmin(dt_min_fourier, dt_min_CFL);

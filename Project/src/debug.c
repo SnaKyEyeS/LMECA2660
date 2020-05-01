@@ -14,12 +14,12 @@
  *                       grad P = [- 1/4 * r * sin^2(theta), - 1/4 * r * sin(theta) * cos(theta)] // Higher error on y (?)
  * (first iteration)         u* = u + dt * (-H - grad P + nu * laplacian u)
  *                          rhs = div . u* / dt
- *   (div . u) / dt:            = 0 / dt 
+ *   (div . u) / dt:            = 0 / dt
  * - (div . H):                   + 1/4 * (cos(2 * theta) + 3)
  * - (div . grad P):              + 1/4
  *   (div . laplacian u):         + 0
  *                              = 1/4 * cos(2 * theta) + 1
- * 
+ *
  */
 
 /*
@@ -36,12 +36,12 @@
  *                       grad P = [- 1/4 * r * sin^2(theta), - 1/4 * r * sin(theta) * cos(theta)] // Higher error on y (?)
  * (first iteration)         u* = u + dt * (-H - grad P + nu * laplacian u)
  *                          rhs = div . u* / dt
- *   (div . u) / dt:            = 0 / dt 
+ *   (div . u) / dt:            = 0 / dt
  * - (div . H):                   + 1/4 * (cos(2 * theta) + 3)
  * - (div . grad P):              + 1/4
  *   (div . laplacian u):         + 0
  *                              = 1/4 * cos(2 * theta) + 1
- * 
+ *
  */
 void solenoidal_speed(double r, double theta, double *u, double *v) {
     if (u) {*u = 0.5 * r * sin(theta);}
@@ -50,7 +50,7 @@ void solenoidal_speed(double r, double theta, double *u, double *v) {
 
 /*
  * Tracker will track values in both normal and tangential directions
- */ 
+ */
 Tracker *init_Tracker(double n1, double n2, double *val1, double *val2, double dt) {
     Tracker *t = (Tracker *) malloc(sizeof(Tracker));
     t->n1 = n1;
