@@ -7,13 +7,14 @@
 #include "cylinder.h"
 
 #define N_MESH 4
-#define U_INF       1.0
-#define U_PERT      0.0
-#define CFL_MAX     0.1
-#define FOURIER_MAX 0.1
+
+#define REYNOLDS    550
+#define FOURIER     0.1
+#define CFL         0.1
+
 #define RHO_AIR     1.292
-#define RE          550
-#define NU          (3.636363e-5)
+#define NU          (1e-5)      // UNUSED VARIABLE -> defined for the save_header
+                                // in debug.c --> to change eventually !
 
 typedef enum {AIRFOIL, CYLINDER} MappingType;
 
@@ -42,6 +43,9 @@ typedef struct {
     double d1, d2;      // Size of the cells
 
     double dt;          // Timestep for the numerical integration scheme
+    double Lc;          // Mesh's caracteristic length
+    double Uinf;
+    double nu;
 
     Mesh *w;
     Mesh *u;

@@ -5,7 +5,6 @@
 #include <petsc.h>
 #include <petscsys.h>
 #include "mesh.h"
-#include "solver.h"
 
 //Structure storing petsc vectors
 typedef struct {
@@ -13,7 +12,6 @@ typedef struct {
 	Vec x;
 	Mat A;
 	KSP sles;
-
 } PoissonData;
 
 PetscErrorCode initialize_poisson_solver(PoissonData* data, MACMesh *mesh);
