@@ -136,6 +136,7 @@ void compute_omega(MACMesh *mesh) {
     double h2_left_1 , h2_left_2 , h2_left_3 , h2_left_4 ;
     double h1_up_1, h1_up_2, h1_down_1, h1_down_2;
     double diff_h2_v_d1, diff_h1_u_d2;
+    double ghost;
 
     for (int i = mesh->w->n1-1; i >= 0; i--) {
         for (int j = 0; j < mesh->w->n2; j++) {
@@ -170,16 +171,17 @@ void compute_omega(MACMesh *mesh) {
             h1_down_2   = mesh->u->h1[ind_u_down_2];
 
             if (i == 0) {
-                h2_right_5  = mesh->v->h2[ind_v_right_5];
                 h2_right_4  = mesh->v->h2[ind_v_right_4];
                 h2_right_3  = mesh->v->h2[ind_v_right_3];
 
-                double v_ghost_left = -(v[ind_v_right_3] - 5*v[ind_v_right_2] + 15*v[ind_v_right_1])/5;
-                diff_h2_v_d1 = (- 22*v_ghost_left    *h2
+                // We compute a ghost point for v*h2 on the left side of the inner wall
+                ghost = -(v[ind_v_right_3]*h2_right_3 - 5*v[ind_v_right_2]*h2_right_2
+                                                     + 15*v[ind_v_right_1]*h2_right_1)/5;
+                diff_h2_v_d1 = (- 22*ghost
                                 + 17*v[ind_v_right_1]*h2_right_1  +  9*v[ind_v_right_2]*h2_right_2
                                 -  5*v[ind_v_right_3]*h2_right_3  +  1*v[ind_v_right_4]*h2_right_4) / (24*d1);
 
-
+                // h2_right_5  = mesh->v->h2[ind_v_right_5];
                 // diff_h2_v_d1 = (- 93*v[ind_v_right_1] *h2_right_1  +229*v[ind_v_right_2]*h2_right_2
                 //                 -225*v[ind_v_right_3] *h2_right_3  +111*v[ind_v_right_4]*h2_right_4
                 //                                                    - 22*v[ind_v_right_5]*h2_right_5) / (24*d1);
@@ -512,7 +514,7 @@ void icUpdateH(IterateCache *ic) {
  * 3) compute u_n+1
  * 4) compute P^n+1
  */
-void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic) {
+void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic, double t) {
     double *new_h_x, *new_h_y;
     double *old_h_x, *old_h_y;
     double *u_star, *v_star;
@@ -548,6 +550,21 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic) {
 
     nu_lapl_u_x = ic->nu_lapl_u_x;
     nu_lapl_u_y = ic->nu_lapl_u_y;
+
+    // (0) Assign the boundary conditions on u
+    int ind_inner, ind_outer;
+    double freq = 0.19 * mesh->Uinf / mesh->Lc;
+    double theta;
+
+    for (int j = 0; j < mesh->u->n2; j++) {
+        ind_inner = j;
+        ind_outer = (mesh->u->n1-1)*(mesh->u->n2) + j;
+        theta     = mesh->u->theta[ind_outer];
+
+        u[ind_inner] = 0.0;
+        u[ind_outer] = mesh->Uinf*cos(theta) + 0* mesh->Uinf*sin(2*M_PI*freq*t) / 4;
+    }
+
 
     // (1) Compute H, grad_P and nu_lapl
     compute_h(mesh, new_h_x, new_h_y);
@@ -596,8 +613,6 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic) {
     }
 
     // Fill u* boundaries
-    int ind_inner, ind_outer;
-
     for (int j = 0; j < mesh->u->n2; j++) {
         ind_inner = j;
         ind_outer = (mesh->u->n1-1)*(mesh->u->n2) + j;

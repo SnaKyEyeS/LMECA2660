@@ -30,5 +30,5 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y);
 // Iteration Cache
 IterateCache *initIterateCache(MACMesh *mesh);
 void freeIterateCache(IterateCache *ic);
-void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic);
+void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic, double t);
 #endif

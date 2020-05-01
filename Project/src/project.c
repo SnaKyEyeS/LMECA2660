@@ -152,7 +152,7 @@ void run_tests() {
     save_header(t_v_star, mesh->v->x, mesh->v->y, fp_v_star);
 
 
-    iterate(mesh, poisson, ic);
+    iterate(mesh, poisson, ic, 0);
 
     // Save and close u*, v*
     save_tracking_state(t_u_star, 0.0, fp_u_star);
@@ -229,7 +229,7 @@ int main(int argc, char *argv[]){
     printf("Beginning iterations\n");
     while (state < endState) {
         printf("\tIterate t=%.5fs... [%4d/%d]\n", state, ic->n+1, max_n);
-        iterate(mesh, poisson, ic);
+        iterate(mesh, poisson, ic, state);
 
         state += dt;
 
