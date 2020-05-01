@@ -562,7 +562,7 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic, double t) {
         theta     = mesh->u->theta[ind_outer];
 
         u[ind_inner] = 0.0;
-        u[ind_outer] = mesh->Uinf*cos(theta) + 0* mesh->Uinf*sin(2*M_PI*freq*t) / 4;
+        u[ind_outer] = mesh->Uinf*cos(theta) + mesh->Uinf*sin(2*M_PI*freq*t)*sin(theta) / 4;
     }
 
 
@@ -669,7 +669,7 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic, double t) {
         r = hypot(x, y);
 
         // r <= 12 * D (D = 1)
-        if (r <= 12.0/50.0) {
+        if (r <= 12.0*mesh->Lc) {
             h = fmax(mesh->w->h1[ind]*mesh->w->d1, mesh->w->h2[ind]*mesh->w->d2);
             Re_w = fabs(mesh->w->val1[ind]) * h*h / mesh->nu;
             if (Re_w > Re_w_max) {
