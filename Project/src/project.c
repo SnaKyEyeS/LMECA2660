@@ -236,7 +236,7 @@ int main(int argc, char *argv[]){
         if (ic->n % every_n == 0) {
             printf("Saving state.\n");
             for (int i = 0; i < N_MESH; i++) {
-                save_mesh_state(meshes[i], state * U_INF * 50.0, files[i]);
+                save_mesh_state(meshes[i], state * mesh->Uinf * 50.0, files[i]);
             }
 
         }
