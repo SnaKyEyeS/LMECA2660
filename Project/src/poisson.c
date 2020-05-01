@@ -14,10 +14,11 @@ void computeRHS(MACMesh *mesh, double *rhs, PetscInt rowStart, PetscInt rowEnd) 
 
     for(int ind = rowStart; ind < rowEnd ; ind++) {
 
+        /*
         if (ind == 0) {
             rhs[ind] =  0.0;
             continue;
-        }
+        }*/
 
         x = mesh->p->x[ind];
         y = mesh->p->y[ind];

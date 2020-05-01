@@ -7,6 +7,7 @@ import os
 from ast import literal_eval
 import numexpr as ne
 from utils.manufactured_solutions import analytical_solutions, parse_solution
+import glob
 
 def get_function():
     print("Input the function here.\nIt should take maximum 5 parameters, r (radius), t (theta), R, dt and nu, and return a scalar. Ex.: r*sin(t)\nYou can also use {} around an expression to use a manufactured solution. Ex.: {u_star} + {h_x}\nWrite and press enter to confirm:")
@@ -109,6 +110,8 @@ def plot_mesh(filename, **kwargs):
 
     theta = np.arctan2(y, x)
 
+    parse_number = lambda n: str(n).zfill(len(str(n_status)))
+
 
     fig, ax = plt.subplots()
 
@@ -118,20 +121,25 @@ def plot_mesh(filename, **kwargs):
     vmin = -5
     vmax =  5
 
-    def init():
+    def set_limits():
         if kwargs['limits']:
             lim = kwargs['limits']
             plt.xlim([-lim, lim])
             plt.ylim([-lim, lim])
         return
 
+    def init():
+        set_limits()
+
     def update(i):
+
+        ax.clear()
 
         status, val_1, val_2 = next(data_generator)
 
         val = val_1 if kwargs['value'] == 1 else val_2
 
-        print(f'Generating frame {i}')
+        print(f'Generating frame {i+1}/{n_status}')
 
         global vmin, vmax
 
@@ -152,7 +160,7 @@ def plot_mesh(filename, **kwargs):
 
         plt.title(f't = {status:.5f}s')
         if kwargs['plot_type'] == 'pcolor':
-            plot = plt.pcolormesh(x, y, val, cmap='plasma', vmin=vmin, vmax=vmax)
+            plot = plt.pcolormesh(x, y, val, cmap='Spectral', vmin=vmin, vmax=vmax)
         elif kwargs['plot_type'] == 'vector':
             U, V = kwargs['vector'](theta, val)
             M = np.hypot(U, V)
@@ -163,10 +171,13 @@ def plot_mesh(filename, **kwargs):
 
         if i == 0:
             fig.colorbar(plot, ax=ax)
+        
+        plt.autoscale()
+        set_limits()
 
         if kwargs['save_frames']:
             format = kwargs['frame_format']
-            plt.savefig(os.path.join(kwargs['output_dir'], f'{basename}_{i}{format}'))
+            plt.savefig(os.path.join(kwargs['output_dir'], f'{basename}_{parse_number(i)}{format}'), dpi=kwargs['dpi'])
         return plot
 
     anim = FuncAnimation(fig, update, frames=range(n_status), blit=False, init_func=init, repeat=False, interval=kwargs['interval'], cache_frame_data=False)
@@ -184,8 +195,11 @@ def plot_mesh(filename, **kwargs):
         else:
             print("Unkwown movie type!")
             os._exit(1)
-        
         print("Generated a {kwargs['movie_format']} file at", output)
+    elif kwargs['save_frames']:
+        for i in range(n_status):
+            update(i)
+
 
 
 
@@ -209,6 +223,7 @@ parser.add_argument('--limits', type=float, help='x and y limits, symmetric, pos
 parser.add_argument('-debug', action='store_true', help='enter in debug mode : 3D-plot first status')
 parser.add_argument('-debug_all', action='store_true', help='if in debug mode : will 3D-plot all the status')
 parser.add_argument('-compare', action='store_true', help='if in debug mode : will ask you to enter the analytical solution to compare with the results')
+parser.add_argument('--make_video', help='will make a video from images in .png format located in output directory and named {param}_number.png when {param} is your input')
 
 if __name__ == '__main__':
     args = parser.parse_args()
@@ -228,3 +243,14 @@ if __name__ == '__main__':
             debug_mesh(filename, **args)
         else:
             plot_mesh(filename, **args)
+
+    if args['make_video']:
+        param = args['make_video']
+        output_dir = args['output_dir']
+        frame_format = args['frame_format']
+        filepattern = f'{output_dir}/{param}_*{frame_format}'
+        files = glob.glob(filepattern)
+        n = files[0][::-1].index('_') - len(frame_format)
+        command = f'ffmpeg -r 40 -f image2 -s 1920x1080 -i {output_dir}/{param}_%0{n}d{frame_format} -vcodec libx264 -crf 25  -pix_fmt yuv420p {param}.mp4'
+        os.system(command)
+        

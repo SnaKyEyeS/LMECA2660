@@ -456,10 +456,10 @@ int main(int argc, char *argv[]){
     double dt    = mesh->dt;    // detla-time
     double nu    = NU;
 
-    double endState = 1;
+    double endState = 1.0;
 
-    int every_n = 1;
-    int max_n = 20;
+    int every_n = 200;
+    int max_n = ceil(endState / dt);
 
     printf("Opening files\n");
     Mesh *meshes[N_MESH] = {mesh->w, mesh->u, mesh->v, mesh->p};
@@ -486,14 +486,15 @@ int main(int argc, char *argv[]){
         if (ic->n % every_n == 0) {
             printf("Saving state.\n");
             for (int i = 0; i < N_MESH; i++) {
-                save_mesh_state(meshes[i], state, files[i]);
+                save_mesh_state(meshes[i], state * U_INF * 50.0, files[i]);
             }
 
         }
 
+        /*
         if (ic->n == max_n) {
             break;
-        }
+        }*/
     }
 
     for (int i = 0; i < N_MESH; i++) {
