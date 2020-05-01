@@ -80,6 +80,7 @@ S = solve([eq1 eq2 eq3 eq4 eq5], [a b c d e]);
 sol = simplify(S.a*(-h/2)^4 + S.b*(-h/2)^3 + S.c*(-h/2)^2 + S.d*(-h/2)^1 + S.e)
 
 %% Plot live data
+clc; close all;
 figure;
 
 fid = fopen('mesh_u.txt', 'rt');
@@ -92,17 +93,27 @@ x = reshape(cell2mat(textscan(fid, repmat('%f,', 1, n))), n2, n1);
 y = reshape(cell2mat(textscan(fid, repmat('%f,', 1, n))), n2, n1);
 
 
+i = 0;
 while ~feof(fid)
     data = cell2mat(textscan(fid, repmat('%f,', 1, n+1)));
     t = data(1);
-    data = reshape(data(2:end), n2, n1);
+    val1 = reshape(data(2:end), n2, n1);
     
-    h = pcolor(x,y,data);
+    data = cell2mat(textscan(fid, repmat('%f,', 1, n+1)));
+    val2 = reshape(data(2:end), n2, n1);
+    
+    h = pcolor(x,y,val1);
     set(h, 'edgecolor', 'none');
-    title(t)
+    title(i)
+    
+    %caxis([-10 10])
+    xlim([-0.1 0.1])
+    ylim([-0.1 0.1])
+    
     colorbar;
     drawnow;
-%     pause;
+    pause;
+    i = i + 1;
 end
 
 %% Test zone

@@ -274,16 +274,13 @@ void compute_diffusive(MACMesh *mesh, double *res_x, double *res_y, double nu) {
  *         U[0]------------U[3]
  */
 double interpolate2D(double xp[4], double yp[4], double U[4], double x, double y) {
-    
     double w, sum_w = 0.0, sum = 0.0;
-
     for(int i = 0; i < 4; i++) {
         w = 1 / hypot(x - xp[i], y - yp[i]);
         sum += w * U[i];
         sum_w += w;
     }
-         
-    
+
     return sum / sum_w;
 }
 
@@ -341,7 +338,6 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
             r_1 = hypot(mesh->v->x[ind_v_up_left],      mesh->v->y[ind_v_up_left]);
             r_2 = hypot(mesh->v->x[ind_v_up_right],     mesh->v->y[ind_v_up_right]);
             r_3 = hypot(mesh->v->x[ind_v_bottom_right], mesh->v->y[ind_v_bottom_right]);
-
             double radius[4] = {
                 r_0,
                 r_1,
@@ -353,7 +349,6 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
             theta_1 = mesh->v->theta[ind_v_up_left];
             theta_2 = mesh->v->theta[ind_v_up_right];
             theta_3 = mesh->v->theta[ind_v_bottom_right];
-
             double thetas[4] = {
                 theta_0,
                 theta_1,
@@ -404,15 +399,13 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
             dh2_d1 = mesh->v->dh2_d1[ind];
             dh1_d2 = mesh->v->dh1_d2[ind];
 
-            r   = hypot(mesh->v->x[ind],                mesh->v->y[ind]);
-
+            r       = hypot(mesh->v->x[ind], mesh->v->y[ind]);
             theta   = mesh->v->theta[ind];
-            
+
             r_0 = hypot(mesh->u->x[ind_u_bottom_left],  mesh->u->y[ind_u_bottom_left]);
             r_1 = hypot(mesh->u->x[ind_u_up_left],      mesh->u->y[ind_u_up_left]);
             r_2 = hypot(mesh->u->x[ind_u_up_right],     mesh->u->y[ind_u_up_right]);
             r_3 = hypot(mesh->u->x[ind_u_bottom_right], mesh->u->y[ind_u_bottom_right]);
-
             double radius[4] = {
                 r_0,
                 r_1,
@@ -424,7 +417,6 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y) {
             theta_1 = mesh->u->theta[ind_u_up_left];
             theta_2 = mesh->u->theta[ind_u_up_right];
             theta_3 = mesh->u->theta[ind_u_bottom_right];
-
             double thetas[4] = {
                 theta_0,
                 theta_1,
@@ -602,7 +594,7 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic, double t) {
         theta     = mesh->u->theta[ind_outer];
 
         u[ind_inner] = 0.0;
-        u[ind_outer] = mesh->Uinf*cos(theta) + factor * mesh->Uinf*sin(2*M_PI*freq*t)*sin(theta) / 4;
+        u[ind_outer] = mesh->Uinf*cos(theta) + factor * mesh->Uinf*sin(2*M_PI*freq*t)*sin(theta) / 4.0;
     }
 
 
