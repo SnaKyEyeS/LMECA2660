@@ -29,11 +29,10 @@ void compute_rhs(MACMesh *mesh, double *result, double dt) {
         for (int j = 0; j < mesh->p->n2; j++) {
             ind = i*mesh->p->n2 + j;
 
-            /*
             if (ind == 0) {
                 result[ind] = 0.0;
                 continue;
-            }*/
+            }
 
             ind_u_left  = index(i, j, mesh->u->n2, 0, 0);
             ind_u_right = index(i, j, mesh->u->n2, 1, 0);
@@ -607,7 +606,6 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic, double t) {
         printf("\tArtificial sinusoidal perturbation added\n");
     }
 
-
     // (1) Compute H, grad_P and nu_lapl
     compute_h(mesh, new_h_x, new_h_y);
     compute_diffusive(mesh, nu_lapl_u_x, nu_lapl_u_y, nu);
@@ -700,26 +698,6 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic, double t) {
     }
 
     icUpdateH(ic);
-
-    // Compute Re_w,max
-    double x, y, r, h;
-    double Re_w, Re_w_max = -1;
-    int ind_max = 0;
-    for (int ind = 0; ind < mesh->w->n; ind++) {
-        x = mesh->w->x[ind];
-        y = mesh->w->y[ind];
-        r = hypot(x, y);
-
-        // r <= 12 * D (D = 1)
-        if (r <= 12.0*mesh->Lc) {
-            h = fmax(mesh->w->h1[ind]*mesh->w->d1, mesh->w->h2[ind]*mesh->w->d2);
-            Re_w = fabs(mesh->w->val1[ind]) * h*h / mesh->nu;
-            if (Re_w > Re_w_max) {
-                ind_max = ind;
-                Re_w_max = Re_w;
-            }
-        }
-    }
 }
 
 
@@ -766,8 +744,8 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
         dx = mesh->u->x[ind_u1] - mesh->u->x[ind_u2];
         dy = mesh->u->y[ind_u1] - mesh->u->y[ind_u2];
         dl = hypot(dx, dy);
-        *drag += 2*shear_stress*dl*sin(theta) / (mesh->Uinf*mesh->Uinf*mesh->Lc);
-        *lift += 2*shear_stress*dl*cos(theta) / (mesh->Uinf*mesh->Uinf*mesh->Lc);
+        *drag += shear_stress*dl*sin(theta);
+        *lift += shear_stress*dl*cos(theta);
 
         // Compute y+
         *y_plus = fmax(*y_plus, sqrt(fabs(shear_stress)) * mesh->w->h1[ind] * mesh->w->d1 / mesh->nu);
@@ -782,9 +760,12 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
         dx = mesh->w->x[ind_w1] - mesh->w->x[ind_w2];
         dy = mesh->w->y[ind_w1] - mesh->w->y[ind_w2];
         dl = hypot(dx, dy);
-        *drag += 2*mesh->p->val1[ind]*dl*cos(theta) / (mesh->Uinf*mesh->Uinf*mesh->Lc);
-        *lift += 2*mesh->p->val1[ind]*dl*sin(theta) / (mesh->Uinf*mesh->Uinf*mesh->Lc);
+        *drag -= mesh->p->val1[ind]*dl*cos(theta);
+        *lift += mesh->p->val1[ind]*dl*sin(theta);
     }
+
+    *drag *= 2 / (mesh->Uinf*mesh->Uinf*mesh->Lc);
+    *lift *= 2 / (mesh->Uinf*mesh->Uinf*mesh->Lc);
 
     if (print) {
         x = mesh->w->x[ind_max];
