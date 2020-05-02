@@ -240,7 +240,7 @@ int main(int argc, char *argv[]){
             printf("Saving state.\n");
             for (int i = 0; i < N_MESH; i++) {
                 save_mesh_state(meshes[i], state * mesh->Uinf / mesh->Lc, files[i]);
-                fprintf(diag, "%f, %f, %f, %f\n", cd, cl, re, y_plus);
+                fprintf(diag, "%f, %f, %f, %f, %f\n", state * mesh->Uinf / mesh->Lc, cd, cl, re, y_plus);
             }
         }
         printf("\n");
