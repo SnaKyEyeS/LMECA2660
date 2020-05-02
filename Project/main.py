@@ -8,6 +8,10 @@ from ast import literal_eval
 import numexpr as ne
 from utils.manufactured_solutions import analytical_solutions, parse_solution
 import glob
+from matplotlib import rc
+rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+rc('text', usetex=True)
+plt.rcParams.update({'font.size': 15})
 
 def get_function():
     print("Input the function here.\nIt should take maximum 5 parameters, r (radius), t (theta), R, dt and nu, and return a scalar. Ex.: r*sin(t)\nYou can also use {} around an expression to use a manufactured solution. Ex.: {u_star} + {h_x}\nWrite and press enter to confirm:")
@@ -115,21 +119,30 @@ def plot_mesh(filename, **kwargs):
 
     fig, ax = plt.subplots()
 
-    plt.xlabel('x')
-    plt.ylabel('y')
-
-    vmin = -5
-    vmax =  5
-
     def set_limits():
         if kwargs['limits']:
             lim = kwargs['limits']
             plt.xlim([-lim, lim])
             plt.ylim([-lim, lim])
+        
+        if kwargs['adim']:
+            unit = kwargs['adim_unit_symbol']
+            xlim = plt.xlim()
+            x_ticks = np.linspace(xlim[0], xlim[1], 6) / kwargs['adim_unit_value']
+            x_labels = [f'${int(xtick)}{unit}$' for xtick in x_ticks]
+            plt.xticks(x_ticks * kwargs['adim_unit_value'], x_labels)
+            ylim = plt.ylim()
+            y_ticks = np.linspace(ylim[0], ylim[1], 6) / kwargs['adim_unit_value']
+            y_labels = [f'${int(ytick)}{unit}$' for ytick in y_ticks]
+            plt.yticks(y_ticks * kwargs['adim_unit_value'], y_labels)
+            plt.xlabel('$x$')
+            plt.ylabel('$y$', labelpad=0)
+
         return
 
     def init():
         set_limits()
+        plt.tight_layout()
 
     def update(i):
 
@@ -141,23 +154,16 @@ def plot_mesh(filename, **kwargs):
 
         print(f'Generating frame {i+1}/{n_status}')
 
-        global vmin, vmax
-
-        if i == 0:
-            vmin = -5
-            vmax = 5
-            #vmin = 20 * min(val)
-            #vmax = 20 * max(val)
-            if vmin == vmax:
-                vmin = -1
-                vmax =  1
-
         vmax = max(abs(val)) / 5
         vmin = -vmax
 
         val = np.reshape(val, (n_x, n_y), order='C')
 
-        plt.title(f't = {status:.5f}s')
+        if kwargs['plot_suptitle']:
+            suptitle = kwargs['plot_suptitle']
+            plt.suptitle(f'{suptitle}')
+
+        plt.title(f'$t = {status:.5f}s$')
         if kwargs['plot_type'] == 'pcolor':
             plot = plt.pcolormesh(x, y, val, cmap='Spectral', vmin=vmin, vmax=vmax)
         elif kwargs['plot_type'] == 'vector':
@@ -171,12 +177,12 @@ def plot_mesh(filename, **kwargs):
         if i == 0:
             fig.colorbar(plot, ax=ax)
 
-        plt.autoscale()
         set_limits()
 
         if kwargs['save_frames']:
             format = kwargs['frame_format']
             plt.savefig(os.path.join(kwargs['output_dir'], f'{basename}_{parse_number(i)}{format}'), dpi=kwargs['dpi'])
+
         return plot
 
     anim = FuncAnimation(fig, update, frames=range(n_status), blit=False, init_func=init, repeat=False, interval=kwargs['interval'], cache_frame_data=False)
@@ -223,6 +229,10 @@ parser.add_argument('-debug', action='store_true', help='enter in debug mode : 3
 parser.add_argument('-debug_all', action='store_true', help='if in debug mode : will 3D-plot all the status')
 parser.add_argument('-compare', action='store_true', help='if in debug mode : will ask you to enter the analytical solution to compare with the results')
 parser.add_argument('--make_video', help='will make a video from images in .png format located in output directory and named {param}_number.png when {param} is your input')
+parser.add_argument('--plot_suptitle', help='choose the plot suptitle')
+parser.add_argument('-adim', action='store_true', help='choose adimensional axis')
+parser.add_argument('--adim_unit_symbol', default='D', help='choose adimensional unit symbol')
+parser.add_argument('--adim_unit_value', default=0.02, type=float, help='choose adimensional unit value')
 
 if __name__ == '__main__':
     args = parser.parse_args()
