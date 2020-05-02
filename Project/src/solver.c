@@ -712,6 +712,7 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
     *drag = 0.0;
     *lift = 0.0;
     *reynolds = 0.0;
+    *yplus = 0.0;
 
     int ind_max = -1;
     double x, y, r, tmp, shear_stress, h;
@@ -760,7 +761,7 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
         dx = mesh->w->x[ind_w1] - mesh->w->x[ind_w2];
         dy = mesh->w->y[ind_w1] - mesh->w->y[ind_w2];
         dl = hypot(dx, dy);
-        *drag -= mesh->p->val1[ind]*dl*cos(theta);
+        *drag += mesh->p->val1[ind]*dl*cos(theta);
         *lift += mesh->p->val1[ind]*dl*sin(theta);
     }
 
@@ -771,7 +772,7 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
         x = mesh->w->x[ind_max];
         y = mesh->w->y[ind_max];
         r = hypot(x, y);
-        printf("\t\tMesh Reynolds = %f \t\t\tat r = %f\n", *reynolds, r);
+        printf("\t\tMesh Reynolds = %f \t\t\tat r = %f*D\n", *reynolds, r/mesh->Lc);
         printf("\t\ty+            = %f\n", *y_plus);
         printf("\t\tCd            = %f\n", *drag);
         printf("\t\tCl            = %f\n", *lift);

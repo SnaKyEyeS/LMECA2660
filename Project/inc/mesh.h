@@ -12,7 +12,6 @@
 #define FOURIER     0.1
 #define CFL         0.7
 
-#define RHO_AIR     1.292
 #define NU          (1e-5)      // UNUSED VARIABLE -> defined for the save_header
                                 // in debug.c --> to change eventually !
 
