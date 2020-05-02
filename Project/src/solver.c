@@ -749,7 +749,7 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
         theta = mesh->w->theta[ind];
 
         *drag -= shear_stress*r*dtheta*sin(theta);
-        *lift -= shear_stress*r*dtheta*cos(theta);
+        *lift += shear_stress*r*dtheta*cos(theta);
 
         // Compute y+
         *y_plus = fmax(*y_plus, sqrt(fabs(shear_stress)) * mesh->w->h1[ind] * mesh->w->d1 / mesh->nu);
