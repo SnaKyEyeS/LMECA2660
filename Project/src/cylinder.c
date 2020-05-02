@@ -9,7 +9,7 @@ CylinderMapping *init_cylinder_mapping() {
     mapping->R = mapping->D / 2.0;
     mapping->H = 50*mapping->D;
     mapping->h_wall_normal = mapping->D / 300;
-    mapping->gamma = 1.015;
+    mapping->gamma = 1.01;
     mapping->n_xi2 = 360;
 
     // We compute the rest
