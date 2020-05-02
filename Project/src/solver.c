@@ -773,7 +773,7 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
     }
 
     for (int ind = 0; ind < mesh->v->n;  ind++) {
-        *max_uv = fmax(*max_uv, fabs(mesh->v->val1[ind]) + fabs(mesh->u->val1[ind]));
+        *max_uv = fmax(*max_uv, (fabs(mesh->v->val1[ind]) + fabs(mesh->u->val1[ind])) / mesh->Uinf);
     }
 
     // L = PI * Lc ?
