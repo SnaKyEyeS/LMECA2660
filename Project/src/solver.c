@@ -712,7 +712,7 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
     *drag = 0.0;
     *lift = 0.0;
     *reynolds = 0.0;
-    *yplus = 0.0;
+    *y_plus = 0.0;
 
     int ind_max = -1;
     double x, y, r, tmp, shear_stress, h;
@@ -753,11 +753,9 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
         y = mesh->w->y[ind];
         r = hypot(x, y);
 
-        L = 2 * M_PI * r;
-
         dl = hypot(dx, dy);
-        *drag += shear_stress*dl*sin(theta);
-        *lift += shear_stress*dl*cos(theta);
+        *drag -= shear_stress*r*dtheta*sin(theta);
+        *lift += shear_stress*r*dtheta*cos(theta);
 
         // Compute y+
         *y_plus = fmax(*y_plus, sqrt(fabs(shear_stress)) * mesh->w->h1[ind] * mesh->w->d1 / mesh->nu);
@@ -772,10 +770,12 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
         dx = mesh->w->x[ind_w1] - mesh->w->x[ind_w2];
         dy = mesh->w->y[ind_w1] - mesh->w->y[ind_w2];
         dl = hypot(dx, dy);
-        *drag += mesh->p->val1[ind]*dl*cos(theta);
-        *lift += mesh->p->val1[ind]*dl*sin(theta);
+        *drag += mesh->p->val1[ind]*r*dtheta*cos(theta);
+        *lift += mesh->p->val1[ind]*r*dtheta*sin(theta);
     }
 
+
+    // L = PI * Lc ?
     *drag *= 2 / (mesh->Uinf*mesh->Uinf*mesh->Lc);
     *lift *= 2 / (mesh->Uinf*mesh->Uinf*mesh->Lc);
 
