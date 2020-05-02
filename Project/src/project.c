@@ -239,6 +239,11 @@ int main(int argc, char *argv[]){
                 save_mesh_state(meshes[i], state * mesh->Uinf / mesh->Lc, files[i]);
             }
         }
+
+        double re, cd, cl, y_plus;
+        compute_diagnostics(mesh, &cd, &cl, &re, &y_plus, true);
+
+        printf("\n");
     }
 
     printf("Saving last state !\n");
