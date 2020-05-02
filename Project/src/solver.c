@@ -735,8 +735,8 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
     *lift = 0.0;
     *reynolds = 0.0;
 
-    double x, y, r, tmp, shear_stress, h;
     int ind_max = -1;
+    double x, y, r, tmp, shear_stress, h;
     for (int ind = 0; ind < mesh->w->n; ind++) {
         // Compute the Mesh Reynolds
         x = mesh->w->x[ind];
@@ -752,19 +752,27 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
         }
     }
 
-    double theta;
+    int ind_u1, ind_u2;
+    double dx, dy, dl, theta;
     for (int ind = 0; ind < mesh->w->n2; ind++) {
-        // Compute the force contribution from the wall shear stress
+        // Shear wall stress
         theta = mesh->w->theta[ind];
         shear_stress = mesh->nu * mesh->w->val1[ind];
-        *drag += 2*shear_stress*sin(theta) / (mesh->Uinf*mesh->Uinf*mesh->Lc);
-        *lift += 2*shear_stress*cos(theta) / (mesh->Uinf*mesh->Uinf*mesh->Lc);
+
+        // Compute the force contribution from the wall shear stress
+        ind_u1 = index(0, ind, mesh->u->n2, 0, 0);
+        ind_u2 = index(0, ind, mesh->u->n2, 0, -1);
+
+        dx = mesh->u->x[ind_u1] - mesh->u->x[ind_u2];
+        dy = mesh->u->y[ind_u1] - mesh->u->y[ind_u2];
+        dl = hypot(dx, dy);
+        *drag += 2*shear_stress*dl*sin(theta) / (mesh->Uinf*mesh->Uinf*mesh->Lc);
+        *lift += 2*shear_stress*dl*cos(theta) / (mesh->Uinf*mesh->Uinf*mesh->Lc);
 
         // Compute y+
         *y_plus = fmax(*y_plus, sqrt(fabs(shear_stress)) * mesh->w->h1[ind] * mesh->w->d1 / mesh->nu);
     }
 
-    double dx, dy, dl;
     int ind_w1, ind_w2;
     for (int ind = 0; ind < mesh->p->n2; ind++) {
         // Compute the force contribution from the pressure
@@ -774,7 +782,6 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
         dx = mesh->w->x[ind_w1] - mesh->w->x[ind_w2];
         dy = mesh->w->y[ind_w1] - mesh->w->y[ind_w2];
         dl = hypot(dx, dy);
-
         *drag += 2*mesh->p->val1[ind]*dl*cos(theta) / (mesh->Uinf*mesh->Uinf*mesh->Lc);
         *lift += 2*mesh->p->val1[ind]*dl*sin(theta) / (mesh->Uinf*mesh->Uinf*mesh->Lc);
     }
