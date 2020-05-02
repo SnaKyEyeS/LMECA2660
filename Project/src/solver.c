@@ -592,7 +592,7 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic, double t) {
     int ind_inner, ind_outer;
     double freq = 0.19 * mesh->Uinf / mesh->Lc;
     double theta;
-    int factor = (t < 1.0/freq);
+    int factor = (t < 1.0/freq) && (mesh->type == CYLINDER);
 
     for (int j = 0; j < mesh->u->n2; j++) {
         ind_inner = j;
@@ -773,7 +773,7 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
     }
 
     for (int ind = 0; ind < mesh->v->n;  ind++) {
-        *max_uv = fmax(*max_uv, fabs(mesh->v->val1[ind]) + fabs(mesh->u->val1[ind]));
+        *max_uv = fmax(*max_uv, (fabs(mesh->v->val1[ind]) + fabs(mesh->u->val1[ind])) / mesh->Uinf);
     }
 
     // L = PI * Lc ?

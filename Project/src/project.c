@@ -206,9 +206,22 @@ int main(int argc, char *argv[]){
     double dt    = mesh->dt;    // detla-time
     double nu    = mesh->nu;
 
-    double endState = 1.0;
+    double endState;
+    switch (mesh->type) {
+        case AIRFOIL:
+            endState = 15 * mesh->Lc / mesh->Uinf;
+            break;
 
-    int every_n = 100;
+        case CYLINDER:
+            endState = 50 * mesh->Lc / mesh->Uinf;
+            break;
+
+        default:
+            printf("Unknown mapping type.\n");
+            exit(1);
+    }
+
+    int every_n = 1e6;
     int max_n = ceil(endState / dt);
 
     printf("Opening files\n");
