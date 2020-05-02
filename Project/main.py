@@ -151,10 +151,9 @@ def plot_mesh(filename, **kwargs):
             if vmin == vmax:
                 vmin = -1
                 vmax =  1
-        vmin = -5
-        vmax = 5
 
-        vmin = vmax = None
+        vmax = max(abs(val)) / 5
+        vmin = -vmax
 
         val = np.reshape(val, (n_x, n_y), order='C')
 
@@ -171,7 +170,7 @@ def plot_mesh(filename, **kwargs):
 
         if i == 0:
             fig.colorbar(plot, ax=ax)
-        
+
         plt.autoscale()
         set_limits()
 
@@ -181,10 +180,10 @@ def plot_mesh(filename, **kwargs):
         return plot
 
     anim = FuncAnimation(fig, update, frames=range(n_status), blit=False, init_func=init, repeat=False, interval=kwargs['interval'], cache_frame_data=False)
-    
+
     if kwargs['live']:
         plt.show()
-    
+
     if not kwargs['no_save']:
         if kwargs['movie_format'] == '.mp4':
             output = os.path.join(kwargs['output_dir'], basename + kwargs['movie_format'])
@@ -253,4 +252,3 @@ if __name__ == '__main__':
         n = files[0][::-1].index('_') - len(frame_format)
         command = f'ffmpeg -r 40 -f image2 -s 1920x1080 -i {output_dir}/{param}_%0{n}d{frame_format} -vcodec libx264 -crf 25  -pix_fmt yuv420p {param}.mp4'
         os.system(command)
-        
