@@ -219,6 +219,7 @@ int main(int argc, char *argv[]){
         fopen("../data/mesh_v.txt", "w+"),
         fopen("../data/mesh_p.txt", "w+")
     };
+    FILE *diag = fopen("../data/diagnostics.txt", "w+");
 
     printf("Writing headers and initial states\n");
     for (int i = 0; i < N_MESH; i++) {
@@ -229,20 +230,19 @@ int main(int argc, char *argv[]){
     printf("Beginning iterations\n");
     while (state < endState) {
         printf("\tIterate t=%.5fs... [%4d/%d]\n", state, ic->n+1, max_n);
+
+        double re, cd, cl, y_plus;
         iterate(mesh, poisson, ic, state);
+        compute_diagnostics(mesh, &cd, &cl, &re, &y_plus, true);
 
         state += dt;
-
         if (ic->n % every_n == 0) {
             printf("Saving state.\n");
             for (int i = 0; i < N_MESH; i++) {
                 save_mesh_state(meshes[i], state * mesh->Uinf / mesh->Lc, files[i]);
+                fprintf(diag, "%f, %f, %f, %f, %f\n", state * mesh->Uinf / mesh->Lc, cd, cl, re, y_plus);
             }
         }
-
-        double re, cd, cl, y_plus;
-        compute_diagnostics(mesh, &cd, &cl, &re, &y_plus, true);
-
         printf("\n");
     }
 
@@ -257,5 +257,4 @@ int main(int argc, char *argv[]){
     free_poisson_solver(poisson);
     freeIterateCache(ic);
     PetscFinalize();
-
 }
