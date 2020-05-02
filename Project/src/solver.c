@@ -734,26 +734,20 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
     int ind_u1, ind_u2;
     double dx, dy, dl, theta;
     double dtheta;
-    double L;
     for (int ind = 0; ind < mesh->w->n2; ind++) {
         // Shear wall stress / rho
-        theta = mesh->w->theta[ind];
         shear_stress = mesh->nu * mesh->w->val1[ind];
 
         // Compute the force contribution from the wall shear stress
         ind_u1 = index(0, ind, mesh->u->n2, 0, 0);
         ind_u2 = index(0, ind, mesh->u->n2, 0, -1);
 
-        dx = mesh->u->x[ind_u1] - mesh->u->x[ind_u2];
-        dy = mesh->u->y[ind_u1] - mesh->u->y[ind_u2];
-
         dtheta = mesh->u->theta[ind_u1] - mesh->u->theta[ind_u2];
-
         x = mesh->w->x[ind];
         y = mesh->w->y[ind];
         r = hypot(x, y);
+        theta = mesh->w->theta[ind];
 
-        dl = hypot(dx, dy);
         *drag -= shear_stress*r*dtheta*sin(theta);
         *lift -= shear_stress*r*dtheta*cos(theta);
 
@@ -767,15 +761,11 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
         ind_w1 = index(0, ind, mesh->w->n2, 0, 0);
         ind_w2 = index(0, ind, mesh->w->n2, 0, 1);
 
-        dx = mesh->w->x[ind_w1] - mesh->w->x[ind_w2];
-        dy = mesh->w->y[ind_w1] - mesh->w->y[ind_w2];
-        dl = hypot(dx, dy);
-
-        dtheta = mesh->u->theta[ind_u1] - mesh->u->theta[ind_u2];
-
-        x = mesh->w->x[ind];
-        y = mesh->w->y[ind];
+        dtheta = mesh->w->theta[ind_w1] - mesh->w->theta[ind_w2];
+        x = mesh->p->x[ind];
+        y = mesh->p->y[ind];
         r = hypot(x, y);
+        theta = mesh->w->theta[ind];
 
         *drag += mesh->p->val1[ind]*r*dtheta*cos(theta);
         *lift += mesh->p->val1[ind]*r*dtheta*sin(theta);
