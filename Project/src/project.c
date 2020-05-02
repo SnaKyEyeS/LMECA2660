@@ -229,18 +229,18 @@ int main(int argc, char *argv[]){
 
     printf("Beginning iterations\n");
     while (state < endState) {
-        printf("\tIterate t=%.5fs... [%4d/%d]\n", state, ic->n+1, max_n);
+        printf("\tIterate tU/D = %.5f... [%4d/%d]\n", state * mesh->Uinf / mesh->Lc, ic->n+1, max_n);
 
-        double re, cd, cl, y_plus;
+        double re, cd, cl, y_plus, max_uv;
         iterate(mesh, poisson, ic, state);
-        compute_diagnostics(mesh, &cd, &cl, &re, &y_plus, true);
+        compute_diagnostics(mesh, &cd, &cl, &re, &y_plus, &max_uv, true);
 
         state += dt;
         if (ic->n % every_n == 0) {
             printf("Saving state.\n");
             for (int i = 0; i < N_MESH; i++) {
                 save_mesh_state(meshes[i], state * mesh->Uinf / mesh->Lc, files[i]);
-                fprintf(diag, "%f, %f, %f, %f, %f\n", state * mesh->Uinf / mesh->Lc, cd, cl, re, y_plus);
+                fprintf(diag, "%f, %f, %f, %f, %f, %f\n", state * mesh->Uinf / mesh->Lc, cd, cl, re, y_plus, max_uv);
             }
         }
         printf("\n");

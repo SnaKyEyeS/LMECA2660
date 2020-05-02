@@ -708,15 +708,16 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic, double t) {
  *      - Mesh Reynolds     = |w|h² / nu;
  *      - y+                = sqrt(tau_w) * h_n / nu.
  */
-void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reynolds, double *y_plus, bool print) {
+void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reynolds, double *y_plus, double *max_uv, bool print) {
     *drag = 0.0;
     *lift = 0.0;
     *reynolds = 0.0;
     *y_plus = 0.0;
+    *max_uv = 0.0;
 
     int ind_max = -1;
     double x, y, r, tmp, shear_stress, h;
-    for (int ind = 0; ind < mesh->w->n; ind++) {
+    for (int ind = 0; ind < mesh->w->n;  ind++) {
         // Compute the Mesh Reynolds
         x = mesh->w->x[ind];
         y = mesh->w->y[ind];
@@ -771,6 +772,9 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
         *lift += mesh->p->val1[ind]*r*dtheta*sin(theta);
     }
 
+    for (int ind = 0; ind < mesh->v->n;  ind++) {
+        *max_uv = fmax(*max_uv, fabs(mesh->v->val1[ind]) + fabs(mesh->u->val1[ind]));
+    }
 
     // L = PI * Lc ?
     *drag *= 2 / (mesh->Uinf*mesh->Uinf*mesh->Lc);
