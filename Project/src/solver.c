@@ -188,11 +188,18 @@ void compute_omega(MACMesh *mesh) {
                 //                                                    - 22*v[ind_v_right_5]*h2_right_5) / (24*d1);
 
             } else if (i == 1) {
-                h2_right_4  = mesh->v->h2[ind_v_right_4];
-                h2_right_3  = mesh->v->h2[ind_v_right_3];
-                diff_h2_v_d1 = (- 22*v[ind_v_left_1] *h2_left_1
-                                + 17*v[ind_v_right_1]*h2_right_1  +  9*v[ind_v_right_2]*h2_right_2
-                                -  5*v[ind_v_right_3]*h2_right_3  +  1*v[ind_v_right_4]*h2_right_4) / (24*d1);
+                // We compute a ghost point for v*h2 on the left side of the inner wall
+                ghost = -(v[ind_v_right_2]*h2_right_2 - 5*v[ind_v_right_1]*h2_right_1
+                                                     + 15*v[ind_v_left_1]*h2_left_1)/5;
+
+                diff_h2_v_d1 = (  1*ghost                       - 27*v[ind_v_left_1] *h2_left_1
+                                - 1*v[ind_v_right_2]*h2_right_2 + 27*v[ind_v_right_1]*h2_right_1) / (24*d1);
+
+                // h2_right_4  = mesh->v->h2[ind_v_right_4];
+                // h2_right_3  = mesh->v->h2[ind_v_right_3];
+                // diff_h2_v_d1 = (- 22*v[ind_v_left_1] *h2_left_1
+                //                 + 17*v[ind_v_right_1]*h2_right_1  +  9*v[ind_v_right_2]*h2_right_2
+                //                 -  5*v[ind_v_right_3]*h2_right_3  +  1*v[ind_v_right_4]*h2_right_4) / (24*d1);
 
             } else if (i == mesh->w->n1-1) {
                 h2_left_3   = mesh->v->h2[ind_v_left_3];
@@ -596,6 +603,9 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic, double t) {
         u[ind_inner] = 0.0;
         u[ind_outer] = mesh->Uinf*cos(theta) + factor * mesh->Uinf*sin(2*M_PI*freq*t)*sin(theta) / 4.0;
     }
+    if (factor) {
+        printf("\tArtificial sinusoidal perturbation added\n");
+    }
 
 
     // (1) Compute H, grad_P and nu_lapl
@@ -710,14 +720,73 @@ void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic, double t) {
             }
         }
     }
+}
 
-    x = mesh->w->x[ind_max];
-    y = mesh->w->y[ind_max];
-    r = hypot(x, y);
 
-    if (factor) {
-        printf("\tMesh Reynolds = %f at r = %f - with perturbation\n", Re_w_max, r);
-    } else {
-        printf("\tMesh Reynolds = %f at r = %f\n", Re_w_max, r);
+/*
+ *  Computes the diagnostics:
+ *      - Drag coefficient  = 2Fd / rho*U²*L;
+ *      - Lift coefficient  = 2Fl / rho*U²*L;
+ *      - Mesh Reynolds     = |w|h² / nu;
+ *      - y+                = sqrt(tau_w) * h_n / nu.
+ */
+void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reynolds, double *y_plus, bool print) {
+    *drag = 0.0;
+    *lift = 0.0;
+    *reynolds = 0.0;
+
+    double x, y, r, tmp, shear_stress, h;
+    int ind_max = -1;
+    for (int ind = 0; ind < mesh->w->n; ind++) {
+        // Compute the Mesh Reynolds
+        x = mesh->w->x[ind];
+        y = mesh->w->y[ind];
+        r = hypot(x, y);
+        if (r <= 12*mesh->Lc) {
+            h = fmax(mesh->w->h1[ind]*mesh->w->d1, mesh->w->h2[ind]*mesh->w->d2);
+            tmp = fabs(mesh->w->val1[ind]) * h*h / mesh->nu;
+            if (tmp > *reynolds) {
+                ind_max = ind;
+                *reynolds = tmp;
+            }
+        }
+    }
+
+
+    double theta;
+    for (int ind = 0; ind < mesh->w->n; ind ++) {
+        // Compute the force contribution from the wall shear stress
+        theta = mesh->w->theta[ind];
+        shear_stress = mesh->nu * mesh->w->val1[ind];
+        *drag += 2*shear_stress*sin(theta) / (mesh->Uinf*mesh->Uinf*mesh->Lc);
+        *lift += 2*shear_stress*cos(theta) / (mesh->Uinf*mesh->Uinf*mesh->Lc);
+
+        // Compute y+
+        *y_plus = fmax(*y_plus, sqrt(fabs(shear_stress)) * mesh->w->h1[ind] * mesh->w->d1 / mesh->nu);
+    }
+
+    double dx, dy, dl;
+    int ind_w1, ind_w2;
+    for (int ind = 0; ind < mesh->p->n; ind++) {
+        // Compute the force contribution from the pressure
+        ind_w1 = index(0, ind, mesh->w->n2, 0, 0);
+        ind_w2 = index(0, ind, mesh->w->n2, 0, 1);
+
+        dx = mesh->w->x[ind_w1] - mesh->w->x[ind_w2];
+        dy = mesh->w->y[ind_w1] - mesh->w->y[ind_w2];
+        dl = hypot(dx, dy);
+
+        *drag += 2*mesh->p->val1[ind]*dl*cos(theta) / (mesh->Uinf*mesh->Uinf*mesh->Lc);
+        *lift += 2*mesh->p->val1[ind]*dl*sin(theta) / (mesh->Uinf*mesh->Uinf*mesh->Lc);
+    }
+
+    if (print) {
+        x = mesh->w->x[ind_max];
+        y = mesh->w->y[ind_max];
+        r = hypot(x, y);
+        printf("\t\tMesh Reynolds = %f \t\t\tat r = %f\n", *reynolds, r);
+        printf("\t\ty+            = %f\n", *y_plus);
+        printf("\t\tCd            = %f\n", *drag);
+        printf("\t\tCl            = %f\n", *lift);
     }
 }

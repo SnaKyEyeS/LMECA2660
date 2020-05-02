@@ -31,4 +31,8 @@ void compute_h(MACMesh *mesh, double *res_x, double *res_y);
 IterateCache *initIterateCache(MACMesh *mesh);
 void freeIterateCache(IterateCache *ic);
 void iterate(MACMesh *mesh, PoissonData *poisson, IterateCache *ic, double t);
+
+// Diagnostics
+void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reynolds, double *y_plus, bool print);
+
 #endif
