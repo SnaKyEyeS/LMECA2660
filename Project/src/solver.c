@@ -29,11 +29,11 @@ void compute_rhs(MACMesh *mesh, double *result, double dt) {
         for (int j = 0; j < mesh->p->n2; j++) {
             ind = i*mesh->p->n2 + j;
 
-            /*
+            
             if (ind == 0) {
                 result[ind] = 0.0;
                 continue;
-            }*/
+            }
 
             ind_u_left  = index(i, j, mesh->u->n2, 0, 0);
             ind_u_right = index(i, j, mesh->u->n2, 1, 0);
@@ -754,8 +754,10 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
 
     int ind_u1, ind_u2;
     double dx, dy, dl, theta;
+    double dtheta;
+    double L;
     for (int ind = 0; ind < mesh->w->n2; ind++) {
-        // Shear wall stress
+        // Shear wall stress / rho
         theta = mesh->w->theta[ind];
         shear_stress = mesh->nu * mesh->w->val1[ind];
 
@@ -765,9 +767,18 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
 
         dx = mesh->u->x[ind_u1] - mesh->u->x[ind_u2];
         dy = mesh->u->y[ind_u1] - mesh->u->y[ind_u2];
+
+        dtheta = mesh->u->theta[ind_u1] - mesh->u->theta[ind_u2];
+
+        x = mesh->w->x[ind];
+        y = mesh->w->y[ind];
+        r = hypot(x, y);
+
+        L = 2 * M_PI * r;
+
         dl = hypot(dx, dy);
-        *drag += 2*shear_stress*dl*sin(theta) / (mesh->Uinf*mesh->Uinf*mesh->Lc);
-        *lift += 2*shear_stress*dl*cos(theta) / (mesh->Uinf*mesh->Uinf*mesh->Lc);
+        *drag -= 2*shear_stress*r*dtheta*sin(theta) / (mesh->Uinf*mesh->Uinf*L);
+        *lift += 2*shear_stress*r*dtheta*cos(theta) / (mesh->Uinf*mesh->Uinf*L);
 
         // Compute y+
         *y_plus = fmax(*y_plus, sqrt(fabs(shear_stress)) * mesh->w->h1[ind] * mesh->w->d1 / mesh->nu);
@@ -782,8 +793,17 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
         dx = mesh->w->x[ind_w1] - mesh->w->x[ind_w2];
         dy = mesh->w->y[ind_w1] - mesh->w->y[ind_w2];
         dl = hypot(dx, dy);
-        *drag += 2*mesh->p->val1[ind]*dl*cos(theta) / (mesh->Uinf*mesh->Uinf*mesh->Lc);
-        *lift += 2*mesh->p->val1[ind]*dl*sin(theta) / (mesh->Uinf*mesh->Uinf*mesh->Lc);
+
+        dtheta = mesh->w->theta[ind_u1] - mesh->w->theta[ind_u2];
+
+        x = mesh->p->x[ind];
+        y = mesh->p->y[ind];
+        r = hypot(x, y);
+
+        L = 2 * M_PI * r;
+
+        *drag += 2*mesh->p->val1[ind]*r*dtheta*cos(theta) / (mesh->Uinf*mesh->Uinf*L);
+        *lift += 2*mesh->p->val1[ind]*r*dtheta*sin(theta) / (mesh->Uinf*mesh->Uinf*L);
     }
 
     if (print) {
