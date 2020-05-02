@@ -752,9 +752,8 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
         }
     }
 
-
     double theta;
-    for (int ind = 0; ind < mesh->w->n; ind ++) {
+    for (int ind = 0; ind < mesh->w->n2; ind++) {
         // Compute the force contribution from the wall shear stress
         theta = mesh->w->theta[ind];
         shear_stress = mesh->nu * mesh->w->val1[ind];
@@ -767,7 +766,7 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
 
     double dx, dy, dl;
     int ind_w1, ind_w2;
-    for (int ind = 0; ind < mesh->p->n; ind++) {
+    for (int ind = 0; ind < mesh->p->n2; ind++) {
         // Compute the force contribution from the pressure
         ind_w1 = index(0, ind, mesh->w->n2, 0, 0);
         ind_w2 = index(0, ind, mesh->w->n2, 0, 1);
