@@ -109,4 +109,26 @@ legend("RK4 stability region", "E2", "E4", "E6", "DS", "location", "southwest");
 title("Stability analysis", "interpreter", "latex")
 
 
+%% Stability analysis
+figure; hold on;
+CFL = 1;
+
+% RK4
+[x, y] = meshgrid(-1.2:.01:.2, 0:.01:1); 
+z = x + 1i*y;
+
+b = 1+1.5*z;
+c = z/2;
+
+f1 = abs(b - sqrt(b.^2 - 4*c))/2;
+f2 = abs(b + sqrt(b.^2 - 4*c))/2;
+f = max(f1, f2);
+
+contour(x,y,-f, -1:0.1:0, 'Linewidth', 1); 
+grid;
+
+xlabel("Re($\lambda_k\Delta t$)", "interpreter", "latex", "fontsize", 14)
+ylabel("Im($\lambda_k\Delta t$)", "interpreter", "latex", "fontsize", 14)
+legend("AB2 stability region", "location", "southwest");
+title("Stability of the AB2 time integration scheme", "interpreter", "latex")
 
