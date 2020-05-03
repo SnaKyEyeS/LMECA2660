@@ -8,6 +8,7 @@ from ast import literal_eval
 import numexpr as ne
 from utils.manufactured_solutions import analytical_solutions, parse_solution
 import glob
+from tqdm import tqdm
 from matplotlib import rc
 rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
 rc('text', usetex=True)
@@ -21,7 +22,7 @@ def read_file(filename):
 
     print(f'Counting the # of lines in {filename}')
     with open(filename, 'r') as file:
-        for i, _ in enumerate(file):
+        for i, _ in tqdm(enumerate(file)):
             pass
         n_status = (i - 2) >> 1
 
@@ -33,6 +34,8 @@ def read_file(filename):
     n_y = parameters['n2']
     x = np.reshape(xy[0, :], (n_x, n_y), order='C')
     y = np.reshape(xy[1, :], (n_x, n_y), order='C')
+
+    print(f'Mesh size: {n_x} x {n_y}')
 
     def data_generator(n):
         count = 0
@@ -147,7 +150,8 @@ def plot_mesh(filename, **kwargs):
         return
 
     def init():
-        plt.pcolormesh(x, y, np.ones_like(x),facecolor='none', edgecolor='k', linewidth=0.005)
+        n = 10
+        plt.pcolormesh(x[::n, ::n], y[::n, ::n], np.ones_like(x[::n, ::n]),facecolor='none', edgecolor='k', linewidth=0.005)
         set_limits()
         plt.tight_layout()
         plt.savefig('mesh.pdf', dpi=kwargs['dpi'])
