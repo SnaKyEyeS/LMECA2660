@@ -146,8 +146,10 @@ def plot_mesh(filename, **kwargs):
         return
 
     def init():
+        plt.pcolormesh(x, y, np.ones_like(x),facecolor='none', edgecolor='k', linewidth=0.005)
         set_limits()
         plt.tight_layout()
+        plt.savefig('mesh.pdf', dpi=kwargs['dpi'])
 
     def update(i):
 
@@ -179,8 +181,8 @@ def plot_mesh(filename, **kwargs):
             print("Unkwown plot type!")
             os._exit(1)
 
-        if i == 0:
-            fig.colorbar(plot, ax=ax)
+        #if i == 0:
+            #fig.colorbar(plot, ax=ax)
 
         set_limits()
 
@@ -207,6 +209,7 @@ def plot_mesh(filename, **kwargs):
             os._exit(1)
         print("Generated a {kwargs['movie_format']} file at", output)
     elif kwargs['save_frames']:
+        init()
         for i in range(n_status):
             update(i)
 
