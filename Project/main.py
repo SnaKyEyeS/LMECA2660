@@ -19,6 +19,7 @@ def get_function():
 
 def read_file(filename):
 
+    print(f'Counting the # of lines in {filename}')
     with open(filename, 'r') as file:
         for i, _ in enumerate(file):
             pass
