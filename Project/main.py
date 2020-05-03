@@ -7,6 +7,7 @@ import os
 from ast import literal_eval
 import numexpr as ne
 from utils.manufactured_solutions import analytical_solutions, parse_solution
+from utils.strouhal import strouhal_from_diagonostic
 import glob
 from tqdm import tqdm
 from matplotlib import rc
@@ -175,7 +176,8 @@ def plot_mesh(filename, **kwargs):
             suptitle = kwargs['plot_suptitle']
             plt.suptitle(f'{suptitle}')
 
-        plt.title(r'' + '$t U_\infty/D'+f'= {status:.5f}$')
+        adim_symbol = kwargs['adim_unit_symbol']
+        plt.title(r'' + '$t U_\infty/'+f'{adim_symbol}= {status:.5f}$')
         if kwargs['plot_type'] == 'pcolor':
             plot = plt.pcolormesh(x, y, val, cmap='Spectral', vmin=vmin, vmax=vmax)
         elif kwargs['plot_type'] == 'vector':
@@ -246,6 +248,8 @@ parser.add_argument('--plot_suptitle', help='choose the plot suptitle')
 parser.add_argument('-adim', action='store_true', help='choose adimensional axis')
 parser.add_argument('--adim_unit_symbol', default='D', help='choose adimensional unit symbol')
 parser.add_argument('--adim_unit_value', default=0.02, type=float, help='choose adimensional unit value')
+parser.add_argument('--make_diag', help='will make the diagnostic from file {param}')
+parser.add_argument('--time_developed', default=20, type=float, help='adimensional time were shedding is developed')
 
 if __name__ == '__main__':
     args = parser.parse_args()
@@ -275,3 +279,8 @@ if __name__ == '__main__':
         n = files[0][::-1].index('_') - len(frame_format)
         command = f'ffmpeg -r 40 -f image2 -s 1920x1080 -i {output_dir}/{param}_%0{n}d{frame_format} -vcodec libx264 -crf 25  -pix_fmt yuv420p {param}.mp4'
         os.system(command)
+
+    if args['make_diag']:
+        freq, St = strouhal_from_diagonostic(args['make_diag'], **args)
+
+        print(f'Frequency of shedding {freq}Hz and St={St}')
