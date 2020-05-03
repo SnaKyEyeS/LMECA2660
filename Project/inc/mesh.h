@@ -6,10 +6,10 @@
 #include "airfoil.h"
 #include "cylinder.h"
 
-#define N_MESH 4
+#define N_MESH      4
 
 #define REYNOLDS    550
-#define FOURIER     0.15
+#define FOURIER     0.4
 #define CFL         0.7
 
 #define NU          (1e-5)      // UNUSED VARIABLE -> defined for the save_header

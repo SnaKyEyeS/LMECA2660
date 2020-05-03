@@ -83,8 +83,12 @@ MACMesh *init_mac_mesh(MappingType type) {
 
 
             // Stability criterion
-            double dt_min_fourier = FOURIER * mapping->h_wall_normal * mapping->h_wall_normal / mesh->nu;
-            double dt_min_CFL     = CFL * mapping->h_wall_normal / (5.5*mesh->Uinf);
+            double h_min = 1e6;
+            for (int ind = 0; ind < mesh->w->n; ind++) {
+                h_min = fmin(h_min, fmin(mesh->w->h2[ind]*mesh->w->d2, mesh->w->h1[ind]*mesh->w->d1));
+            }
+            double dt_min_fourier = FOURIER * h_min * h_min / mesh->nu;
+            double dt_min_CFL     = CFL * h_min / (4*mesh->Uinf);
             printf("dt fourier = %.10f\n", dt_min_fourier);
             printf("dt CFL     = %.10f\n", dt_min_CFL);
             mesh->dt = fmin(dt_min_fourier, dt_min_CFL);

@@ -67,9 +67,7 @@ int main(int argc, char *argv[]){
         only_w ? NULL : fopen("../data/mesh_v.txt", "w+"),
         only_w ? NULL : fopen("../data/mesh_p.txt", "w+")
     };
-    
     FILE *diag = fopen("../data/diagnostics.txt", "w+");
-
     printf("Writing headers and initial states\n");
     for (int i = 0; i < N_SAVES; i++) {
         save_mesh_header(meshes[i], files[i]);
