@@ -49,7 +49,7 @@ int main(int argc, char *argv[]){
             exit(1);
     }
 
-    int every_n = 1e6;
+    int every_n = 25;
     int max_n = ceil(endState / dt);
 
     printf("Opening files\n");
@@ -67,6 +67,7 @@ int main(int argc, char *argv[]){
         only_w ? NULL : fopen("../data/mesh_v.txt", "w+"),
         only_w ? NULL : fopen("../data/mesh_p.txt", "w+")
     };
+    
     FILE *diag = fopen("../data/diagnostics.txt", "w+");
     printf("Writing headers and initial states\n");
     for (int i = 0; i < N_SAVES; i++) {
