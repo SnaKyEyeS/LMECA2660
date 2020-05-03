@@ -760,7 +760,7 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
                 break;
         }
 
-        *drag -= shear_stress*dl*sin(theta);
+        *drag += shear_stress*dl*sin(theta);
         *lift -= shear_stress*dl*cos(theta);
 
         // Compute y+
@@ -790,7 +790,7 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
                 break;
         }
 
-        *drag += mesh->p->val1[ind]*dl*cos(theta);
+        *drag -= mesh->p->val1[ind]*dl*cos(theta);
         *lift -= mesh->p->val1[ind]*dl*sin(theta);
     }
 
