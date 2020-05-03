@@ -54,16 +54,24 @@ int main(int argc, char *argv[]){
 
     printf("Opening files\n");
     Mesh *meshes[N_MESH] = {mesh->w, mesh->u, mesh->v, mesh->p};
+
+    // Only save W ? //
+    int only_w = 1;
+    //---------------//
+
+    int N_SAVES = only_w ? 1 : N_MESH;
+
     FILE *files[N_MESH]  = {
         fopen("../data/mesh_w.txt", "w+"),
-        fopen("../data/mesh_u.txt", "w+"),
-        fopen("../data/mesh_v.txt", "w+"),
-        fopen("../data/mesh_p.txt", "w+")
+        only_w ? NULL : fopen("../data/mesh_u.txt", "w+"),
+        only_w ? NULL : fopen("../data/mesh_v.txt", "w+"),
+        only_w ? NULL : fopen("../data/mesh_p.txt", "w+")
     };
+    
     FILE *diag = fopen("../data/diagnostics.txt", "w+");
 
     printf("Writing headers and initial states\n");
-    for (int i = 0; i < N_MESH; i++) {
+    for (int i = 0; i < N_SAVES; i++) {
         save_mesh_header(meshes[i], files[i]);
         save_mesh_state(meshes[i], state, files[i]);
     }
@@ -80,7 +88,7 @@ int main(int argc, char *argv[]){
         state += dt;
         if (ic->n % every_n == 0) {
             printf("Saving state.\n");
-            for (int i = 0; i < N_MESH; i++) {
+            for (int i = 0; i < N_SAVES; i++) {
                 save_mesh_state(meshes[i], state * mesh->Uinf / mesh->Lc, files[i]);
                 fprintf(diag, "%f, %f, %f, %f, %f, %f\n", state * mesh->Uinf / mesh->Lc, cd, cl, re, y_plus, max_uv);
             }
@@ -89,7 +97,7 @@ int main(int argc, char *argv[]){
     }
 
     printf("Saving last state !\n");
-    for (int i = 0; i < N_MESH; i++) {
+    for (int i = 0; i < N_SAVES; i++) {
         save_mesh_state(meshes[i], state * mesh->Uinf / mesh->Lc, files[i]);
         fclose(files[i]);
     }
