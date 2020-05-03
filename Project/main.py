@@ -129,7 +129,7 @@ def plot_mesh(filename, **kwargs):
             lim = kwargs['limits']
             plt.xlim([-lim, lim])
             plt.ylim([-lim, lim])
-        
+
         if kwargs['adim']:
             unit = kwargs['adim_unit_symbol']
             xlim = plt.xlim()
@@ -159,7 +159,7 @@ def plot_mesh(filename, **kwargs):
 
         print(f'Generating frame {i+1}/{n_status}')
 
-        vmax = max(abs(val)) / 5
+        vmax = max(abs(val)) / 10
         vmin = -vmax
 
         val = np.reshape(val, (n_x, n_y), order='C')

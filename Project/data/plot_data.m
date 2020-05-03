@@ -1,3 +1,19 @@
+%% Plot diagnostics
+figure;
+
+data = load("airfoil_run1.txt");
+
+% Drag coefficient
+subplot(1,2,1)
+plot(data(:,1), data(:,2))
+title("Drag coefficient")
+
+% Lift coefficient
+subplot(1,2,2)
+plot(data(:,1), -data(:,3))
+title("Lift coefficient")
+
+
 %% Plot mesh data
 data = load("mesh.txt");
 
@@ -83,7 +99,7 @@ sol = simplify(S.a*(-h/2)^4 + S.b*(-h/2)^3 + S.c*(-h/2)^2 + S.d*(-h/2)^1 + S.e)
 clc; close all;
 figure;
 
-fid = fopen('mesh_u.txt', 'rt');
+fid = fopen('mesh_v.txt', 'rt');
 data = textscan(fid, "{'n': %d, 'n1': %d, 'n2': %d, 'd1': %f, 'd2': %f}");
 n = cell2mat(data(1));
 n1 = cell2mat(data(2));
@@ -107,8 +123,8 @@ while ~feof(fid)
     title(i)
     
     %caxis([-10 10])
-    xlim([-0.1 0.1])
-    ylim([-0.1 0.1])
+    %xlim([-0.1 0.1]/4)
+    %ylim([-0.1 0.1]/4)
     
     colorbar;
     drawnow;
