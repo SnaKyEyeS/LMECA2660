@@ -116,6 +116,11 @@ def plot_mesh(filename, **kwargs):
 
     parse_number = lambda n: str(n).zfill(len(str(n_status)))
 
+    if kwargs['save_frames']:
+        format = kwargs['frame_format']
+        fileformat = os.path.join(kwargs['output_dir'], f'{basename}*{format}')
+        print('Removing old plot:', fileformat)
+        os.system(f'rm {fileformat}')
 
     fig, ax = plt.subplots()
 
@@ -163,7 +168,7 @@ def plot_mesh(filename, **kwargs):
             suptitle = kwargs['plot_suptitle']
             plt.suptitle(f'{suptitle}')
 
-        plt.title(f'$t = {status:.5f}s$')
+        plt.title(r'' + '$t U_\infty/D'+f'= {status:.5f}$')
         if kwargs['plot_type'] == 'pcolor':
             plot = plt.pcolormesh(x, y, val, cmap='Spectral', vmin=vmin, vmax=vmax)
         elif kwargs['plot_type'] == 'vector':

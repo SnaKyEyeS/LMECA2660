@@ -10,7 +10,7 @@ CylinderMapping *init_cylinder_mapping() {
     mapping->H = 50*mapping->D;
     mapping->h_wall_normal = mapping->D / 300;
     mapping->gamma = 1.01;
-    mapping->n_xi2 = 500;
+    mapping->n_xi2 = 600;
 
     // We compute the rest
     mapping->beta = mapping->h_wall_normal / (mapping->gamma - 1);
