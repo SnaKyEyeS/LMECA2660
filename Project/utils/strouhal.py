@@ -24,6 +24,8 @@ def strouhal_from_diagonostic(filepath, **kwargs):
 
     plt.xlabel(xlabel)
 
+    plt.tight_layout()
+
     plt.savefig('diagnostic_coef.pdf', dpi=kwargs['dpi'])
 
     fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
@@ -38,6 +40,8 @@ def strouhal_from_diagonostic(filepath, **kwargs):
     xlabel = f'$t U_\infty/' +f'{adim_symbol}$'
 
     plt.xlabel(xlabel)
+
+    plt.tight_layout()
 
     plt.savefig('diagnostic_stability.pdf', dpi=kwargs['dpi'])
 
