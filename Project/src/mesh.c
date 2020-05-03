@@ -88,7 +88,7 @@ MACMesh *init_mac_mesh(MappingType type) {
                 h_min = fmin(h_min, fmin(mesh->w->h2[ind]*mesh->w->d2, mesh->w->h1[ind]*mesh->w->d1));
             }
             double dt_min_fourier = FOURIER * h_min * h_min / mesh->nu;
-            double dt_min_CFL     = CFL * h_min / (4*mesh->Uinf);
+            double dt_min_CFL     = CFL * h_min / (2.5*mesh->Uinf);
             printf("dt fourier = %.10f\n", dt_min_fourier);
             printf("dt CFL     = %.10f\n", dt_min_CFL);
             mesh->dt = fmin(dt_min_fourier, dt_min_CFL);
