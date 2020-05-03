@@ -748,9 +748,20 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
         y = mesh->w->y[ind];
         r = hypot(x, y);
         theta = mesh->w->theta[ind];
+        dx = mesh->u->x[ind_u1] - mesh->u->x[ind_u2];
+        dy = mesh->u->y[ind_u1] - mesh->u->y[ind_u2];
 
-        *drag -= shear_stress*r*dtheta*sin(theta);
-        *lift += shear_stress*r*dtheta*cos(theta);
+        switch (mesh->type) {
+            case CYLINDER:
+                dl = r*dtheta;
+                break;
+            case AIRFOIL:
+                dl = hypot(dx, dy);
+                break;
+        }
+
+        *drag -= shear_stress*dl*sin(theta);
+        *lift -= shear_stress*dl*cos(theta);
 
         // Compute y+
         *y_plus = fmax(*y_plus, sqrt(fabs(shear_stress)) * mesh->w->h1[ind] * mesh->w->d1 / mesh->nu);
@@ -767,9 +778,20 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
         y = mesh->p->y[ind];
         r = hypot(x, y);
         theta = mesh->p->theta[ind];
+        dx = mesh->w->x[ind_w1] - mesh->w->x[ind_w2];
+        dy = mesh->w->y[ind_w1] - mesh->w->y[ind_w2];
 
-        *drag += mesh->p->val1[ind]*r*dtheta*cos(theta);
-        *lift += mesh->p->val1[ind]*r*dtheta*sin(theta);
+        switch (mesh->type) {
+            case CYLINDER:
+                dl = r*dtheta;
+                break;
+            case AIRFOIL:
+                dl = hypot(dx, dy);
+                break;
+        }
+
+        *drag += mesh->p->val1[ind]*dl*cos(theta);
+        *lift -= mesh->p->val1[ind]*dl*sin(theta);
     }
 
     for (int ind = 0; ind < mesh->v->n;  ind++) {
@@ -783,7 +805,7 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
         x = mesh->w->x[ind_max];
         y = mesh->w->y[ind_max];
         r = hypot(x, y);
-        printf("\t\tMesh Reynolds = %f \t\t\tat r = %f*D\n", *reynolds, r/mesh->Lc);
+        printf("\t\tMesh Reynolds = %f\n", *reynolds);
         printf("\t\ty+            = %f\n", *y_plus);
         printf("\t\tCd            = %f\n", *drag);
         printf("\t\tCl            = %f\n", *lift);
