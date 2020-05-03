@@ -2,6 +2,7 @@
 #define _DEBUG_H_
 
 #include "mesh.h"
+#include "solver.h"
 #include <math.h>
 
 typedef struct {
@@ -19,5 +20,7 @@ void save_header(Tracker *t, double *x, double *y, FILE *fp);
 void save_tracking_state(Tracker *t, double state, FILE *fp);
 
 void set_speed_pressure(MACMesh *mesh, void (*f)(double, double, double*, double*));
+
+void run_tests();
 
 #endif
