@@ -776,7 +776,6 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
         *max_uv = fmax(*max_uv, (fabs(mesh->v->val1[ind]) + fabs(mesh->u->val1[ind])) / mesh->Uinf);
     }
 
-    // L = PI * Lc ?
     *drag *= 2 / (mesh->Uinf*mesh->Uinf*mesh->Lc);
     *lift *= 2 / (mesh->Uinf*mesh->Uinf*mesh->Lc);
 
