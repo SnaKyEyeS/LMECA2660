@@ -751,17 +751,10 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
         dx = mesh->u->x[ind_u1] - mesh->u->x[ind_u2];
         dy = mesh->u->y[ind_u1] - mesh->u->y[ind_u2];
 
-        switch (mesh->type) {
-            case CYLINDER:
-                dl = r*dtheta;
-                break;
-            case AIRFOIL:
-                dl = hypot(dx, dy);
-                break;
-        }
+        dl = hypot(dx, dy);
 
-        *drag += shear_stress*dl*sin(theta);
-        *lift -= shear_stress*dl*cos(theta);
+        *drag -= shear_stress*dl*sin(theta);
+        *lift += shear_stress*dl*cos(theta);
 
         // Compute y+
         *y_plus = fmax(*y_plus, sqrt(fabs(shear_stress)) * mesh->w->h1[ind] * mesh->w->d1 / mesh->nu);

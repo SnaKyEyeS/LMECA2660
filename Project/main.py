@@ -132,7 +132,7 @@ def plot_mesh(filename, **kwargs):
     if kwargs['save_frames']:
         format = kwargs['frame_format']
         fileformat = os.path.join(kwargs['output_dir'], f'{basename}*{format}')
-        print('Removing old plot:', fileformat)
+        print('Removing old plots:', fileformat)
         os.system(f'rm {fileformat}')
 
     fig, ax = plt.subplots()

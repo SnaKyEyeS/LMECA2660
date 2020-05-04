@@ -3,6 +3,7 @@ import numpy as np
 
 def strouhal_from_diagonostic(filepath, **kwargs):
     data = np.loadtxt(filepath, delimiter=',')
+
     t_adim = data[:, 0]
     U_inf = 1
     Lc = kwargs['adim_unit_value']

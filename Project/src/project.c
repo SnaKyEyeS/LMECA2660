@@ -89,8 +89,10 @@ int main(int argc, char *argv[]){
             printf("Saving state.\n");
             for (int i = 0; i < N_SAVES; i++) {
                 save_mesh_state(meshes[i], state * mesh->Uinf / mesh->Lc, files[i]);
+                fflush(files[i]);
             }
             fprintf(diag, "%f, %f, %f, %f, %f, %f\n", state * mesh->Uinf / mesh->Lc, cd, cl, re, y_plus, max_uv);
+            fflush(diag);
         }
         printf("\n");
     }
@@ -100,6 +102,8 @@ int main(int argc, char *argv[]){
         save_mesh_state(meshes[i], state * mesh->Uinf / mesh->Lc, files[i]);
         fclose(files[i]);
     }
+
+    fclose(diag);
 
     // Free memory
     free_mac_mesh(mesh);
