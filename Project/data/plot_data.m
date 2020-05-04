@@ -1,3 +1,5 @@
+%% Compute 
+
 %% Plot diagnostics
 figure;
 
@@ -99,24 +101,24 @@ sol = simplify(S.a*(-h/2)^4 + S.b*(-h/2)^3 + S.c*(-h/2)^2 + S.d*(-h/2)^1 + S.e)
 clc; close all;
 figure;
 
-fid = fopen('mesh_v.txt', 'rt');
+fid = fopen('mesh_w.txt', 'rt');
 data = textscan(fid, "{'n': %d, 'n1': %d, 'n2': %d, 'd1': %f, 'd2': %f}");
 n = cell2mat(data(1));
 n1 = cell2mat(data(2));
 n2 = cell2mat(data(3));
 
-x = reshape(cell2mat(textscan(fid, repmat('%f,', 1, n))), n2, n1);
-y = reshape(cell2mat(textscan(fid, repmat('%f,', 1, n))), n2, n1);
+x = reshape(cell2mat(textscan(fid, repmat('%f,', 1, n))), n1, n2);
+y = reshape(cell2mat(textscan(fid, repmat('%f,', 1, n))), n1, n2);
 
 
 i = 0;
 while ~feof(fid)
     data = cell2mat(textscan(fid, repmat('%f,', 1, n+1)));
     t = data(1);
-    val1 = reshape(data(2:end), n2, n1);
+    val1 = reshape(data(2:end), n1, n2);
     
     data = cell2mat(textscan(fid, repmat('%f,', 1, n+1)));
-    val2 = reshape(data(2:end), n2, n1);
+    val2 = reshape(data(2:end), n1, n2);
     
     h = pcolor(x,y,val1);
     set(h, 'edgecolor', 'none');

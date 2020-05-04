@@ -207,19 +207,19 @@ Mesh *init_mesh(int n1, int n2, double d1, double d2) {
     mesh->d2 = d2;
 
     // Allocate mesh data
-    mesh->x = (double *) malloc(mesh->n*sizeof(double));
-    mesh->y = (double *) malloc(mesh->n*sizeof(double));
-    mesh->h1 = (double *) malloc(mesh->n*sizeof(double));
-    mesh->h2 = (double *) malloc(mesh->n*sizeof(double));
-    mesh->dh1_d1 = (double *) malloc(mesh->n*sizeof(double));
-    mesh->dh1_d2 = (double *) malloc(mesh->n*sizeof(double));
-    mesh->dh2_d1 = (double *) malloc(mesh->n*sizeof(double));
-    mesh->dh2_d2 = (double *) malloc(mesh->n*sizeof(double));
+    mesh->x         = (double *) malloc(mesh->n*sizeof(double));
+    mesh->y         = (double *) malloc(mesh->n*sizeof(double));
+    mesh->h1        = (double *) malloc(mesh->n*sizeof(double));
+    mesh->h2        = (double *) malloc(mesh->n*sizeof(double));
+    mesh->dh1_d1    = (double *) malloc(mesh->n*sizeof(double));
+    mesh->dh1_d2    = (double *) malloc(mesh->n*sizeof(double));
+    mesh->dh2_d1    = (double *) malloc(mesh->n*sizeof(double));
+    mesh->dh2_d2    = (double *) malloc(mesh->n*sizeof(double));
     mesh->ddh1_d1d2 = (double *) malloc(mesh->n*sizeof(double));
     mesh->ddh2_d1d2 = (double *) malloc(mesh->n*sizeof(double));
-    mesh->theta = (double *) malloc(mesh->n*sizeof(double));
-    mesh->val1 = (double *) calloc(mesh->n, sizeof(double));
-    mesh->val2 = (double *) calloc(mesh->n, sizeof(double));
+    mesh->theta     = (double *) malloc(mesh->n*sizeof(double));
+    mesh->val1      = (double *) calloc(mesh->n, sizeof(double));
+    mesh->val2      = (double *) calloc(mesh->n, sizeof(double));
 }
 
 void free_mac_mesh(MACMesh *mesh) {
