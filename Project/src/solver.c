@@ -765,8 +765,8 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
         dy = mesh->w->y[ind_w1] - mesh->w->y[ind_w2];
         dl = hypot(dx, dy);
 
-        *drag += mesh->p->val1[ind]*dl*cos(theta);
-        *lift += mesh->p->val1[ind]*dl*sin(theta);
+        *drag -= mesh->p->val1[ind]*dl*cos(theta);
+        *lift -= mesh->p->val1[ind]*dl*sin(theta);
     }
 
     for (int ind = 0; ind < mesh->v->n;  ind++) {
