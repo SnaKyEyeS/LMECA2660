@@ -734,7 +734,6 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
 
     int ind_u1, ind_u2;
     double dx, dy, dl, theta;
-    double dtheta;
     for (int ind = 0; ind < mesh->w->n2; ind++) {
         // Shear wall stress / rho
         shear_stress = mesh->nu * mesh->w->val1[ind];
@@ -743,14 +742,9 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
         ind_u1 = index(0, ind, mesh->u->n2, 0, 0);
         ind_u2 = index(0, ind, mesh->u->n2, 0, -1);
 
-        dtheta = mesh->u->theta[ind_u1] - mesh->u->theta[ind_u2];
-        x = mesh->w->x[ind];
-        y = mesh->w->y[ind];
-        r = hypot(x, y);
         theta = mesh->w->theta[ind];
         dx = mesh->u->x[ind_u1] - mesh->u->x[ind_u2];
         dy = mesh->u->y[ind_u1] - mesh->u->y[ind_u2];
-
         dl = hypot(dx, dy);
 
         *drag -= shear_stress*dl*sin(theta);
@@ -766,22 +760,10 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
         ind_w1 = index(0, ind, mesh->w->n2, 0, 0);
         ind_w2 = index(0, ind, mesh->w->n2, 0, 1);
 
-        dtheta = mesh->w->theta[ind_w1] - mesh->w->theta[ind_w2];
-        x = mesh->p->x[ind];
-        y = mesh->p->y[ind];
-        r = hypot(x, y);
         theta = mesh->p->theta[ind];
         dx = mesh->w->x[ind_w1] - mesh->w->x[ind_w2];
         dy = mesh->w->y[ind_w1] - mesh->w->y[ind_w2];
-
-        switch (mesh->type) {
-            case CYLINDER:
-                dl = r*dtheta;
-                break;
-            case AIRFOIL:
-                dl = hypot(dx, dy);
-                break;
-        }
+        dl = hypot(dx, dy);
 
         *drag += mesh->p->val1[ind]*dl*cos(theta);
         *lift += mesh->p->val1[ind]*dl*sin(theta);
