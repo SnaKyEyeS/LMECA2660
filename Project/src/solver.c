@@ -783,8 +783,8 @@ void compute_diagnostics(MACMesh *mesh, double *drag, double *lift, double *reyn
                 break;
         }
 
-        *drag -= mesh->p->val1[ind]*dl*cos(theta);
-        *lift -= mesh->p->val1[ind]*dl*sin(theta);
+        *drag += mesh->p->val1[ind]*dl*cos(theta);
+        *lift += mesh->p->val1[ind]*dl*sin(theta);
     }
 
     for (int ind = 0; ind < mesh->v->n;  ind++) {
