@@ -19,6 +19,9 @@ def get_function():
     print("Input the function here.\nIt should take maximum 5 parameters, r (radius), t (theta), R, dt and nu, and return a scalar. Ex.: r*sin(t)\nYou can also use {} around an expression to use a manufactured solution. Ex.: {u_star} + {h_x}\nWrite and press enter to confirm:")
     return parse_solution(input().strip())
 
+def periodic_cat(X):
+    return np.hstack((X, X[:, 1, np.newaxis]))
+
 def read_file(filename):
 
     print(f'Counting the # of lines in {filename}')
@@ -35,6 +38,9 @@ def read_file(filename):
     n_y = parameters['n2']
     x = np.reshape(xy[0, :], (n_x, n_y), order='C')
     y = np.reshape(xy[1, :], (n_x, n_y), order='C')
+    
+    x = periodic_cat(x)
+    y = periodic_cat(y)
 
     print(f'Mesh size: {n_x} x {n_y}')
 
@@ -87,6 +93,8 @@ def debug_mesh(filename, **kwargs):
         val = val_1 if kwargs['value'] == 1 else val_2
 
         val = np.reshape(val, (n_x, n_y), order='C')
+        
+        val = periodic_cat(val)
 
         if kwargs['compare']:
             fig = plt.figure(figsize=plt.figaspect(1/3))
