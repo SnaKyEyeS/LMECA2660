@@ -20,7 +20,7 @@ def get_function():
     return parse_solution(input().strip())
 
 def periodic_cat(X):
-    return np.hstack((X, X[:, 1, np.newaxis]))
+    return np.hstack((X, X[:, 0, np.newaxis]))
 
 def read_file(filename):
 
