@@ -38,7 +38,7 @@ def read_file(filename):
     n_y = parameters['n2']
     x = np.reshape(xy[0, :], (n_x, n_y), order='C')
     y = np.reshape(xy[1, :], (n_x, n_y), order='C')
-    
+
     x = periodic_cat(x)
     y = periodic_cat(y)
 
@@ -93,7 +93,7 @@ def debug_mesh(filename, **kwargs):
         val = val_1 if kwargs['value'] == 1 else val_2
 
         val = np.reshape(val, (n_x, n_y), order='C')
-        
+
         val = periodic_cat(val)
 
         if kwargs['compare']:
@@ -147,11 +147,11 @@ def plot_mesh(filename, **kwargs):
             unit = kwargs['adim_unit_symbol']
             xlim = plt.xlim()
             x_ticks = np.linspace(xlim[0], xlim[1], 6) / kwargs['adim_unit_value']
-            x_labels = [f'${int(xtick)}{unit}$' for xtick in x_ticks]
+            x_labels = [f'${round(xtick,1)}{unit}$' for xtick in x_ticks]
             plt.xticks(x_ticks * kwargs['adim_unit_value'], x_labels)
             ylim = plt.ylim()
             y_ticks = np.linspace(ylim[0], ylim[1], 6) / kwargs['adim_unit_value']
-            y_labels = [f'${int(ytick)}{unit}$' for ytick in y_ticks]
+            y_labels = [f'${round(ytick,1)}{unit}$' for ytick in y_ticks]
             plt.yticks(y_ticks * kwargs['adim_unit_value'], y_labels)
             plt.xlabel('$x$')
             plt.ylabel('$y$', labelpad=0)

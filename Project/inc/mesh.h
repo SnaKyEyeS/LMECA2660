@@ -8,7 +8,7 @@
 
 #define N_MESH      4
 
-#define REYNOLDS    550
+#define REYNOLDS    1000
 #define FOURIER     0.4
 #define CFL         0.7
 
