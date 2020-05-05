@@ -181,11 +181,6 @@ void compute_omega(MACMesh *mesh) {
                                 + 17*v[ind_v_right_1]*h2_right_1  +  9*v[ind_v_right_2]*h2_right_2
                                 -  5*v[ind_v_right_3]*h2_right_3  +  1*v[ind_v_right_4]*h2_right_4) / (24*d1);
 
-                // h2_right_5  = mesh->v->h2[ind_v_right_5];
-                // diff_h2_v_d1 = (- 93*v[ind_v_right_1] *h2_right_1  +229*v[ind_v_right_2]*h2_right_2
-                //                 -225*v[ind_v_right_3] *h2_right_3  +111*v[ind_v_right_4]*h2_right_4
-                //                                                    - 22*v[ind_v_right_5]*h2_right_5) / (24*d1);
-
             } else if (i == 1) {
                 // We compute a ghost point for v*h2 on the left side of the inner wall
                 ghost = -(v[ind_v_right_2]*h2_right_2 - 5*v[ind_v_right_1]*h2_right_1
@@ -193,12 +188,6 @@ void compute_omega(MACMesh *mesh) {
 
                 diff_h2_v_d1 = (  1*ghost                       - 27*v[ind_v_left_1] *h2_left_1
                                 - 1*v[ind_v_right_2]*h2_right_2 + 27*v[ind_v_right_1]*h2_right_1) / (24*d1);
-
-                // h2_right_4  = mesh->v->h2[ind_v_right_4];
-                // h2_right_3  = mesh->v->h2[ind_v_right_3];
-                // diff_h2_v_d1 = (- 22*v[ind_v_left_1] *h2_left_1
-                //                 + 17*v[ind_v_right_1]*h2_right_1  +  9*v[ind_v_right_2]*h2_right_2
-                //                 -  5*v[ind_v_right_3]*h2_right_3  +  1*v[ind_v_right_4]*h2_right_4) / (24*d1);
 
             } else if (i == mesh->w->n1-1) {
                 h2_left_3   = mesh->v->h2[ind_v_left_3];
