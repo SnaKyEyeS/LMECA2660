@@ -50,6 +50,13 @@ def strouhal_from_diagonostic(filepath, **kwargs):
 
     t = t_adim[index] * Lc / U_inf
 
+
+    cl = cl[index]
+
+    # Remove the constant component
+
+    cl -= np.mean(cl)
+
     y = np.fft.fft(cl[index])
     dt = t[1] - t[0]
     n = len(y)
