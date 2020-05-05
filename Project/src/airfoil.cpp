@@ -16,7 +16,7 @@ AirfoilMapping *init_airfoil_mapping() {
 	mapping->epsOa = 0.15; //To set the width
 	mapping->delta = M_PI/4.0; //To set the camber
 	mapping->reg = 1.05; //To make the airfoil regularized at the leading edge.
-	mapping->AoA = 20;
+	mapping->AoA = 0;
 	double a = (mapping->L_carac/2.0);
 	double eps = (mapping->epsOa)*a;
 	double Delta = 4.0*eps*eps*cos(mapping->delta)*cos(mapping->delta) - 4.0*(eps*eps - a*a);

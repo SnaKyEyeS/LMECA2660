@@ -14,7 +14,7 @@ int main(int argc, char *argv[]){
     PetscInitialize(&argc, &argv, 0, 0);
 
     // Initialize Mesh
-    MACMesh *mesh = init_mac_mesh(CYLINDER);
+    MACMesh *mesh = init_mac_mesh(AIRFOIL);
     IterateCache *ic = initIterateCache(mesh);
 
     // Initialize Poisson solver
@@ -49,7 +49,7 @@ int main(int argc, char *argv[]){
             exit(1);
     }
 
-    int every_n = 25;
+    int every_n = 100;
     int max_n = ceil(endState / dt);
 
     printf("Opening files\n");
