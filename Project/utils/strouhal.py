@@ -57,7 +57,7 @@ def strouhal_from_diagonostic(filepath, **kwargs):
 
     cl -= np.mean(cl)
 
-    y = np.fft.fft(cl[index])
+    y = np.fft.fft(cl)
     dt = t[1] - t[0]
     n = len(y)
     freq = np.fft.fftfreq(n, d=dt)
