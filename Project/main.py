@@ -147,11 +147,13 @@ def plot_mesh(filename, **kwargs):
             unit = kwargs['adim_unit_symbol']
             xlim = plt.xlim()
             x_ticks = np.linspace(xlim[0], xlim[1], 6) / kwargs['adim_unit_value']
-            x_labels = [f'${round(xtick,1)}{unit}$' for xtick in x_ticks]
+            x_labels = [f'${int(xtick)}{unit}$' for xtick in x_ticks]
+            #x_labels = [f'${round(xtick,1)}{unit}$' for xtick in x_ticks]
             plt.xticks(x_ticks * kwargs['adim_unit_value'], x_labels)
             ylim = plt.ylim()
             y_ticks = np.linspace(ylim[0], ylim[1], 6) / kwargs['adim_unit_value']
-            y_labels = [f'${round(ytick,1)}{unit}$' for ytick in y_ticks]
+            #y_labels = [f'${round(ytick,1)}{unit}$' for ytick in y_ticks]
+            y_labels = [f'${int(ytick)}{unit}$' for ytick in y_ticks]
             plt.yticks(y_ticks * kwargs['adim_unit_value'], y_labels)
             plt.xlabel('$x$')
             plt.ylabel('$y$', labelpad=0)
@@ -289,6 +291,6 @@ if __name__ == '__main__':
         os.system(command)
 
     if args['make_diag']:
-        freq, St = strouhal_from_diagonostic(args['make_diag'], **args)
+        freq, St, cl, cd = strouhal_from_diagonostic(args['make_diag'], **args)
 
-        print(f'Frequency of shedding {freq}Hz and St={St}')
+        print(f'Frequency of shedding {freq}Hz and St={St}. cl = {cl} and cd = {cd}')

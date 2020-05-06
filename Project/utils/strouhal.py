@@ -51,13 +51,13 @@ def strouhal_from_diagonostic(filepath, **kwargs):
     t = t_adim[index] * Lc / U_inf
 
 
-    cl = cl[index]
+    cl_ = cl[index]
 
     # Remove the constant component
 
-    cl -= np.mean(cl)
+    cl_ -= np.mean(cl_)
 
-    y = np.fft.fft(cl)
+    y = np.fft.fft(cl_)
     dt = t[1] - t[0]
     n = len(y)
     freq = np.fft.fftfreq(n, d=dt)
@@ -68,4 +68,4 @@ def strouhal_from_diagonostic(filepath, **kwargs):
 
     St = f_max * Lc / U_inf
 
-    return f_max, St
+    return f_max, St, np.mean(cl[index]), np.mean(cd[index])
