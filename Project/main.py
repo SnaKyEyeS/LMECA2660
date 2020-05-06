@@ -291,6 +291,6 @@ if __name__ == '__main__':
         os.system(command)
 
     if args['make_diag']:
-        freq, St, cl, cd = strouhal_from_diagonostic(args['make_diag'], **args)
+        freq, St, cl, cd, std_cd, std_cl = strouhal_from_diagonostic(args['make_diag'], **args)
 
-        print(f'Frequency of shedding {freq}Hz and St={St}. cl = {cl} and cd = {cd}')
+        print(f'Frequency of shedding {freq}Hz and St={St}. mean/std cl = {cl}|{std_cl} and cd = {cd}|{std_cd}')

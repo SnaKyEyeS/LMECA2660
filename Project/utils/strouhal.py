@@ -68,4 +68,4 @@ def strouhal_from_diagonostic(filepath, **kwargs):
 
     St = f_max * Lc / U_inf
 
-    return f_max, St, np.mean(cl[index]), np.mean(cd[index])
+    return f_max, St, np.mean(cl[index]), np.mean(cd[index]), np.std(cl[index]), np.std(cd[index])
