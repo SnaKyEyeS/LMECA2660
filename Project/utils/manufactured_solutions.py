@@ -17,6 +17,10 @@ analytical_solutions = {
     'rhs' : '1/4 * cos(2 * theta) + 1'
 }"""
 
+"""
+WARNING : P is not correct. Same for grad P and the rhs.
+"""
+
 analytical_solutions = {
     'u': '(1 - R**2/ (r**2)) * cos(theta)',
     'v': '- (1 + R**2 / (r**2)) * sin(theta)',
