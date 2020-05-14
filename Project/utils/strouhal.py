@@ -33,7 +33,7 @@ def strouhal_from_diagonostic(filepath, **kwargs):
 
     ax1.plot(t_adim, re_w)
     ax1.set_ylabel('$Re_\omega$')
-    ax2.plot(t_adim, cl)
+    ax2.plot(t_adim, y_p)
     ax2.set_ylabel('$y^+$')
 
     adim_symbol = kwargs['adim_unit_symbol']
