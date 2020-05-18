@@ -9,7 +9,7 @@
 #define N_MESH      4
 
 #define REYNOLDS    1000
-#define FOURIER     0.4
+#define FOURIER     0.2
 #define CFL         0.7
 
 #define NU          (1e-5)      // UNUSED VARIABLE -> defined for the save_header
