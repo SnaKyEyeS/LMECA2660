@@ -20,7 +20,7 @@ set(LIBM_LIBRARIES m)
 # PETSc
 set(PETSC_DIR ${PROJECT_SOURCE_DIR}/petsc-3.12.4)
 set(PETSC_ARCH arch-linux2-c-debug)
-find_package(PETSc 3.12.4 REQUIRED)
+find_package(PETSc REQUIRED)
 include_directories(${PETSC_INCLUDES})
 add_definitions(${PETSC_DEFINITIONS})
 
